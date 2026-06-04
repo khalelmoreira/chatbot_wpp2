@@ -1,6 +1,6 @@
 import json
 import time
-from src.repositories.db import marcar_processamento, marcar_emitido, marcar_erro, executar_modif
+from chatbot_wpp2.src.database.db import marcar_processamento, marcar_emitido, marcar_erro, executar_modif
 from src.services.nfse_service import emitir_nf
 
 def processar_job(job):

@@ -7,40 +7,47 @@ from src.types.context_cadastro import ContextCadastro
 from src.types.context_nfse import ContextNfse, DadosNfse
 from src.types.context_base import ResultadoValidacao
 
+def cpf_valido(cpf: str) -> bool
+
 def validar_dados_mensagem(ctx: ContextCadastro) -> None:
     
-    dados_completos = ctx.dados_completos
+    dados = ctx.dados_completos
 
-    validos = {}
-    invalidos = []
-    faltantes = []
+    validos: dict[str, str] = {}
+    invalidos: list[str] = []
+    faltantes: list[str] = []
 
-    nome = dados_completos.nome
+    nome = dados.nome
 
-    if nome is None:
+    if not nome or len(nome.strip()) < 3:
         faltantes.append("nome")
 
-    elif len(nome.strip()) >= 3:
+    else:
         validos["nome"] = nome.strip()
 
-    else:
-        invalidos.append("nome")
+    cpf_cnpj_raw = dados.cpf_cnpj
 
-    cpf_cnpj = dados_completos.cpf_cnpj
-
-    if cpf_cnpj is None:
+    if cpf_cnpj_raw is None:
         faltantes.append("cpf_cnpj")
 
     else:
-        cpf_cnpj_limpo = re.sub(r"\D", "", cpf_cnpj)
+        limpo = re.sub(r"\D", "", cpf_cnpj_raw)
+
+        if len(limpo) == 11 and cpf_valido(limpo):
+            validos["cpf_cnpj"] = limpo
+            validos["tipo_pessoa"] = "F"
+
+        elif len(limpo) == 14 and cnpj_valido(limpo)
+
+        cpf_cnpj_limpo = re.sub(r"\D", "", cpf_cnpj_raw)
 
         if len(cpf_cnpj_limpo) in [11, 14]:
-            validos["cpf_cnpj"] = cpf_cnpj_limpo
+            validos["cpf_cnpj_raw"] = cpf_cnpj_limpo
 
         else:
-            invalidos.append("cpf_cnpj")
+            invalidos.append("cpf_cnpj_raw")
 
-    email = dados_completos.email
+    email = dados.email
 
     if email is None:
         faltantes.append("email")
@@ -164,44 +171,21 @@ def validar_dados_nf(ctx: ContextNfse) -> None:
         faltantes=faltantes
     )
 
-def mesclar_dados_nf(origem, novos):
-
-    resultado = deepcopy(origem)
-
-    for chave, valor in novos.items():
-
-        if (
-            chave in resultado
-            and isinstance(resultado[chave], dict)
-            and isinstance(valor, dict)
-        ):
-
-            resultado[chave] = mesclar_dados_nf(
-                resultado[chave],
-                valor
-            )
-
-        else:
-
-            resultado[chave] = valor
-
-    return resultado
-
 #def validar_assinatura(request):
 
-    assinatura_recebida = request.headers.get("X-Hub-Signature-256")
+#     assinatura_recebida = request.headers.get("X-Hub-Signature-256")
 
-    if not assinatura_recebida:
-        return False
+#     if not assinatura_recebida:
+#         return False
     
-    assinatura_recebida = assinatura_recebida.split("=")[1]
+#     assinatura_recebida = assinatura_recebida.split("=")[1]
 
-    body = request.get_data()
+#     body = request.get_data()
 
-    hash_gerado = hmac.new(
-        os.getenv("APP_SECRET").encode("utf-8"),
-        body,
-        hashlib.sha256
-    ).hexdigest()
+#     hash_gerado = hmac.new(
+#         os.getenv("APP_SECRET").encode("utf-8"),
+#         body,
+#         hashlib.sha256
+#     ).hexdigest()
 
-    return hmac.compare_digest(hash_gerado, assinatura_recebida)
+#     return hmac.compare_digest(hash_gerado, assinatura_recebida)

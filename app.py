@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
-from src.repositories.db import init_db
+from src.database.tables_db import init_db
 from src.services.webhook_wpp_service import processar_webhook
 from src.services.notaas_service import processar_webhook_notaas, verificar_assinatura
 

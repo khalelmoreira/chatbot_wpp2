@@ -4,7 +4,8 @@ import threading
 import logging
 from config import MAX_TENTATIVAS
 from src.repositories.message_db import limpar_msg_antigas
-from src.services.fila_service import busca_reserva_job, marcar_emitido, marcar_erro, calcular_backoff
+from src.services.fila_service import calcular_backoff
+from src.repositories.fila_emissao_db import FilaManager
 from src.services.nfse_service import emitir_nf
 from src.utils.logger import logger
 
@@ -13,7 +14,10 @@ def worker_emissao() -> None:
     logger.info("Worker de emissao iniciado")
 
     while True:
-        job = busca_reserva_job()
+
+        fila = FilaManager()
+
+        job = fila.get_reserva_job()
 
         if not job:
             time.sleep(2)
@@ -25,7 +29,7 @@ def worker_emissao() -> None:
         try:
             payload = json.loads(job["payload"])
             emitir_nf(payload)
-            marcar_emitido(job_id)
+            fila.marcar_emitido(job_id)
 
             logger.info(f"job {job_id} emitido com sucesso")
 
@@ -33,7 +37,7 @@ def worker_emissao() -> None:
 
         except Exception as e:
 
-            marcar_erro(job_id, e)
+            fila.marcar_erro(job_id, e)
             espera = calcular_backoff(tentativas)
 
             logger.info(f"job {job_id} falhou (tentativa {tentativas + 1}/{MAX_TENTATIVAS}): {e}")

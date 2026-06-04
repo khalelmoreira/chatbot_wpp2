@@ -1,35 +1,37 @@
 import sqlite3
-from src.repositories.db import executar_modif
+from chatbot_wpp2.src.database.db import executar_modif
 
-def salvar_msg_se_nova(phone, tipo, mensagem_id, conteudo, timestamp):
+# class MessageManager:
 
-    if not mensagem_id:
-        print("mensagem sem ID, ignorando\n")
-        return False
+#     def salvar_msg_se_nova(phone, tipo, mensagem_id, conteudo, timestamp):
 
-    try:
-        executar_modif(
-            """
-            INSERT INTO mensagens (phone, tipo, mensagem_id, conteudo, timestamp)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (phone, tipo, mensagem_id, conteudo, timestamp)
-        )
-        print("mensagem do usuario é nova e foi salva no db\n")
-        return True
-    
-    except sqlite3.IntegrityError:
-        print("mensagem duplicada ignorada\n")
-        return False
+#         if not mensagem_id:
+#             print("mensagem sem ID, ignorando\n")
+#             return False
 
-def limpar_msg_antigas():
+#         try:
+#             executar_modif(
+#                 """
+#                 INSERT INTO messages (phone, tipo, mensagem_id, conteudo, timestamp)
+#                 VALUES (?, ?, ?, ?, ?)
+#                 """,
+#                 (phone, tipo, mensagem_id, conteudo, timestamp)
+#             )
+#             print("mensagem do usuario é nova e foi salva no db\n")
+#             return True
+        
+#         except sqlite3.IntegrityError:
+#             print("mensagem duplicada ignorada\n")
+#             return False
 
-    msg_deletadas = executar_modif(
-        """
-        DELETE FROM mensagens
-        WHERE criado_em < datetime('now', '-1 day')
-        """
-    )
+#     def limpar_msg_antigas():
 
-    if msg_deletadas > 0:
-        print(f"{msg_deletadas} mensagens antigas foram deletadas\n")
+#         msg_deletadas = executar_modif(
+#             """
+#             DELETE FROM messages
+#             WHERE criado_em < datetime('now', '-1 day')
+#             """
+#         )
+
+#         if msg_deletadas > 0:
+#             print(f"{msg_deletadas} messages antigas foram deletadas\n")

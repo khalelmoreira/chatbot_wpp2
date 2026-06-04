@@ -1,13 +1,10 @@
-cd ~/Documentos/dev/chatbot_wpp
-cat > pyproject.toml << 'EOF'
 [build-system]
 requires = ["setuptools"]
-build-backend = "setuptools.backends.legacy:BuildBackend"
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "chatbot_wpp"
+name = "chatbot_wpp2"
 version = "0.1.0"
 
 [tool.setuptools.packages.find]
 where = ["."]
-EOF

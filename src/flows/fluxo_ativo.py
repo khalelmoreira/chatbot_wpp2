@@ -1,7 +1,7 @@
 from src.services.ai_service import analisar_msg_nota_ai
 from src.services.msg_service import enviar_mensagem
-from src.repositories.nfse_db import adicionar_fila_emissao, atualizar_nf_parcial, buscar_nf_parcial, limpar_nf_parcial
-from src.utils.validacao import normalizar_dados_nf, validar_dados_nf, mesclar_dados_nf
+from src.repositories.nfse_db import NFSeManager
+from src.utils.validacao import normalizar_dados_nf, validar_dados_nf
 from src.types.context_nfse import ContextNfse, DadosNfse, Tomador, Servico, Valores
 
 def fluxo_ativo(ctx: ContextNfse):
@@ -32,11 +32,13 @@ def fluxo_ativo(ctx: ContextNfse):
 
     print(f"IA analisou ultima mensagem\ndados_novos: {ctx.dados_novos}\n")
 
+    nfse_manager = NFSeManager()
+
     if ctx.dados_novos:
 
-        atualizar_nf_parcial(ctx)
+        nfse_manager.update_draft(ctx)
     
-    buscar_nf_parcial(ctx)
+    nfse_manager.get_draft(ctx)
 
     print(f"dados_db:{ctx.dados_db}\n")
 
@@ -69,9 +71,9 @@ def fluxo_ativo(ctx: ContextNfse):
 
     print("dados completos\n")
 
-    adicionar_fila_emissao(ctx)
+    nfse_manager.add_fila(ctx)
 
-    limpar_nf_parcial(ctx)
+    nfse_manager.delete_nfse_draft(ctx)
 
     # enviar_mensagem(
     #     phone,

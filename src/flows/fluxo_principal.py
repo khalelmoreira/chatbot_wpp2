@@ -1,6 +1,6 @@
 from src.flows.fluxo_cadastro import fluxo_cadastro
 from src.flows.fluxo_ativo import fluxo_ativo
-from src.repositories.user_db import verifica_estado_usuario, criar_usuario
+from src.repositories.user_db import UserManager
 from src.services.msg_service import enviar_mensagem
 from src.types.incoming_msg import IncomingMessage
 from src.types.context_cadastro import ContextCadastro, DadosCadastro
@@ -13,13 +13,15 @@ def fluxo_principal(ctx_meta: IncomingMessage):
     phone = ctx_meta.phone
     text = ctx_meta.text
 
-    user = verifica_estado_usuario(phone)
+    user_manager = UserManager()
+
+    user = user_manager.get_state(phone)
 
     print(f"USER: {user}\n")
 
     if not user:
         
-        user = criar_usuario(phone)
+        user = user_manager.criar_user(phone)
 
         print(f"USER CRIADO: {user}\n")
 

@@ -1,4 +1,4 @@
-from src.repositories.db import init_db, executar_modif, buscar_nf_parcial
+from chatbot_wpp2.src.database.db import init_db, executar_modif, buscar_nf_parcial
 from src.tests.generators.gen_msg_ai import gen_msg_fake, gen_conversa_fake
 #from app.services.ai_service import analisar_msg_nota_ai
 from src.flows.fluxo_ativo import fluxo_ativo

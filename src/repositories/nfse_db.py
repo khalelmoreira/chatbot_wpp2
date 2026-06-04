@@ -1,123 +1,125 @@
 import json
 from dataclasses import asdict
 import uuid
-from src.repositories.db import executar_modif, fetchone
+from chatbot_wpp2.src.database.db import executar_modif, fetchone
 from src.types.context_nfse import ContextNfse, DadosNfse, Tomador, Servico, Valores
 from src.utils.debug import print_table
 
-def atualizar_nf_parcial(ctx: ContextNfse) -> None:
+class NFSeManager:
 
-    phone = ctx.user.phone
+    def get_draft(self, ctx: ContextNfse) -> None:
 
-    print(f"ATUALIZA DADOS DA TABLE nf_parcial.\n")
-    print(f"ANTES:\n")
-    print_table("nf_parcial")
+        phone = ctx.user.phone
 
-    query = """
-        INSERT INTO nf_parcial (
-            phone,
-            nf,
-            updated_at
+        query = """
+            SELECT nf
+            FROM nfse_drafts
+            WHERE phone = ?
+        """
+
+        result = fetchone(query, (phone,))
+
+        if not result:
+            ctx.dados_db = DadosNfse()
+            return
+        
+        nf = result["nf"]
+
+        if not nf:
+            ctx.dados_db = DadosNfse()
+            return
+        
+        data = json.loads(nf)
+
+        print(f"nfse_drafts.loads: {data}\n")
+
+        nome = data.get("tomador", {}).get("nome")
+        cnpj = data.get("tomador", {}).get("cnpj")
+
+        descricao = data.get("servico", {}).get("descricao")
+        total = data.get("valores", {}).get("total")
+        aliquotaIss = data.get("valores", {}).get("aliquotaIss")
+
+        ctx.dados_db = DadosNfse(
+            tomador=Tomador(
+                nome=nome,
+                cnpj=cnpj
+            ),
+            servico=Servico(
+                descricao=descricao
+            ),
+            valores=Valores(
+                total=total,
+                aliquotaIss=aliquotaIss
+            )
         )
-        VALUES (?, ?, datetime('now'))
 
-        ON CONFLICT(phone)
-        DO UPDATE SET
-            nf = excluded.nf,
-            updated_at = datetime('now')
-    """
+    def delete_nfse_draft(self, ctx: ContextNfse) -> None:
 
-    executar_modif(
-        query,
-        (
-            phone,
-            json.dumps(asdict(ctx.dados_novos))
+        phone = ctx.user.phone
+
+        query = """
+            DELETE FROM nfse_drafts
+            WHERE phone = ?
+        """
+        executar_modif(
+            query,
+            (phone,)
         )
-    )
-    print(f"DEPOIS:\n")
-    print_table("nf_parcial")
+        
+        print_table("nfse_drafts")
 
-def buscar_nf_parcial(ctx: ContextNfse) -> None:
+    def add_fila(self, ctx: ContextNfse) -> None:
 
-    phone = ctx.user.phone
+        dados_nf = ctx.validacao.validos
 
-    query = """
-        SELECT nf
-        FROM nf_parcial
-        WHERE phone = ?
-    """
-
-    result = fetchone(query, (phone,))
-
-    if not result:
-        ctx.dados_db = DadosNfse()
-        return
-    
-    nf = result["nf"]
-
-    if not nf:
-        ctx.dados_db = DadosNfse()
-        return
-    
-    data = json.loads(nf)
-
-    print(f"nf_parcial.loads: {data}\n")
-
-    nome = data.get("tomador", {}).get("nome")
-    cnpj = data.get("tomador", {}).get("cnpj")
-
-    descricao = data.get("servico", {}).get("descricao")
-    total = data.get("valores", {}).get("total")
-    aliquotaIss = data.get("valores", {}).get("aliquotaIss")
-
-    ctx.dados_db = DadosNfse(
-        tomador=Tomador(
-            nome=nome,
-            cnpj=cnpj
-        ),
-        servico=Servico(
-            descricao=descricao
-        ),
-        valores=Valores(
-            total=total,
-            aliquotaIss=aliquotaIss
+        query = """
+        INSERT INTO fila_emissao (
+            payload,
+            idempotency_key
         )
-    )
+        VALUES (?, ?)
+        """
 
-def limpar_nf_parcial(ctx: ContextNfse) -> None:
+        payload = json.dumps(dados_nf, ensure_ascii=False)
+        idempotency_key = str(uuid.uuid4())
 
-    phone = ctx.user.phone
+        executar_modif(
+            query,
+            (payload, idempotency_key)
+        )
 
-    query = """
-        DELETE FROM nf_parcial
-        WHERE phone = ?
-    """
-    executar_modif(
-        query,
-        (phone,)
-    )
-    
-    print_table("nf_parcial")
+        print("\nadicionado a fila de emissao\n")
+        print_table("fila_emissao")
 
-def adicionar_fila_emissao(ctx: ContextNfse) -> None:
+    def update_draft(self, ctx: ContextNfse) -> None:
 
-    dados_nf = ctx.validacao.validos
+        phone = ctx.user.phone
 
-    query = """
-    INSERT INTO fila_emissao (
-        payload,
-        idempotency_key
-    )
-    VALUES (?, ?)
-    """
+        print(f"ATUALIZA DADOS DA TABLE nfse_drafts.\n")
+        print(f"ANTES:\n")
+        print_table("nfse_drafts")
 
-    payload = json.dumps(dados_nf, ensure_ascii=False)
-    idempotency_key = str(uuid.uuid4())
+        query = """
+            INSERT INTO nfse_drafts (
+                phone,
+                nf,
+                updated_at
+            )
+            VALUES (?, ?, datetime('now'))
 
-    executar_modif(
-        query,
-        (payload, idempotency_key)
-    )
+            ON CONFLICT(phone)
+            DO UPDATE SET
+                nf = excluded.nf,
+                updated_at = datetime('now')
+        """
 
-    print("\nadicionado a fila de emissao\n")
-    print_table("fila_emissao")
+        executar_modif(
+            query,
+            (
+                phone,
+                json.dumps(asdict(ctx.dados_novos))
+            )
+        )
+        print(f"DEPOIS:\n")
+        print_table("nfse_drafts")
