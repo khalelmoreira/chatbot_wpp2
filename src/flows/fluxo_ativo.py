@@ -1,6 +1,6 @@
 from src.services.ai_service import analisar_msg_nota_ai
 from src.services.msg_service import enviar_mensagem
-from src.repositories.nfse_db import NFSeManager
+from src.managers.nfse_manager import NFSeManager
 from src.utils.validacao import normalizar_dados_nf, validar_dados_nf
 from src.types.context_nfse import ContextNfse, DadosNfse, Tomador, Servico, Valores
 

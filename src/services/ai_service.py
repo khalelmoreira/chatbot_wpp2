@@ -2,16 +2,84 @@ from openai import OpenAI
 import json
 import os
 from dotenv import load_dotenv
-from src.types.context_cadastro import ContextCadastro, DadosCadastro
+from src.types.context_prestador import ContextPrestador, DadosPrestador
 from src.types.context_nfse import ContextNfse, DadosNfse, Tomador, Servico, Valores
 from src.types.conversation_type import AIResponse
-from src.models.prompts import AI_SYSTEM_EXTRACT_NF, AI_SYSTEM_CADASTRO, AI_SYSTEM_CONVERSACIONAL
+from src.models.prompts import AI_SYSTEM_EXTRACT_NF, AI_SYSTEM_CADASTRO, AI_SYSTEM_CONVERSACIONAL, AI_SYSTEM_PRESTADOR_EXTRATOR, AI_SYSTEM_PRESTADOR_GEMMA
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(base_url="http://localhost:1234/v1", api_key="lm-studio")
 
-def analisar_mensagem_ia(ctx: ContextCadastro) -> None:
+def extract_data_prestador(ctx: ContextPrestador) -> None:
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            response_format={"type": "json_object"},
+            temperature=0,
+            messages=[
+                {"role": "system", "content": AI_SYSTEM_PRESTADOR_EXTRATOR},
+                {"role": "user",   "content": ctx.text}
+            ]
+        )
+
+        conteudo = response.choices[0].message.content.strip()
+
+        dados = json.loads(conteudo)
+
+        ctx.dados_novos = DadosPrestador(
+            razao_social=dados.get("razao_social"),
+            cnpj=dados.get("cnpj"),
+            email=dados.get("email"),
+            regime_tributario=dados.get("regime_tributario"),
+            cep=dados.get("cep"),
+            inscricao_municipal=dados.get("inscricao_municipal")
+        )
+    except json.JSONDecodeError:
+        print("Erro ao converter respota da ia para json")
+        print(conteudo)
+    
+    except Exception as e:
+        print("Erro ao analisar mensagem:", e)
+
+def extract_data_prestador_gemma(ctx: ContextPrestador) -> None:
+    
+    try:
+        response = client.chat.completions.create(
+            model="google/gemma-4-e4b",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": AI_SYSTEM_PRESTADOR_GEMMA},
+                {"role": "user",   "content": ctx.text}
+            ]
+        )
+        print(f"{response}\n")
+
+        print(f"{response.choices[0].message.reasoning_content}\n")
+        print(f"{response.choices[0].message.content}\n")
+
+        conteudo = response.choices[0].message.content.strip()
+
+        dados = json.loads(conteudo)
+
+        ctx.dados_novos = DadosPrestador(
+            razao_social=dados.get("razao_social"),
+            cnpj=dados.get("cnpj"),
+            email=dados.get("email"),
+            regime_tributario=dados.get("regime_tributario"),
+            cep=dados.get("cep"),
+            inscricao_municipal=dados.get("inscricao_municipal")
+        )
+    except json.JSONDecodeError:
+        print("Erro ao converter respota da ia para json")
+        print(conteudo)
+    
+    except Exception as e:
+        print("Erro ao analisar mensagem:", e)
+
+def analisar_mensagem_ia(ctx) -> None:
 
     text = ctx.text
     conteudo = ""

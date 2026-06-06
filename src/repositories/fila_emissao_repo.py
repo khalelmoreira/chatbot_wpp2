@@ -1,6 +1,6 @@
 from typing import Optional
 from config import MAX_TENTATIVAS
-from chatbot_wpp2.src.database.db import executar_modif, fetchone
+from src.database.db import executar_modif, fetchone
 
 class FilaManager:
 

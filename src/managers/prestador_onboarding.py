@@ -1,48 +1,7 @@
 import httpx
-from dataclasses import dataclass
-from datetime import datetime
+from src.types.context_prestador import Prestador, ResultadoOnboarding
 
 NOTAAS_BASE_URL = "https://platform.notaas.com.br/api/v1"
-
-@dataclass
-class Prestador:
-    name: str
-    cnpj: str
-    razaoSocial: str
-    incricaoMunicipal: str
-    regimeTributario: str
-    codigoMunicipio: str
-    inscricaoEstadual: str
-
-    endereco: Endereco
-
-    email: str
-    phone: str | None
-
-    notaas_project_id: str | None
-    notaas_api_key: str | None
-    certificado_enviado: bool
-
-    onboarding_status: str
-    created_at: datetime
-
-@dataclass
-class Endereco:
-    logradouro: str
-    numero: str
-    complemento: str | None
-    bairro: str
-    cidade: str
-    uf: str
-    cep: str
-
-
-@dataclass
-class ResultadoOnboarding:
-    sucesso: bool
-    project_id: str | None = None
-    api_key: str | None = None
-    erro: str | None = None
 
 def criar_project(prestador: Prestador, org_token: str) -> ResultadoOnboarding:
 
@@ -50,7 +9,7 @@ def criar_project(prestador: Prestador, org_token: str) -> ResultadoOnboarding:
         "name": prestador.razaoSocial,
         "cnpj": prestador.cnpj,
         "razaoSocial": prestador.razaoSocial,
-        "incricaoMunicipal": prestador.incricaoMunicipal,
+        "inscricaoMunicipal": prestador.inscricaoMunicipal,
         "regimeTributario": prestador.regimeTributario,
         "codigoMunicipio": "3304557",
         "email": prestador.email,

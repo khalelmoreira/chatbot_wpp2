@@ -1,7 +1,7 @@
 import json
 import sqlite3
 from typing import Optional
-from chatbot_wpp2.src.database.db import executar_modif, fetchall, fetchone, get_connection
+from src.database.db import executar_modif, fetchall, fetchone, get_connection
 
 class ConversationManager:
 

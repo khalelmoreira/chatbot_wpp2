@@ -1,69 +1,111 @@
 import re
-from copy import deepcopy
-import hmac
-import hashlib
-import os
-from src.types.context_cadastro import ContextCadastro
+from enum import StrEnum
 from src.types.context_nfse import ContextNfse, DadosNfse
 from src.types.context_base import ResultadoValidacao
 
-def cpf_valido(cpf: str) -> bool
+class RegimeTributario(StrEnum):
+    NORMAL = "1"
+    MEI = "2"
+    SIMPLES = "3"
+    SIMPLES_EXCESSO = "3e"
 
-def validar_dados_mensagem(ctx: ContextCadastro) -> None:
+def extrair_digitos(valor: str | None) -> str | None:
+    if not valor:
+        return None
+    resultado = re.sub(r'\D', '', valor)
+    return resultado if resultado else None
+
+def validar_razao_social(razao_social: str | None) -> bool:
+
+    if not razao_social:
+        return False
     
-    dados = ctx.dados_completos
+    razao_social = razao_social.strip()
 
-    validos: dict[str, str] = {}
-    invalidos: list[str] = []
-    faltantes: list[str] = []
+    if len(razao_social) < 3:
+        return False
+    
+    return True
 
-    nome = dados.nome
+def validar_cnpj(cnpj: str | None) -> bool:
 
-    if not nome or len(nome.strip()) < 3:
-        faltantes.append("nome")
+    cnpj = extrair_digitos(cnpj)
 
-    else:
-        validos["nome"] = nome.strip()
+    if not cnpj:
+        return False
+    
+    if len(cnpj) != 14:
+        return False
+    
+    if not cnpj.isdigit():
+        return False
+    
+    if cnpj == cnpj[0] * 14:
+        return False
+    
+    def calcular_digit(numbers: str, weights: list[int]) -> str:
+        soma = sum(
+            int(n) * p
+            for n, p in zip(numbers, weights)
+        )
 
-    cpf_cnpj_raw = dados.cpf_cnpj
+        resto = soma % 11
 
-    if cpf_cnpj_raw is None:
-        faltantes.append("cpf_cnpj")
+        return "0" if resto < 2 else str(11 - resto)
+    
+    weights1 = [5,4,3,2,9,8,7,6,5,4,3,2]
+    weights2 = [6,5,4,3,2,9,8,7,6,5,4,3,2]
 
-    else:
-        limpo = re.sub(r"\D", "", cpf_cnpj_raw)
+    dv1 = calcular_digit(cnpj[:12], weights1)
+    dv2 = calcular_digit(cnpj[:12] + dv1, weights2)
 
-        if len(limpo) == 11 and cpf_valido(limpo):
-            validos["cpf_cnpj"] = limpo
-            validos["tipo_pessoa"] = "F"
+    return cnpj[-2:] == dv1 + dv2
 
-        elif len(limpo) == 14 and cnpj_valido(limpo)
+def validar_email(email: str | None) -> bool:
 
-        cpf_cnpj_limpo = re.sub(r"\D", "", cpf_cnpj_raw)
+    if not email:
+        return False
+    
+    if "@" not in email:
+        return False
+    
+    try:
+        user, dominio = email.split("@")
+    except ValueError:
+        return False
+    
+    if not user:
+        return False
+    
+    if "." not in dominio:
+        return False
+    
+    return True
 
-        if len(cpf_cnpj_limpo) in [11, 14]:
-            validos["cpf_cnpj_raw"] = cpf_cnpj_limpo
+def validar_reg_trib(regime: str | None) -> bool:
+    return regime in RegimeTributario._value2member_map_
 
-        else:
-            invalidos.append("cpf_cnpj_raw")
+def validar_cep(cep: str | None) -> bool:
 
-    email = dados.email
+    cep = extrair_digitos(cep)
 
-    if email is None:
-        faltantes.append("email")
+    if not cep:
+        return False
+    
+    if len(cep) != 8:
+        return False
+    
+    return cep.isdigit()
 
-    elif re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
-        validos["email"] = email.strip().lower()
+def validar_inscricao_municipal(im: str | None) -> bool:
 
-    else:
-        invalidos.append("email")
-
-
-    ctx.validacao = ResultadoValidacao(
-        validos=validos,
-        invalidos=invalidos,
-        faltantes=faltantes
-    )
+    if not im:
+        return False
+    
+    if len(im) < 3:
+        return False
+    
+    return im.isalnum()
 
 def normalizar_dados_nf(ctx: ContextNfse) -> DadosNfse:
 

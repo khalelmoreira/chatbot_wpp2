@@ -1,4 +1,4 @@
-from chatbot_wpp2.src.database.db import fetchall
+from src.database.db import fetchall
 
 def print_table(
         table_name: str, 

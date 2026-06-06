@@ -1,4 +1,4 @@
-from src.repositories.conversation_db import ConversationManager
+from src.managers.conversation_db import ConversationManager
 from src.types.conversation_type import AIClient
 from src.utils.conversation_helpers import is_cancel, is_confirm, campos_faltando, merge_draft
 

@@ -3,9 +3,9 @@ import json
 import threading
 import logging
 from config import MAX_TENTATIVAS
-from src.repositories.message_db import limpar_msg_antigas
+from src.repositories.message_repo import limpar_msg_antigas
 from src.services.fila_service import calcular_backoff
-from src.repositories.fila_emissao_db import FilaManager
+from src.repositories.fila_emissao_repo import FilaManager
 from src.services.nfse_service import emitir_nf
 from src.utils.logger import logger
 

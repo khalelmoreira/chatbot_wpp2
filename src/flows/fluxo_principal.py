@@ -1,10 +1,11 @@
-from src.flows.fluxo_cadastro import fluxo_cadastro
+from src.flows.fluxo_prestador import fluxo_prestador
 from src.flows.fluxo_ativo import fluxo_ativo
 from src.repositories.user_db import UserManager
 from src.services.msg_service import enviar_mensagem
 from src.types.incoming_msg import IncomingMessage
-from src.types.context_cadastro import ContextCadastro, DadosCadastro
+from src.types.context_prestador import ContextPrestador, DadosPrestador
 from src.types.context_nfse import ContextNfse, DadosNfse
+from src.utils.debug import print_table
 
 def fluxo_principal(ctx_meta: IncomingMessage):
 
@@ -15,15 +16,17 @@ def fluxo_principal(ctx_meta: IncomingMessage):
 
     user_manager = UserManager()
 
-    user = user_manager.get_state(phone)
+    user = user_manager.get_user(phone)
 
-    print(f"USER: {user}\n")
+    print(f"USER:\n")
+    print_table(table_name="users", where=phone)
 
     if not user:
         
         user = user_manager.criar_user(phone)
 
-        print(f"USER CRIADO: {user}\n")
+        print(f"USER CRIADO:\n")
+        print_table(table_name="users", where=phone)
 
         # enviar_mensagem(
         #     phone,
@@ -46,18 +49,19 @@ def fluxo_principal(ctx_meta: IncomingMessage):
             )
         return
     
-    if user.estado == "aguardando_dados" or user.estado == "novo":
+    if user.estado == "cadastro_prestador" or user.estado == "novo":
 
-        ctx = ContextCadastro(
+        ctx = ContextPrestador(
             user=user,
             text=text,
-            dados_novos=DadosCadastro(),
-            dados_db=DadosCadastro(),
+            dados_novos=DadosPrestador(),
+            dados_db=DadosPrestador(),
+            dados_completos=DadosPrestador(),
         )
 
         print(f"CTX CADASTRO: {ctx}\n")
         
-        return fluxo_cadastro(ctx)
+        return fluxo_prestador(ctx)
 
     else:
 
@@ -66,6 +70,7 @@ def fluxo_principal(ctx_meta: IncomingMessage):
             text=text,
             dados_novos=DadosNfse(),
             dados_db=DadosNfse(),
+            dados_completos=DadosPrestador(),
         )
 
         print(f"CTX NFSE: {ctx}\n")

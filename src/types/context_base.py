@@ -1,14 +1,16 @@
 from dataclasses import dataclass, field
-from typing import Generic, Optional, Protocol, TypeVar, Literal, Any
+from typing import Generic, Optional, Protocol, TypeVar, Literal, Any, Self
 
-EstadoUser = Literal["novo", "ativo", "aguardando_dados"]
+EstadoUser = Literal[
+    "novo",
+    "cadastro_prestador",
+    "ativo"
+]
 
-class Merge(Protocol):
-    def merge(self: "T", novos: "T") -> "T":...
-    def is_complete(self) -> bool:...
-    def campos_faltantes(self) -> list[str]:...
+class Mergeable(Protocol):
+    def merge(self, novos: Self) -> Self: ...
 
-T = TypeVar("T", bound=Merge)
+T = TypeVar("T", bound=Mergeable)
 
 @dataclass
 class User:
@@ -23,7 +25,7 @@ class ResultadoValidacao:
     faltantes: list[str] = field(default_factory=list)
 
     @property
-    def is_valido(self) -> bool:
+    def is_complete(self) -> bool:
         return not self.invalidos and not self.faltantes
 
 @dataclass
@@ -32,17 +34,5 @@ class ContextBase(Generic[T]):
     text: str
     dados_novos: T
     dados_db: T
-    dados_normalizados: Optional[T] = None
+    dados_completos: T
     validacao: ResultadoValidacao = field(default_factory=ResultadoValidacao)
-
-    @property
-    def dados_completos(self) -> T:
-        return self.dados_db.merge(self.dados_novos)
-    
-    @property
-    def completo(self) -> bool:
-        return self.dados_completos.is_complete()
-    
-    @property
-    def campos_faltantes(self) -> list[str]:
-        return self.dados_completos.campos_faltantes()

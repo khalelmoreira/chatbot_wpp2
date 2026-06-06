@@ -1,7 +1,7 @@
 import json
 from dataclasses import asdict
 import uuid
-from chatbot_wpp2.src.database.db import executar_modif, fetchone
+from src.database.db import executar_modif, fetchone
 from src.types.context_nfse import ContextNfse, DadosNfse, Tomador, Servico, Valores
 from src.utils.debug import print_table
 

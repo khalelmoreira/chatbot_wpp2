@@ -1,11 +1,10 @@
 from typing import Optional
-from chatbot_wpp2.src.database.db import fetchone, executar_modif
+from src.database.db import fetchone, executar_modif
 from src.types.context_base import User, EstadoUser
-from src.types.context_cadastro import ContextCadastro, DadosCadastro
 
 class UserManager:
 
-    def get_state(self, phone: str) -> Optional[User]:
+    def get_user(self, phone: str) -> Optional[User]:
 
         row = fetchone(
             """
@@ -34,15 +33,15 @@ class UserManager:
 
         executar_modif(
             """
-            INSERT INTO users (phone, estado, criado_em)
+            INSERT INTO users (phone, estado, created_at)
             VALUES (?, ?, datetime('now'))
             """,
-            (phone, "aguardando_dados")
+            (phone, "cadastro_prestador")
         )
 
         print(f"CRIANDO USER NO DB\n")
 
-        user = self.get_state(phone)
+        user = self.get_user(phone)
 
         if not user:
             raise ValueError("erro ao criar usuario")
@@ -57,59 +56,3 @@ class UserManager:
             WHERE phone = ?
         """
         executar_modif(query, (novo_estado, user.phone))
-
-    def get_draft(self, ctx: ContextCadastro) -> None:
-
-        phone = ctx.user.phone
-
-        query = """
-            SELECT nome, cpf_cnpj, email
-            FROM users
-            WHERE phone = ?
-        """
-        row = fetchone(query, (phone,))
-
-        if not row:
-            
-            ctx.dados_db = DadosCadastro()
-
-            return
-        
-        ctx.dados_db = DadosCadastro(
-            nome=row["nome"],
-            cpf_cnpj=row["cpf_cnpj"],
-            email=row["email"]
-        )
-
-    def update_draft(self, ctx: ContextCadastro) -> None:
-
-        phone = ctx.user.phone
-        dados_novos = ctx.dados_novos
-        
-        campos = []
-        valores = []
-
-        if dados_novos.nome:
-            campos.append("nome = ?")
-            valores.append(dados_novos.nome)
-        
-        if dados_novos.cpf_cnpj:
-            campos.append("cpf_cnpj = ?")
-            valores.append(dados_novos.cpf_cnpj)
-
-        if dados_novos.email:
-            campos.append("email = ?")
-            valores.append(dados_novos.email)
-
-        if not campos:
-            return
-        
-        query = f"""
-            UPDATE users
-            SET {", ".join(campos)}
-            WHERE phone = ?
-        """
-
-        valores.append(phone)
-
-        executar_modif(query, tuple(valores))

@@ -4,15 +4,83 @@ def init_db():
 
     executar_modif("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            phone TEXT UNIQUE,
-            nome TEXT,
-            cpf_cnpj TEXT,
-            email TEXT,
-            estado TEXT,
-            criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone         TEXT UNIQUE NOT NULL,
+            estado        TEXT NOT NULL DEFAULT 'novo',
+            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    # PRESTADOR
+
+    executar_modif("""
+        CREATE TABLE IF NOT EXISTS prestador (
+            id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone                TEXT REFERENCES users(phone),
+            
+            --dados fiscais
+            cnpj                 TEXT UNIQUE,
+            razao_social         TEXT,
+            inscricao_municipal  TEXT,
+            regime_tributario    TEXT, -- "1", "2", "3", "3e"
+            email                TEXT,
+            
+            -- endereço
+            cep                  TEXT,
+            logradouro           TEXT,
+            numero               TEXT,
+            complemento          TEXT,
+            bairro               TEXT,
+            cidade               TEXT,
+            uf                   TEXT,
+
+            -- notaas                   
+            notaas_project_id    TEXT,
+            notaas_api_key       TEXT,  --criptografaco
+            certificado_enviado  INTEGER NOT NULL DEFAULT 0,
+                   
+            -- controle
+            onboarding_status    TEXT NOT NULL DEFAULT 'novo',
+            created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # TOMADOR
+
+    # executar_modif("""
+    #     CREATE TABLE IF NOT EXISTS tomador (
+    #         id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    #         prestador_id INTEGER NOT NULL,
+    #         nome         TEXT,
+    #         cnpj         TEXT,
+    #         email        TEXT,
+    #         tipo_pessoa  TEXT, -- "F" OU "J"
+    #         created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            
+    #         FOREING KEY (prestador_id) REFERENCES prestador(id),
+    #         UNIQUE (prestador_id, cnpj)
+    #     )
+    # """)
+
+    # NF EMITIDA
+
+    # executar_modif("""
+    #     CREATE TABLE IF NOT EXISTS emissoes (
+    #         id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    #         prestador_id     INTEGER NOT NULL,
+    #         tomador_id       INTEGER NOT NULL,
+    #         invoice_id       TEXT UNIQUE, --retorno de notaas
+    #         idempotency_key  TEXT UNIQUE, --sha256 gerado
+    #         status           TEXT DEFAULT 'pendente',
+    #         valor_total      REAL,
+    #         descricao        TEXT,
+    #         created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            
+    #         FOREING KEY (prestador_id) REFERENCES prestador(id),
+    #         UNIQUE (tomador_id) REFERENCES tomador(id)
+    #     )
+    # """)
 
     executar_modif("""
         CREATE TABLE IF NOT EXISTS fila_emissao (
@@ -70,16 +138,16 @@ def init_db():
     """)
 
     executar_modif("""
-        CREATE INDEX idx_conversations_wpp_status
+        CREATE INDEX IF NOT EXISTS idx_conversations_wpp_status
             ON conversations(phone, status)
     """)
 
     executar_modif("""
-        CREATE INDEX idx_messages_conversations
+        CREATE INDEX IF NOT EXISTS idx_messages_conversations
             ON messages(conversation_id)
     """)
 
     executar_modif("""
-        CREATE INDEX idx_nfse_emitidas_conversation
+        CREATE INDEX IF NOT EXISTS idx_nfse_emitidas_conversation
             ON nfse_emitidas(conversation_id)
     """)

@@ -1,5 +1,5 @@
 from src.flows.fluxo_ativo import fluxo_ativo
-from chatbot_wpp2.src.database.db import init_db
+from src.database.db import init_db
 
 def test_fluxo_cli():
 
