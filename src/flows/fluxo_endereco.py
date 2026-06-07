@@ -1,18 +1,18 @@
 from src.managers.user_manager import UserManager
 from src.types.incoming_msg import IncomingMessage
 from src.types.estado_user import EstadoUser
+from src.flows.fluxo_onboarding import criar_project
+from src.services.msg_service import send_msg_text
 
 def fluxo_endereco(
         msg: IncomingMessage,
         user_manager: UserManager,
-):
+) -> None:
+    
     if msg.tipo != "button_reply":
         #send_msg_text(msg.phone, "Por favor, use os botões para confirmar ou corrigir o endereço.")
+        print(f"Por favor, use os botões para confirmar ou corrigir o endereço.\n")
         return
-    
-    if msg.id_botao == "endereco_confirmado":
-        user_manager.update_state(msg.phone, EstadoUser.CRIANDO_PROJETO_NOTAAS)
-        return criar_project()
     
     if msg.id_botao == "endereco_corrigir":
         user_manager.update_state(msg.phone, EstadoUser.CADASTRO_ENDERECO_MANUAL)
@@ -21,3 +21,39 @@ def fluxo_endereco(
         #     "Sem problema. Por favor, envie seu endereço completo no seguinte formato:\n\n"
         #     "Logradouro, Número, Bairro, Cidade, UF, CEP",
         #     )
+        print(
+            "Sem problema. Por favor, envie seu endereço completo no seguinte formato:\n\n"
+            "Logradouro, Número, Bairro, Cidade, UF, CEP\n"
+        )
+        return
+    
+    if msg.id_botao == "endereco_confirmado":
+        user_manager.update_state(msg.phone, EstadoUser.CRIANDO_PROJETO_NOTAAS)
+        
+        resultado = criar_project(msg.phone)
+    
+        if not resultado.sucesso:
+            # Estado fica em CRIANDO_PROJETO_NOTAAS — permite retry
+            # send_msg_text(
+            #     msg.phone,
+            #     "Ocorreu um erro ao configurar sua conta. "
+            #     "Tente novamente em instantes.",
+            # )
+            print(
+                "Ocorreu um erro ao configurar sua conta. "
+                "Tente novamente em instantes.\n"
+            )
+            return
+        
+        user_manager.update_state(msg.phone, EstadoUser.AGUARDANDO_CERTIFICADO)
+        # send_msg_text(
+        #     msg.phone,
+        #     "✅ Conta configurada com sucesso!\n\n"
+        #     "O último passo é o envio do seu certificado digital (.pfx).\n"
+        #     "Você receberá um link para fazer o upload em breve.",
+        # )
+        print(
+            "✅ Conta configurada com sucesso!\n\n"
+            "O último passo é o envio do seu certificado digital (.pfx).\n"
+            "Você receberá um link para fazer o upload em breve.\n"
+        )

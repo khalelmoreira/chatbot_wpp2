@@ -50,3 +50,19 @@ class ResultadoOnboarding:
     api_key: str | None = None
     erro: str | None = None
 
+@dataclass
+class ProjectPrestador:
+    name: str
+    cnpj: str
+    razaoSocial: str
+    inscricaoMunicipal: str
+    regimeTributario: str
+    email: str
+    endereco: Endereco
+    notaas_project_id: str
+    notaas_api_key: str
+    certificado_enviado: int
+    onboarding_status: str
+    created_at: str
+    updated_at: str
+    codigoMunicipio: str = "3304557"

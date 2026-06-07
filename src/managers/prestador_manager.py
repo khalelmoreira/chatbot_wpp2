@@ -1,5 +1,5 @@
-from src.types.context_prestador import ContextPrestador, DadosPrestador, Endereco
-from src.database.db import executar_modif, fetchone
+from src.types.context_prestador import ContextPrestador, DadosPrestador, Endereco, ProjectPrestador
+from src.database.db import executar_modif, fetchone, fetchall
 
 class PrestadorManager:
 
@@ -93,3 +93,43 @@ class PrestadorManager:
         endereco.uf,
         endereco.cep,
     ))
+        
+    def get_all(self, phone: str) -> ProjectPrestador:
+
+        query = """
+            SELECT
+                cnpj,
+                razao_social,
+                inscricao_municipal,
+                regime_tributario,
+                email,
+                cep,
+                logradouro,
+                numero,
+                bairro,
+                cidade,
+                uf
+            FROM prestador
+            WHERE phone = ?
+        """
+        row = fetchone(query, (phone,))
+
+        if not row:
+            return
+
+        return ProjectPrestador(
+            name=row["razao_social"],
+            cnpj=row["cnpj"],
+            razaoSocial=row["razao_social"],
+            inscricaoMunicipal=row["inscricao_municipal"],
+            regimeTributario=row["regime_tributario"],
+            email=row["email"],
+            endereco=Endereco(
+                logradouro=row["logradouro"],
+                bairro=row["bairro"],
+                cidade=row["cidade"],
+                uf=row["uf"],
+                cep=row["cep"],
+                numero=row["numero"],
+            )
+        )

@@ -1,5 +1,7 @@
 from src.flows.fluxo_prestador import fluxo_prestador
 from src.flows.fluxo_ativo import fluxo_ativo
+from src.flows.fluxo_endereco import fluxo_endereco
+from src.flows.fluxo_endereco_manual import fluxo_endereco_manual
 from src.managers.user_manager import UserManager
 from src.services.msg_service import send_msg_text, send_msg_botao
 from src.types.incoming_msg import IncomingMessage
@@ -7,7 +9,6 @@ from src.types.context_prestador import ContextPrestador, DadosPrestador
 from src.types.context_nfse import ContextNfse, DadosNfse
 from src.utils.debug import print_table
 from src.types.estado_user import EstadoUser
-from src.flows.fluxo_endereco import fluxo_endereco
 
 def fluxo_principal(ctx_meta: IncomingMessage):
 
@@ -66,7 +67,7 @@ def fluxo_principal(ctx_meta: IncomingMessage):
             return fluxo_endereco(ctx_meta, user_manager)
         
         case EstadoUser.CADASTRO_ENDERECO_MANUAL:
-            return fluxo_endereco_manual
+            return fluxo_endereco_manual(ctx_meta, user_manager)
         
         case EstadoUser.CRIANDO_PROJETO_NOTAAS:
 
