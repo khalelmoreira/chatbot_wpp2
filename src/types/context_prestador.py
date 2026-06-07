@@ -36,11 +36,12 @@ ContextPrestador = ContextBase[DadosPrestador]
 @dataclass
 class Endereco:
     logradouro: str
-    numero: str
     bairro: str
     cidade: str
     uf: str
-    complemento: str | None = None
+    cep: str
+    numero: Optional[str] = None
+    complemento: Optional[str]  = None
 
 @dataclass
 class ResultadoOnboarding:
@@ -48,35 +49,4 @@ class ResultadoOnboarding:
     project_id: str | None = None
     api_key: str | None = None
     erro: str | None = None
-
-    
-# @dataclass
-# class DadosPrestador:
-
-#     razao_social: str | None = None
-#     cnpj: str | None = None
-#     email: str | None = None
-#     inscricao_municipal: str | None = None
-#     regime_tributario: str | None = None
-#     cep: str | None = None
-
-#     razaoSocial: str
-#     cnpj: str
-#     email: str
-#     codigoMunicipio: str = "3304557"
-
-#     inscricaoMunicipal: str | None = None
-#     inscricaoEstadual: str | None = None
-#     regimeTributario: str | None = None
-
-#     endereco: Endereco
-
-#     phone: str | None
-
-#     notaas_project_id: str | None
-#     notaas_api_key: str | None
-#     certificado_enviado: bool
-
-#     onboarding_status: str
-#     created_at: datetime
 

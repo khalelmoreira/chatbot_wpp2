@@ -1,7 +1,6 @@
 from typing import Optional
 from src.types.incoming_msg import IncomingMessage
 from src.services.audio_service import transcrever_audio_wpp
-from src.services.msg_service import enviar_mensagem
 
 class WhatsappWebhookParser:
 
@@ -10,8 +9,6 @@ class WhatsappWebhookParser:
         try:
             value = self.extrair_value(payload)
 
-            print(f"value: {value}\n")
-
         except (KeyError, IndexError) as e:
             raise ValueError(f"payload malformado: {e}") from e
         
@@ -19,65 +16,74 @@ class WhatsappWebhookParser:
         if not messages:
             return None
         
-        print(f"messages: {messages}\n")
-
         contacts = value.get("contacts", [])
-        contact_name = (
+        name = (
             contacts[0]
             .get("profile", {})
-            .get("name", "Desconhecido")
-            if contacts else "Desconhecido"
+            .get("name", "")
+            if contacts else ""
         )
         
-        print(f"contacts: {contacts}\n")
-
         message = messages[0]
+        phone = message["from"]
+        msg_id = message["id"]
+        timestamp = int(message["timestamp"])
+        tipo_raw = message.get("type")
 
-        print(f"message: {message}\n")
-
-        if message.get("type") == "text":
-
-            tipo = message["type"]
-
-            return IncomingMessage(
-            msg_id=message["id"],
-            phone=message["from"],
-            contact_name=contact_name,
-            text=message["text"]["body"],
-            timestamp=int(message["timestamp"]),
-            tipo=tipo
-        )
-
-        elif message.get("type") == "audio":
+        if tipo_raw == "text":
             
-            tipo = message["type"]
-            audio_id = message["id"]
-            text = transcrever_audio_wpp(audio_id)
+            return IncomingMessage(
+                msg_id=msg_id,
+                phone=phone,
+                name=name,
+                tipo="text",
+                timestamp=timestamp,
+                text=message["text"]["body"],
+                id_botao=None,
+            )
+
+        if tipo_raw == "audio":
 
             return IncomingMessage(
-            msg_id=audio_id,
-            phone=message["from"],
-            contact_name=contact_name,
-            text=text,
-            timestamp=int(message["timestamp"]),
-            tipo=tipo
-        )
+                msg_id=msg_id,
+                phone=phone,
+                name=name,
+                tipo="audio",
+                timestamp=timestamp,
+                text = transcrever_audio_wpp(msg_id),
+                id_botao=None,
+            )
+            
+        if tipo_raw == "interactive":
+            subtipo = message["interactive"].get("type")
+
+            if subtipo == "button_reply":
+
+                button_reply = message["interactive"]["button_reply"]
+
+                return IncomingMessage(
+                    msg_id=msg_id,
+                    phone=phone,
+                    name=name,
+                    tipo="button_reply",
+                    timestamp=timestamp,
+                    text=None,
+                    id_botao=button_reply["id"]
+                )
+            
+            print(f"subtipo interativo nao tratado: {subtipo}")
+            return None
 
         else:
-            print("tipo não tratado\n")
+            print(f"tipo não tratado: {tipo_raw}")
             #enviar_mensagem(message["from"], "text", "não entendi a mensagem.")
-            print("MSG: Não entendi a mensagem...\n")
             return None
     
     def extrair_value(self, payload: dict) -> dict:
         try:
             entry = payload["entry"][0]
 
-            print(f"entry: {entry}\n")
-
             change = entry["changes"][0]
-
-            print(f"change: {change}\n")
 
             return change["value"]
         except (KeyError, IndexError) as e:

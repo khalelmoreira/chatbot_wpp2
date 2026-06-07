@@ -1,14 +1,15 @@
 from typing import Optional
 from src.database.db import fetchone, executar_modif
-from src.types.context_base import User, EstadoUser
+from src.types.context_base import User
+from src.types.estado_user import EstadoUser
+from src.types.incoming_msg import IncomingMessage
 
 class UserManager:
 
     def get_user(self, phone: str) -> Optional[User]:
 
-        row = fetchone(
-            """
-            SELECT id, phone, estado
+        row = fetchone("""
+            SELECT id, phone, name, estado
             FROM users
             WHERE phone = ?
             LIMIT 1
@@ -26,17 +27,20 @@ class UserManager:
         return User(
             id=row["id"],
             phone=row["phone"],
-            estado=estado
+            name=row["name"],
+            estado=estado,
         )
 
-    def criar_user(self, phone: str) -> User:
+    def criar_user(self, ctx_meta: IncomingMessage) -> User:
 
-        executar_modif(
-            """
-            INSERT INTO users (phone, estado, created_at)
-            VALUES (?, ?, datetime('now'))
+        phone = ctx_meta.phone
+        name = ctx_meta.name
+
+        executar_modif("""
+            INSERT INTO users (phone, name, estado, created_at)
+            VALUES (?, ?, ?, datetime('now'))
             """,
-            (phone, "cadastro_prestador")
+            (phone, name, "cadastro_prestador")
         )
 
         print(f"CRIANDO USER NO DB\n")
@@ -48,11 +52,15 @@ class UserManager:
         
         return User
 
-    def update_status(self, user: User, novo_estado: EstadoUser) -> None:
+    def update_state(self, phone: str, novo_estado: EstadoUser) -> None:
+
+        print("PHONE:", phone)
+        print("ESTADO:", novo_estado)
+        print("ESTADO:", novo_estado.value)
 
         query = """
             UPDATE users
             SET estado = ?
             WHERE phone = ?
         """
-        executar_modif(query, (novo_estado, user.phone))
+        executar_modif(query, (novo_estado, phone))

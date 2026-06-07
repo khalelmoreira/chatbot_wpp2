@@ -6,6 +6,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
             phone         TEXT UNIQUE NOT NULL,
+            name          TEXT,
             estado        TEXT NOT NULL DEFAULT 'novo',
             created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -16,7 +17,7 @@ def init_db():
     executar_modif("""
         CREATE TABLE IF NOT EXISTS prestador (
             id                   INTEGER PRIMARY KEY AUTOINCREMENT,
-            phone                TEXT REFERENCES users(phone),
+            phone                TEXT UNIQUE REFERENCES users(phone),
             
             --dados fiscais
             cnpj                 TEXT UNIQUE,
@@ -150,4 +151,9 @@ def init_db():
     executar_modif("""
         CREATE INDEX IF NOT EXISTS idx_nfse_emitidas_conversation
             ON nfse_emitidas(conversation_id)
+    """)
+
+    executar_modif("""
+        CREATE INDEX IF NOT EXISTS idx_prestador_phone
+            ON prestador(phone)
     """)

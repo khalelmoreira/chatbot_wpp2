@@ -49,3 +49,56 @@ def build_text_message(phone: str, text: str) -> dict:
     }
   ]
 }
+
+def build_button_reply_message(
+    phone: str,
+    button_id: str
+) -> dict:
+
+    return {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "145678901234567",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "59792598778978",
+                                "phone_number_id": "123456789012345"
+                            },
+                            "contacts": [
+                                {
+                                    "profile": {
+                                        "name": "João Silva"
+                                    },
+                                    "wa_id": phone
+                                }
+                            ],
+                            "messages": [
+                                {
+                                    "context": {
+                                        "from": "59792598778978",
+                                        "id": generate_message_id()
+                                    },
+                                    "from": phone,
+                                    "id": generate_message_id(),
+                                    "timestamp": generate_timestamp(),
+                                    "type": "interactive",
+                                    "interactive": {
+                                        "type": "button_reply",
+                                        "button_reply": {
+                                            "id": button_id,
+                                            "title": "change"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }

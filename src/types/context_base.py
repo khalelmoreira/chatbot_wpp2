@@ -1,11 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Generic, Optional, Protocol, TypeVar, Literal, Any, Self
-
-EstadoUser = Literal[
-    "novo",
-    "cadastro_prestador",
-    "ativo"
-]
+from typing import Generic, Protocol, TypeVar, Any, Self
+from src.types.estado_user import EstadoUser
 
 class Mergeable(Protocol):
     def merge(self, novos: Self) -> Self: ...
@@ -16,6 +11,7 @@ T = TypeVar("T", bound=Mergeable)
 class User:
     id: int
     phone: str
+    name: str
     estado: EstadoUser
 
 @dataclass

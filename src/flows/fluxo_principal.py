@@ -1,11 +1,13 @@
 from src.flows.fluxo_prestador import fluxo_prestador
 from src.flows.fluxo_ativo import fluxo_ativo
-from src.repositories.user_db import UserManager
-from src.services.msg_service import enviar_mensagem
+from src.managers.user_manager import UserManager
+from src.services.msg_service import send_msg_text, send_msg_botao
 from src.types.incoming_msg import IncomingMessage
 from src.types.context_prestador import ContextPrestador, DadosPrestador
 from src.types.context_nfse import ContextNfse, DadosNfse
 from src.utils.debug import print_table
+from src.types.estado_user import EstadoUser
+from src.flows.fluxo_endereco import fluxo_endereco
 
 def fluxo_principal(ctx_meta: IncomingMessage):
 
@@ -13,9 +15,7 @@ def fluxo_principal(ctx_meta: IncomingMessage):
 
     phone = ctx_meta.phone
     text = ctx_meta.text
-
     user_manager = UserManager()
-
     user = user_manager.get_user(phone)
 
     print(f"USER:\n")
@@ -23,56 +23,67 @@ def fluxo_principal(ctx_meta: IncomingMessage):
 
     if not user:
         
-        user = user_manager.criar_user(phone)
+        user = user_manager.criar_user(ctx_meta)
 
         print(f"USER CRIADO:\n")
         print_table(table_name="users", where=phone)
 
-        # enviar_mensagem(
+        # send_msg_text(
         #     phone,
-        #     "text",
-        #         "Olá, seja muito bem vindo a sua IA para automação de notas fiscais.\n\n"
-        #         "Para iniciarmos, envie os seguintes dados:\n"
-        #         "- Nome completo\n"
-        #         "- CPF ou CNPJ\n"
-        #         "- E-mail\n\n"
-        #         "Fico no aguardo!"
+        #     "Olá! Seja bem-vindo à automação de notas fiscais.\n\n"
+        #     "Para começar, me informe:\n"
+        #     "- Razão social\n- CNPJ\n- E-mail\n- Regime tributário\n- CEP\n- Inscrição municipal"
         # )
 
         print(
-            f"MSG: Olá, seja muito bem vindo a sua IA para automação de notas fiscais.\n\n"
-            "Para iniciarmos, envie os seguintes dados:\n"
-            "- Nome completo\n"
-            "- CPF ou CNPJ\n"
-            "- E-mail\n\n"
-            "Fico no aguardo!\n"
+            f"Olá! Seja bem-vindo à automação de notas fiscais.\n\n"
+            "Para começar, me informe:\n"
+            "- Razão social\n- CNPJ\n- E-mail\n- Regime tributário\n- CEP\n- Inscrição municipal"
             )
         return
     
-    if user.estado == "cadastro_prestador" or user.estado == "novo":
+    estado = EstadoUser(user.estado)
 
-        ctx = ContextPrestador(
+    match estado:
+
+        case EstadoUser.NOVO:
+            #send_msg_text(phone, "Vamos iniciar seu cadastro...")
+            user_manager.update_state(user, EstadoUser.CADASTRO_PRESTADOR)
+            return
+
+        case EstadoUser.CADASTRO_PRESTADOR:
+
+            ctx = ContextPrestador(
             user=user,
             text=text,
             dados_novos=DadosPrestador(),
             dados_db=DadosPrestador(),
             dados_completos=DadosPrestador(),
         )
-
-        print(f"CTX CADASTRO: {ctx}\n")
+            return fluxo_prestador(ctx, user_manager)
         
-        return fluxo_prestador(ctx)
+        case EstadoUser.CADASTRO_ENDERECO:
+            return fluxo_endereco(ctx_meta, user_manager)
+        
+        case EstadoUser.CADASTRO_ENDERECO_MANUAL:
+            return fluxo_endereco_manual
+        
+        case EstadoUser.CRIANDO_PROJETO_NOTAAS:
 
-    else:
+            print("ok")
+           #send_msg_text(phone, "Ainda estamos configurando sua conta, aguarde um momento.")
 
-        ctx = ContextNfse(
+        case EstadoUser.ATIVO:
+
+            ctx = ContextNfse(
             user=user,
             text=text,
             dados_novos=DadosNfse(),
             dados_db=DadosNfse(),
             dados_completos=DadosPrestador(),
         )
+            return fluxo_ativo(ctx)
+    
+        case _:
 
-        print(f"CTX NFSE: {ctx}\n")
-
-        return fluxo_ativo(ctx)
+            raise ValueError(f"Estado não mapeado no fluxo: {user.estado}")

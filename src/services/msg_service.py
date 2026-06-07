@@ -1,16 +1,44 @@
 import requests
 import os
-from typing import Literal
 from collections.abc import Sequence
 from dotenv import load_dotenv
+from src.types.context_prestador import Endereco
+from src.types.botoes_types import BotaoResponse
 
 load_dotenv()
 
-TipoMensagem = Literal["text"]
+def _post_wpp(payload: dict) -> dict | None:
 
-def enviar_mensagem(
+    url = (
+        f"https://graph.facebook.com"
+        f"/{os.getenv('API_META_VERSION')}"
+        f"/{os.getenv('PHONE_NUMBER_ID_TEST_META')}/messages"
+    )
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {os.getenv('ACCESS_TOKEN')}",
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=10)
+
+        if response.status_code in (200, 201):
+            print("mensagem enviada com sucesso\n")
+
+            return response.json()
+        
+        print(f"erro ao enviar mensagem: {response.status_code} - {response.text}")
+
+        return None
+    
+    except requests.RequestException as e:
+        print(f"erro no request: {e}")
+
+        return None
+
+def send_msg_text(
         phone: str,
-        tipo: TipoMensagem,
         text: str,
         lista: Sequence[str] | None = None
     ) -> dict | None:
@@ -18,39 +46,91 @@ def enviar_mensagem(
     if lista:
         text = f"{text}\n{formatar_lista(lista)}"
 
-    url = f"https://graph.facebook.com/{os.getenv('API_META_VERSION')}/{os.getenv('PHONE_NUMBER_ID_TEST_META')}/messages"
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {os.getenv('ACCESS_TOKEN')}"
+    payload = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": phone,
+        "type": "text",
+        "text": {"body": text},
     }
+
+    return _post_wpp(payload)
+
+def send_msg_botao(
+        phone: str,
+        text: str,
+        botoes: list[BotaoResponse],
+        rodape: str | None = None
+) -> dict | None:
+    
+    if not (1 <= len(botoes) <= 3):
+        raise ValueError(f"whatsapp aceita entre 1 e 3 botoes, recebido: {len(botoes)}")
+
+    interactive: dict = {
+        "type": "button",
+        "body": {"text": text},
+        "action": {
+            "buttons": [
+                {"type": "reply", "reply": {"id": b.id, "title": b.title}}
+                for b in botoes
+            ]
+        },
+    }
+
+    if rodape:
+        interactive["footer"] = {"text": rodape}
 
     payload = {
         "messaging_product": "whatsapp",
         "recipient_type": "individual",
         "to": phone,
-        "type": tipo,
-        "text": {
-            "body": text
-        }
+        "type": "interactive",
+        "interactive": interactive,
     }
 
-    try:
-        response = requests.post(url, headers=headers, json=payload)
+    return _post_wpp(payload)
 
-        if response.status_code in [200, 201]:
-            print("Mensagem enviada com sucesso!\n")
-            return response.json()
-        
-        print("Erro ao enviar a mensagem:\n")
-        print(response.status_code)
-        print(response.text)
-        return None
-        
-    except requests.exceptions.RequestException as e:
-        print("Erro na requisição:\n", e)
-        return None
+def msg_build_endereco(phone: str, endereco: Endereco) -> dict:
 
+    rows = [
+        f"📍 *Endereço encontrado:*",
+        f"",
+        f"{endereco.logradouro}",
+        f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}",
+        f"CEP: {endereco.cep}",
+        f"",
+        f"Esse é o seu endereço?",
+    ]
+
+    return {
+        "messaging_product": "whatsapp",
+        "to": phone,
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {
+                "text": "\n".join(rows)
+            },
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "endereco_confirmado",
+                            "title": "✅ Sim, confirmar"
+                        }
+                    },
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": "endereco_corrigir",
+                            "title": "✏️ Corrigir"
+                        }
+                    }
+                ]
+            }
+        }
+    }
 
 def formatar_lista(lista: Sequence[str]) -> str:
     return "\n".join(f"- {item}" for item in lista)

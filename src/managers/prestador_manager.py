@@ -1,7 +1,5 @@
-from src.types.context_prestador import ContextPrestador, DadosPrestador
+from src.types.context_prestador import ContextPrestador, DadosPrestador, Endereco
 from src.database.db import executar_modif, fetchone
-import sqlite3
-from src.database.get_connection import get_connection
 
 class PrestadorManager:
 
@@ -18,41 +16,24 @@ class PrestadorManager:
 
     def update_validos(self, ctx: ContextPrestador) -> None:
 
-        print(f"UPDATE VALIDOS\n")
-
         phone = ctx.user.phone
         validos = ctx.validacao.validos
-
-        print(f"VALIDACAO: {ctx.validacao}\n")
-        print(f"VALIDOS: {validos}\n")
         
-        campos_sql = []
-        valores = []
+        campos_insert = ["phone"] + [c for c in validos if c in self.CAMPOS_EDITAVEIS]
+        valores_insert = [phone] + [validos[c] for c in campos_insert[1:]]
 
-        for campo, valor in validos.items():
-            
-            if campo not in self.CAMPOS_EDITAVEIS:
-                continue
+        placeholders = ", ".join("?" * len(campos_insert))
 
-            campos_sql.append(f"{campo} = ?")
-            valores.append(valor)
+        campos_update = campos_insert[1:]
+        set_clause = ", ".join(f"{c} = excluded.{c}" for c in campos_update)
 
-        if not campos_sql:
-            return
-        
         query = f"""
-            UPDATE prestador
-            SET {", ".join(campos_sql)}
-            WHERE phone = ?
+            INSERT INTO prestador ({', '.join(campos_insert)})
+            VALUES ({placeholders})
+            ON CONFLICT(phone) DO UPDATE SET {set_clause}
         """
 
-        valores.append(phone)
-
-        executar_modif(query, tuple(valores))
-
-        with get_connection() as conn:
-            cursor = conn.cursor()
-        print(f"LINHAS AFETADAS: {cursor.rowcount}")
+        executar_modif(query, tuple(valores_insert))
 
     def get_db_data(self, ctx: ContextPrestador) -> None:
 
@@ -75,8 +56,6 @@ class PrestadorManager:
             
             ctx.dados_db = DadosPrestador()
 
-            print(f"SEM DADOS DO PRESTADOR\n")
-
             return
 
         ctx.dados_db = DadosPrestador(
@@ -88,4 +67,29 @@ class PrestadorManager:
             inscricao_municipal=row["inscricao_municipal"],
         )
 
-        print(f"DADOS SALVOS PRESTADOR: {ctx.dados_db}\n")
+    def update_endereco(self, phone: str, endereco: Endereco) -> None:
+
+        query = """
+            INSERT INTO prestador (phone, logradouro, numero, complemento, bairro, cidade, uf, cep)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(phone) DO UPDATE SET
+                logradouro  = excluded.logradouro,
+                numero      = excluded.numero,
+                complemento = excluded.complemento,
+                bairro      = excluded.bairro,
+                cidade      = excluded.cidade,
+                uf          = excluded.uf,
+                cep         = excluded.cep,
+                updated_at  = CURRENT_TIMESTAMP
+        """
+
+        executar_modif(query, (
+        phone,
+        endereco.logradouro,
+        endereco.numero,
+        endereco.complemento,
+        endereco.bairro,
+        endereco.cidade,
+        endereco.uf,
+        endereco.cep,
+    ))

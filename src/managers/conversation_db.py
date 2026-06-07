@@ -36,7 +36,7 @@ class ConversationManager:
 
         return conversation_id
     
-    def update_status(self, conversation_id: int, status: int) -> None:
+    def update_state(self, conversation_id: int, status: int) -> None:
 
         executar_modif("""
             UPDATE conversations

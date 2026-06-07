@@ -30,7 +30,7 @@ class StateMachine:
 
         if is_cancel(message):
             self.manager.add_message(conversation_id, "user", message)
-            self.manager.update_status(conversation_id, "CANCELLED")
+            self.manager.update_state(conversation_id, "CANCELLED")
 
             return "Operação cancelada. Quando quiser emitir nova nota, é só me chamar."
         
@@ -87,7 +87,7 @@ class StateMachine:
 
         faltando = campos_faltando(ai_response.extraido)
         if not faltando:
-            self.manager.update_status(conversation_id, "CONFIRMING")
+            self.manager.update_state(conversation_id, "CONFIRMING")
 
         return ai_response.message
     
@@ -111,7 +111,7 @@ class StateMachine:
         # Transição para CONFIRMING se todos os campos estão presentes
 
         if not campos_faltando(novo_draft):
-            self.manager.update_status(conversation_id, "CONFIRMING")
+            self.manager.update_state(conversation_id, "CONFIRMING")
 
         return ai_response.message
     
@@ -121,11 +121,11 @@ class StateMachine:
         
         # Usuário quer corrigir — volta para COLLECTING
 
-        self.manager.update_status(conversation_id, "COLLECTING")
+        self.manager.update_state(conversation_id, "COLLECTING")
         return self._handle_collecting(conversation_id, message)
     
     def _trigger_emission(self, conversation_id: int) -> str:
-        self.manager.update_status(conversation_id, "EMITTING")
+        self.manager.update_state(conversation_id, "EMITTING")
         draft = self.manager.get_draft(conversation_id)
 
         # Enfileira usando sua fila já existente
