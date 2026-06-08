@@ -12,8 +12,6 @@ class PrestadorManager:
         "inscricao_municipal",
     ]
 
-    # SALVA DADOS_NOVOS NO DB
-
     def update_validos(self, ctx: ContextPrestador) -> None:
 
         phone = ctx.user.phone

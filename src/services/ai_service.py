@@ -3,10 +3,10 @@ import json
 import os
 from dotenv import load_dotenv
 from src.types.context_prestador import ContextPrestador, DadosPrestador, Endereco
-from src.types.context_nfse import ContextNfse, DadosNfse, Tomador, Servico, Valores
+from chatbot_wpp2.src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.types.conversation_type import AIResponse
 from src.types.incoming_msg import IncomingMessage
-from src.models.prompts import AI_SYSTEM_PRESTADOR_GEMMA, AI_SYSTEM_ENDERECO_EXTRATOR_GEMMA
+from src.models.prompts import AI_SYSTEM_PRESTADOR_GEMMA, AI_SYSTEM_ENDERECO_EXTRATOR_GEMMA, AI_SYSTEM_NF_GEMMA
 
 load_dotenv()
 
@@ -96,7 +96,7 @@ def analisar_mensagem_ia(ctx) -> None:
     except Exception as e:
         print("Erro ao analisar mensagem:", e)
     
-def analisar_msg_nota_ai(ctx: ContextNfse) -> None:
+def analisar_msg_nota_ai(ctx: ContextTomador) -> None:
 
     text = ctx.text
 
@@ -132,7 +132,7 @@ def analisar_msg_nota_ai(ctx: ContextNfse) -> None:
         total = dados.get("valores", {}).get("total")
         aliquotaIss = dados.get("valores", {}).get("aliquotaIss")
 
-        ctx.dados_novos = DadosNfse(
+        ctx.dados_novos = DadosTomador(
             tomador=Tomador(
                 nome=nome,
                 cnpj=cnpj
@@ -216,6 +216,7 @@ def _resumir_draft(draft: dict) -> str:
 
 client = OpenAI(base_url="http://localhost:1234/v1", api_key="lm-studio")
 
+
 def extract_data_prestador_gemma(ctx: ContextPrestador) -> None:
     
     try:
@@ -262,8 +263,8 @@ def extract_endereco_gemma(msg: IncomingMessage) -> Endereco:
                 {"role": "user",   "content": msg.text}
             ]
         )
-        print(f"{response}\n")
 
+        print(f"{response}\n")
         print(f"{response.choices[0].message.reasoning_content}\n")
         print(f"{response.choices[0].message.content}\n")
 
@@ -285,3 +286,52 @@ def extract_endereco_gemma(msg: IncomingMessage) -> Endereco:
     
     except Exception as e:
         print("Erro ao analisar mensagem:", e)
+
+def extract_nf_gemma(ctx: ContextTomador) -> None:
+
+    try:
+        response = client.chat.completions.create(
+            model="google/gemma-4-e4b",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": AI_SYSTEM_NF_GEMMA},
+                {"role": "user", "content": ctx.text}
+            ],
+        )
+
+        print(f"{response}\n")
+        print(f"{response.choices[0].message.reasoning_content}\n")
+        print(f"{response.choices[0].message.content}\n")
+
+        conteudo = response.choices[0].message.content.strip()
+
+        dados = json.loads(conteudo)
+
+        nome = dados.get("tomador", {}).get("nome")
+        cnpj = dados.get("tomador", {}).get("cnpj")
+        descricao = dados.get("servico", {}).get("descricao")
+        total = dados.get("valores", {}).get("total")
+        aliquotaIss = dados.get("valores", {}).get("aliquotaIss")
+
+        ctx.dados_novos = DadosTomador(
+            tomador=Tomador(
+                nome=nome,
+                cnpj=cnpj
+            ),
+            servico=Servico(
+                descricao=descricao
+            ),
+            valores=Valores(
+                total=total,
+                aliquotaIss=aliquotaIss
+            )
+        )
+
+    except json.JSONDecodeError:
+        print("Erro ao converter respota da ia para json")
+        print(conteudo)
+        return
+    
+    except Exception as e:
+        print("Erro ao analisar mensagem:", str(e))
+        return

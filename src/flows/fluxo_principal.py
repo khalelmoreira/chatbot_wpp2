@@ -6,7 +6,7 @@ from src.managers.user_manager import UserManager
 from src.services.msg_service import send_msg_text, send_msg_botao
 from src.types.incoming_msg import IncomingMessage
 from src.types.context_prestador import ContextPrestador, DadosPrestador
-from src.types.context_nfse import ContextNfse, DadosNfse
+from chatbot_wpp2.src.types.context_tomador import ContextTomador, DadosTomador
 from src.utils.debug import print_table
 from src.types.estado_user import EstadoUser
 
@@ -76,12 +76,12 @@ def fluxo_principal(ctx_meta: IncomingMessage):
 
         case EstadoUser.ATIVO:
 
-            ctx = ContextNfse(
+            ctx = ContextTomador(
             user=user,
             text=text,
-            dados_novos=DadosNfse(),
-            dados_db=DadosNfse(),
-            dados_completos=DadosPrestador(),
+            dados_novos=DadosTomador(),
+            dados_db=DadosTomador(),
+            dados_completos=DadosTomador(),
         )
             return fluxo_ativo(ctx)
     

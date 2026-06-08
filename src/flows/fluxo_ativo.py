@@ -1,25 +1,32 @@
-from src.services.ai_service import analisar_msg_nota_ai
-from src.managers.nfse_manager import NFSeManager
-from src.utils.validacao import normalizar_dados_nf, validar_dados_nf
-from src.types.context_nfse import ContextNfse, DadosNfse, Tomador, Servico, Valores
+from src.services.ai_service import analisar_msg_nota_ai, extract_nf_gemma
+from chatbot_wpp2.src.managers.tomador_manager import TomadorManager
+from chatbot_wpp2.src.services.validador_tomador import normalizar_dados_nf, validar_dados_nf
+from chatbot_wpp2.src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
+from src.services.validador_tomador import ValidadorTomador
 
-def fluxo_ativo(ctx: ContextNfse):
+def fluxo_ativo(ctx: ContextTomador):
+    
+    tomador = TomadorManager()
+    validador = ValidadorTomador()
 
     print(f"\n\n----------------TESTE FLUXO ATIVO----------------\n\n")
 
-    analisar_msg_nota_ai(ctx)
+    extract_nf_gemma(ctx)
+    print(f"DADOS NOVOS: {ctx.dados_novos}\n")
 
-    print(f"IA analisou ultima mensagem\ndados_novos: {ctx.dados_novos}\n")
 
-    nfse_manager = NFSeManager()
+    tomador.get_db_data(ctx)
+    print(f"DADOS DB:{ctx.dados_db}\n")
 
-    if ctx.dados_novos:
 
-        nfse_manager.update_draft(ctx)
+    ctx.dados_completos = ctx.dados_db.merge(ctx.dados_novos)
+    print(f"MERGE: {ctx.dados_completos}\n")
+
+
+    validador.validar(ctx)
+
+    tomador.update_draft(ctx)
     
-    nfse_manager.get_draft(ctx)
-
-    print(f"dados_db:{ctx.dados_db}\n")
 
     normalizar_dados_nf(ctx)
 
@@ -50,9 +57,9 @@ def fluxo_ativo(ctx: ContextNfse):
 
     print("dados completos\n")
 
-    nfse_manager.add_fila(ctx)
+    tomador.add_fila(ctx)
 
-    nfse_manager.delete_nfse_draft(ctx)
+    tomador.delete_nfse_draft(ctx)
 
     # enviar_mensagem(
     #     phone,

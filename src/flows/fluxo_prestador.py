@@ -3,7 +3,7 @@ from src.managers.prestador_manager import PrestadorManager
 from src.managers.user_manager import UserManager
 from src.services.msg_service import send_msg_text, send_msg_botao
 from src.types.context_prestador import ContextPrestador
-from src.managers.validacao_manager import ValidadorPrestadorManager
+from chatbot_wpp2.src.services.validador_prestador import ValidadorPrestador
 from src.utils.debug import print_table
 from src.utils.get_endereco import get_endereco_by_cep
 from src.types.estado_user import EstadoUser
@@ -12,7 +12,7 @@ from src.types.botoes_types import BotaoResponse
 def fluxo_prestador(ctx: ContextPrestador, user_manager: UserManager):
         
         prestador = PrestadorManager()
-        validador = ValidadorPrestadorManager()
+        validador = ValidadorPrestador()
         
         print(f"\n\n----------------TESTE FLUXO PRESTADOR----------------\n\n")
 

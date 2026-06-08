@@ -45,6 +45,9 @@ def criar_project_apikey(phone: str) -> ResultadoOnboarding:
 
 def criar_project(phone: str) -> ResultadoOnboarding:
 
+    prestador_manager = PrestadorManager()
+    prestador = prestador_manager.get_all(phone)
+
     payload = {
         "name": prestador.razaoSocial,
         "cnpj": prestador.cnpj,
