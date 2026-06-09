@@ -71,7 +71,7 @@ def criar_project(phone: str) -> ResultadoOnboarding:
         response = client.post(
             f"{NOTAAS_BASE_URL}/org/projects",
             json=payload,
-            headers={"x-api-key": org_token}
+            headers={"x-api-key": ORG_TOKEN}
         )
 
     if response.status_code == 409:
@@ -103,7 +103,7 @@ def enviar_certificado(
                 f"{NOTAAS_BASE_URL}/org/projects/{project_id}/certificate",
                 files={"file": ("certificado.pfx", f, "application/x-pkcs12")},
                 data={"password": senha},
-                headers={"x-api-key": org_token}
+                headers={"x-api-key": ORG_TOKEN}
             )
 
         if response.status_code != 201:
@@ -118,7 +118,7 @@ def criar_api_key(project_id: str) -> ResultadoOnboarding:
         response = client.post(
             f"{NOTAAS_BASE_URL}/org/projects/{project_id}/api-keys",
             json={"name": "Backend producao"},
-            headers={"x-api-key": org_token}
+            headers={"x-api-key": ORG_TOKEN}
         )
 
     if response.status_code != 201:
@@ -138,29 +138,29 @@ def onboarding_completo(
         senha_certificado: str
 ) -> ResultadoOnboarding:
     
-    resultado = criar_project(prestador, org_token)
+    resultado = criar_project(prestador, ORG_TOKEN)
     if not resultado.sucesso:
         return resultado
     
     project_id = resultado.project_id
 
-    resultado = enviar_certificado(project_id, caminho_pfx, senha_certificado, org_token)
+    resultado = enviar_certificado(project_id, caminho_pfx, senha_certificado, ORG_TOKEN)
     if not resultado.sucesso:
         return resultado
     
-    resultado = criar_api_key(project_id, org_token)
+    resultado = criar_api_key(project_id, ORG_TOKEN)
     if not resultado.sucesso:
         return resultado
     
-def retomar_onboarding(prestador: Prestador, ...) -> ResultadoOnboarding:
-    # já tem project_id? pula o passo 1
-    if not prestador.notaas_project_id:
-        ...criar projeto...
+# def retomar_onboarding(prestador: Prestador, ...) -> ResultadoOnboarding:
+#     # já tem project_id? pula o passo 1
+#     if not prestador.notaas_project_id:
+#         ...criar projeto...
 
-    # já enviou certificado? pula o passo 2
-    if not prestador.certificado_enviado:
-        ...enviar certificado...
+#     # já enviou certificado? pula o passo 2
+#     if not prestador.certificado_enviado:
+#         ...enviar certificado...
 
-    # já tem api_key? pula o passo 3
-    if not prestador.notaas_api_key:
-        ...criar api key...
+#     # já tem api_key? pula o passo 3
+#     if not prestador.notaas_api_key:
+#         ...criar api key...

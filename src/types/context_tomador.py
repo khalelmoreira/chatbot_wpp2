@@ -78,4 +78,6 @@ class DadosTomador:
     def is_complete(self) -> bool:
         return not self.campos_faltantes()
     
-ContextTomador = ContextBase[DadosTomador]
+@dataclass
+class ContextTomador(ContextBase[DadosTomador]):
+    idempotency_key: str = ""

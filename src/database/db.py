@@ -22,3 +22,11 @@ def fetchall(query: str, params: tuple = ()):
 
     with get_connection() as conn:
         return conn.execute(query, params).fetchall()
+    
+def fetchone_modif(query: str, params: tuple = ()):
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        print(repr(query))
+        cursor.execute(query, params)
+        return cursor.fetchone()

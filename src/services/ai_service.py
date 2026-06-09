@@ -3,7 +3,7 @@ import json
 import os
 from dotenv import load_dotenv
 from src.types.context_prestador import ContextPrestador, DadosPrestador, Endereco
-from chatbot_wpp2.src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
+from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.types.conversation_type import AIResponse
 from src.types.incoming_msg import IncomingMessage
 from src.models.prompts import AI_SYSTEM_PRESTADOR_GEMMA, AI_SYSTEM_ENDERECO_EXTRATOR_GEMMA, AI_SYSTEM_NF_GEMMA

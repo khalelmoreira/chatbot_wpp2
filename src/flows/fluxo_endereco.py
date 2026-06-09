@@ -29,6 +29,11 @@ def fluxo_endereco(
     
     if msg.id_botao == "endereco_confirmado":
         user_manager.update_state(msg.phone, EstadoUser.CRIANDO_PROJETO_NOTAAS)
+        user_manager.update_state(msg.phone, EstadoUser.ATIVO)
+
+        print("USER ATIVO!\n")
+
+        return
         
         resultado = criar_project(msg.phone)
     

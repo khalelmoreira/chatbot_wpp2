@@ -1,7 +1,7 @@
 import re
 from operator import attrgetter
 from typing import Any
-from chatbot_wpp2.src.types.context_tomador import ContextTomador, DadosTomador
+from src.types.context_tomador import ContextTomador, DadosTomador
 from src.types.context_base import ResultadoValidacao
 from src.services.validador_prestador import validar_cnpj
 
@@ -32,7 +32,7 @@ _VALIDACOES_TOMADOR: dict[str, callable[[Any], bool]] = {
     "tomador.nome":        validar_nome,
     "tomador.cnpj":        validar_cnpj,
     "servico.descricao":   validar_descricao,
-    "servico.total":       validar_valor_total,
+    "valores.total":       validar_valor_total,
 }
 
 class ValidadorTomador:

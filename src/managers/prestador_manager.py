@@ -16,6 +16,9 @@ class PrestadorManager:
 
         phone = ctx.user.phone
         validos = ctx.validacao.validos
+
+        if not validos:
+            return
         
         campos_insert = ["phone"] + [c for c in validos if c in self.CAMPOS_EDITAVEIS]
         valores_insert = [phone] + [validos[c] for c in campos_insert[1:]]

@@ -6,7 +6,7 @@ from src.managers.user_manager import UserManager
 from src.services.msg_service import send_msg_text, send_msg_botao
 from src.types.incoming_msg import IncomingMessage
 from src.types.context_prestador import ContextPrestador, DadosPrestador
-from chatbot_wpp2.src.types.context_tomador import ContextTomador, DadosTomador
+from src.types.context_tomador import ContextTomador, DadosTomador
 from src.utils.debug import print_table
 from src.types.estado_user import EstadoUser
 
@@ -19,7 +19,6 @@ def fluxo_principal(ctx_meta: IncomingMessage):
     user_manager = UserManager()
     user = user_manager.get_user(phone)
 
-    print(f"USER:\n")
     print_table(table_name="users", where=phone)
 
     if not user:

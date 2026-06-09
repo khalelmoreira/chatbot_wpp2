@@ -16,8 +16,8 @@ def init_db():
 
     executar_modif("""
         CREATE TABLE IF NOT EXISTS prestador (
-            id                   INTEGER PRIMARY KEY AUTOINCREMENT,
-            phone                TEXT UNIQUE REFERENCES users(phone),
+            id                   INTEGER PRIMARY KEY REFERENCES users(id),
+            phone                TEXT UNIQUE NOT NULL REFERENCES users(phone),
             
             --dados fiscais
             cnpj                 TEXT UNIQUE,
@@ -52,7 +52,7 @@ def init_db():
     executar_modif("""
         CREATE TABLE IF NOT EXISTS tomador (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            prestador_id INTEGER NOT NULL REFERENCES pretador(id),
+            prestador_id INTEGER NOT NULL REFERENCES prestador(id),
                    
             -- identificacao
                    
@@ -84,8 +84,9 @@ def init_db():
     executar_modif("""
         CREATE TABLE IF NOT EXISTS nfs (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            prestador_id  INTEGER NOT NULL REFERENCES prestadores(id),
-            tomador_id    INTEGER NOT NULL REFERENCES tomadores(id),
+            prestador_id  INTEGER NOT NULL REFERENCES prestador(id),
+            tomador_id    INTEGER NOT NULL REFERENCES tomador(id),
+            phone         TEXT,
                    
             -- controle de emissão
                    
@@ -109,7 +110,6 @@ def init_db():
                    
             cpf          TEXT,
             email        TEXT,
-            phone        TEXT,
                    
                 --endereco
                    

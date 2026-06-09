@@ -21,14 +21,14 @@ def main():
 
         escolha = input("\nEscolha: ")
 
-        if escolha == 1:
+        if escolha == "1":
 
             payload = build_button_reply_message(
             phone=phone,
             button_id="endereco_confirmado"
         )
         
-        if escolha == 2:
+        if escolha == "2":
 
             payload = build_button_reply_message(
             phone=phone,

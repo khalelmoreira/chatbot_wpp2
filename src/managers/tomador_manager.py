@@ -1,8 +1,8 @@
 import json
 from dataclasses import asdict
 import uuid
-from src.database.db import executar_modif, fetchone
-from chatbot_wpp2.src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
+from src.database.db import executar_modif, fetchone, fetchone_modif
+from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.utils.debug import print_table
 
 class TomadorManager:
@@ -18,10 +18,17 @@ class TomadorManager:
     }
 
     def update_validos(self, ctx: ContextTomador) -> None:
+
+        print("UPDATE VALIDOS\n")
         
         validos = ctx.validacao.validos
+
+        print(f"VALIDOS: {validos}")
+        return
+
+        prestador_id = ctx.user.id
         tomador_id = self._upsert_tomador(prestador_id, validos)
-        self._insert_nota(prestador_id, tomador_id, ctx, validos)
+        self._insert_nf(prestador_id, tomador_id, ctx, validos)
 
     def _upsert_tomador(self, prestador_id: int, validos: dict) -> int:
 
@@ -38,21 +45,20 @@ class TomadorManager:
         valores = list(all_campos.values())
 
         set_clause = ", ".join(
-            f"{c} = exclued.{c}"
+            f"{c} = excluded.{c}"
             for c in colunas
             if c != "prestador_id"
         )
 
-        query = f"""
+        row = fetchone_modif(f"""
             INSERT INTO tomador ({', '.join(colunas)})
             VALUES ({', '.join('?' * len(colunas))})
             ON CONFLICT(prestador_id, cnpj) DO UPDATE SET
                 {set_clause}
             RETURNING id
-        """
+        """, tuple(valores))
 
-        row = fetchone(query, tuple(valores))
-        return row
+        return row["id"]
     
     def _insert_nf(
             self,
@@ -63,17 +69,17 @@ class TomadorManager:
     ) -> None:
 
         campos_fixos = {
-        "prestador_id":    prestador_id,
-        "tomador_id":      tomador_id,
-        "idempotency_key": ctx.idempotency_key,
-        "payload_enviado": json.dumps(asdict(ctx.dados_completos)),
-        "status":          "queued",
+            "prestador_id":    prestador_id,
+            "tomador_id":      tomador_id,
+            "idempotency_key": ctx.idempotency_key,
+            "payload_enviado": json.dumps(asdict(ctx.dados_completos)),
+            "status":          "queued",
         }
 
         campos_dinamicos = {
-        col: validos[chave]
-        for chave, col in self._VALIDOS_NF.items()
-        if chave in validos
+            col: validos[chave]
+            for chave, col in self._VALIDOS_NF.items()
+            if chave in validos
         }
 
         all_campos = {**campos_fixos, **campos_dinamicos}
@@ -100,15 +106,20 @@ class TomadorManager:
 
     def get_db_data(self, ctx: ContextTomador) -> None:
 
-        phone = ctx.user.phone
+        prestador_id = ctx.user.id
 
         query = """
-            SELECT nf
-            FROM nfse_drafts
-            WHERE phone = ?
+            SELECT
+                nome,
+                cnpj,
+                descricao_servico,
+                aliquota_iss,
+                valor_total
+            FROM nfs
+            WHERE prestador_id = ?
         """
 
-        result = fetchone(query, (phone,))
+        result = fetchone(query, (prestador_id,))
 
         if not result:
             ctx.dados_db = DadosTomador()

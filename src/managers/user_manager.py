@@ -16,9 +16,7 @@ class UserManager:
             """,
             (phone,)
         )
-
-        print(f"VERIFICA ESTADO USER [ROW]: {row}\n")
-
+        
         if not row:
             return None
         
@@ -53,10 +51,6 @@ class UserManager:
         return User
 
     def update_state(self, phone: str, novo_estado: EstadoUser) -> None:
-
-        print("PHONE:", phone)
-        print("ESTADO:", novo_estado)
-        print("ESTADO:", novo_estado.value)
 
         query = """
             UPDATE users
