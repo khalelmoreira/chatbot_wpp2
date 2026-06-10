@@ -1,55 +1,35 @@
-from src.services.ai_service import analisar_msg_nota_ai, extract_nf_gemma
-from src.managers.tomador_manager import TomadorManager
-from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
-from src.services.validador_tomador import ValidadorTomador
-from src.utils.debug import print_table
+from src.types.context_tomador import ContextTomador
+from src.managers.conversation_manager import ConversationManager
+from src.models.conversation_state import ConversationStatus
+from src.flows.fluxo_collecting import fluxo_collecting
 
-def fluxo_ativo(ctx: ContextTomador):
-    
-    tomador = TomadorManager()
-    validador = ValidadorTomador()
+def fluxo_ativo_dispatcher(ctx: ContextTomador):
 
-    print(f"\n\n----------------TESTE FLUXO ATIVO----------------\n\n")
+    conversation = ConversationManager()
+    status = conversation.get_status(ctx.user.phone)
 
-    extract_nf_gemma(ctx)
-    print(f"DADOS NOVOS: {ctx.dados_novos}\n")
+    if status is None:
+        return fluxo_collecting(ctx, conversation)
 
+    match ConversationStatus(status):
+        
+        case ConversationStatus.COLLECTING:
+            return fluxo_collecting(ctx, conversation)
 
-    tomador.get_db_data(ctx)
-    print(f"DADOS DB:{ctx.dados_db}\n")
+        case ConversationStatus.CONFIRMING:
+            conversation.confirming()
 
+        case ConversationStatus.EMITTING:
+            conversation.emitting()
 
-    ctx.dados_completos = ctx.dados_db.merge(ctx.dados_novos)
-    print(f"MERGE: {ctx.dados_completos}\n")
-
-
-    validador.validar(ctx)
-
-    if ctx.validacao.validos:
-
-        tomador.update_validos(ctx)
-        print(f"VALIDACAO: {ctx.validacao}\n")
-
-        if not ctx.validacao.is_complete:
-
-            pendencias = (ctx.validacao.invalidos + ctx.validacao.faltantes)
-            colunas = ["id", "prestador_id", "tomador_id", "idempotency_key", "status", "nome", "cnpj", "descricao_servico", "aliquota_iss", "valor_total"]
-
-            print(f"pendencias: {pendencias}\n")
-            print(f"DADOS DB ATUAL:")
-            print_table(table_name="tomador", columns=colunas, where=ctx.user.phone)
-
-            #send_msg_text(ctx.user.phone, "Parece que ficou faltando esses dados:", pendencias)
-
+        case ConversationStatus.DONE:
             return
         
-    print(f"SEM DADOS VALIDOS\nVALIDOS: {ctx.validacao.validos}\n")
-    return
+        case ConversationStatus.ERROR:
+            conversation.error()
 
-    print("dados completos\n")
+        case ConversationStatus.CANCELLED:
+            conversation.cancelled()
 
-    tomador.add_fila(ctx)
-
-    tomador.delete_nfse_draft(ctx)
-
-    return "OK", 200
+        case _:
+            raise ValueError(f"Estado não mapeado no fluxo: {status}")

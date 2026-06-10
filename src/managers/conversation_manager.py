@@ -1,9 +1,18 @@
 import json
 import sqlite3
 from typing import Optional
+from src.types.context_tomador import DadosTomador, Tomador, Servico, Valores, ContextTomador
 from src.database.db import executar_modif, fetchall, fetchone, get_connection
 
 class ConversationManager:
+
+    def get_status(self, phone: str):
+
+        return fetchone("""
+            SELECT status FROM conversations
+            WHERE phone = ?
+            LIMIT 1
+        """, (phone,))
 
     def get_active_conversation(self, phone: str) -> Optional[sqlite3.Row]:
         # Retorna a conversa ativa do número, ou None se estiver em IDLE
@@ -16,27 +25,22 @@ class ConversationManager:
             LIMIT 1
         """, (phone,))
         
-    def create_conversation(self, phone: str) -> int:
+    def create_conversation(self, ctx: ContextTomador) -> int:
 
         with get_connection() as conn:
             cursor = conn.cursor()
             
             cursor.execute("""
-                INSERT INTO conversations (phone, status)
-                VALUE (?, 'COLLECTING')
-                RETURN id
-            """, (phone,))
+                INSERT INTO conversations (phone, prestador_id, status, draft_json, created_at)
+                VALUES (?, ?, 'COLLECTING', '{}', datetime('now'))
+                RETURNING id
+            """, (ctx.user.phone, ctx.user.id))
 
             conversation_id = cursor.lastrowid
-
-            cursor.execute("""
-                INSERT INTO nfse_drafts (conversation_id, dados)
-                VALUES (?, '{}')
-            """, (conversation_id,))
-
+  
         return conversation_id
     
-    def update_state(self, conversation_id: int, status: int) -> None:
+    def update_state(self, conversation_id: int, status: str) -> None:
 
         executar_modif("""
             UPDATE conversations
@@ -63,22 +67,45 @@ class ConversationManager:
 
         return [{"role": row["role"], "content": row["content"]} for row in rows]
     
-    def get_draft(self, conversation_id: int) -> dict:
+    def get_draft(self, conversation_id: int, ctx: ContextTomador) -> None:
 
         row = fetchone("""
-            SELECT dados FROM nfse_drafts
+            SELECT draft_json FROM conversations
             WHERE conversation_id = ?
         """, (conversation_id,))
 
-        return json.loads(row["dados"]) if row else {}
+        data = json.loads(row["draft_json"])
+
+        print(f"nfse_drafts.loads: {data}\n")
+
+        nome = data.get("tomador", {}).get("nome")
+        cnpj = data.get("tomador", {}).get("cnpj")
+
+        descricao = data.get("servico", {}).get("descricao")
+        total = data.get("valores", {}).get("total")
+        aliquotaIss = data.get("valores", {}).get("aliquotaIss")
+
+        ctx.dados_db = DadosTomador(
+            tomador=Tomador(
+                nome=nome,
+                cnpj=cnpj
+            ),
+            servico=Servico(
+                descricao=descricao
+            ),
+            valores=Valores(
+                total=total,
+                aliquotaIss=aliquotaIss
+            )
+        )
     
-    def update_draft(self, conversation_id: int, dados: dict) -> None:
+    def update_draft(self, conversation_id: int, draft: dict) -> None:
 
         executar_modif("""
-            UPDATE nfse_draft
-            SET dados = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE conversation_id = ?
-        """, (json.dumps(dados), conversation_id))
+            UPDATE conversations
+            SET draft_json = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (json.dumps(draft), conversation_id))
 
     def save_nfse_emitida(
             self,

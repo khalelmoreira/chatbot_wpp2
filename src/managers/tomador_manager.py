@@ -1,6 +1,7 @@
 import json
 from dataclasses import asdict
 import uuid
+from operator import attrgetter
 from src.database.db import executar_modif, fetchone, fetchone_modif
 from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.utils.debug import print_table
@@ -17,27 +18,19 @@ class TomadorManager:
         "valores.total": "valor_total",
     }
 
-    def update_validos(self, ctx: ContextTomador) -> None:
-
-        print("UPDATE VALIDOS\n")
-        
-        validos = ctx.validacao.validos
-
-        print(f"VALIDOS: {validos}")
-        return
+    def update_nf_from_draft(self, ctx: ContextTomador) -> None:
 
         prestador_id = ctx.user.id
-        tomador_id = self._upsert_tomador(prestador_id, validos)
-        self._insert_nf(prestador_id, tomador_id, ctx, validos)
+        tomador_id = self._upsert_tomador(prestador_id, ctx)
+        self._insert_nf(prestador_id, tomador_id, ctx, ctx)
 
-    def _upsert_tomador(self, prestador_id: int, validos: dict) -> int:
+    def _upsert_tomador(self, prestador_id: int, ctx: ContextTomador) -> int:
 
         campos_fixos = {"prestador_id": prestador_id}
 
         campos_dinamicos = {
-            col: validos[chave]
+            col: attrgetter(chave)(ctx.dados_completos)
             for chave, col in self._VALIDOS_TOMADOR.items()
-            if chave in validos
         }
 
         all_campos = {**campos_fixos, **campos_dinamicos}
@@ -65,10 +58,10 @@ class TomadorManager:
             prestador_id: int,
             tomador_id: int,
             ctx: ContextTomador,
-            validos: dict,
     ) -> None:
 
         campos_fixos = {
+            "conversation_id": ctx.conversation_id,
             "prestador_id":    prestador_id,
             "tomador_id":      tomador_id,
             "idempotency_key": ctx.idempotency_key,
@@ -77,9 +70,8 @@ class TomadorManager:
         }
 
         campos_dinamicos = {
-            col: validos[chave]
+            col: attrgetter(chave)(ctx.dados_completos)
             for chave, col in self._VALIDOS_NF.items()
-            if chave in validos
         }
 
         all_campos = {**campos_fixos, **campos_dinamicos}

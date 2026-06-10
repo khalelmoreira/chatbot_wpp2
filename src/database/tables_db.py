@@ -83,16 +83,18 @@ def init_db():
 
     executar_modif("""
         CREATE TABLE IF NOT EXISTS nfs (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            prestador_id  INTEGER NOT NULL REFERENCES prestador(id),
-            tomador_id    INTEGER NOT NULL REFERENCES tomador(id),
-            phone         TEXT,
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            prestador_id    INTEGER NOT NULL REFERENCES prestador(id),
+            tomador_id      INTEGER NOT NULL REFERENCES tomador(id),
+            conversation_id INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
+            phone           TEXT,
                    
             -- controle de emissão
                    
             notaas_invoice_id  TEXT UNIQUE,          -- preenchido no 202
             idempotency_key    TEXT UNIQUE NOT NULL, -- sha256(payload + prestador_id)
-            status             TEXT NOT NULL DEFAULT 'queued',  -- queued | processing | issued | error | cancelled
+            status             TEXT NOT NULL DEFAULT 'COLLECTING', -- COLLECTING | CONFIRMING | EMITTING | DONE | ERROR | CANCELLED
+            tentativas         INTEGER NOT NULL DEFAULT 0,
                    
             -- payload enviado (campos explícitos + blob completo)
                    
@@ -145,12 +147,25 @@ def init_db():
             erros_json         TEXT,                 -- array [{Codigo, Descricao, Complemento}]
                    
             -- campos preenchidos por webhook/polling (cancelled)
-                   
+            
+            processado_em TIMESTAMP,
             cancelado_em       TEXT,
             cancel_xml_url     TEXT,
 
             requested_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    executar_modif("""
+        CREATE TABLE IF NOT EXISTS conversations (
+            id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+            prestador_id        INTEGER NOT NULL REFERENCES prestador(id),
+            phone               TEXT NOT NULL REFERENCES users(phone),
+            status              TEXT NOT NULL DEFAULT 'COLLECTING', -- COLLECTING | CONFIRMING | EMITTING | DONE | ERROR | CANCELLED
+            draft_json          TEXT NOT NULL DEFAULT '{}',
+            created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
@@ -164,30 +179,6 @@ def init_db():
             recebido_em TEXT NOT NULL DEFAULT (datetime('now'))
         )
     """)
-
-    executar_modif("""
-        CREATE TABLE IF NOT EXISTS fila_emissao (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            status TEXT NOT NULL DEFAULT 'pendente',
-            payload TEXT NOT NULL,
-            tentativas INTEGER DEFAULT 0,
-            erro TEXT,
-            idempotency_key TEXT UNIQUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            processado_em TIMESTAMP     
-        )
-    """)
-
-    executar_modif("""
-        CREATE TABLE IF NOT EXISTS conversations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            phone TEXT NOT NULL REFERENCES users(phone),
-            status TEXT NOT NULL DEFAULT 'COLLECTING', -- COLLECTING | CONFIRMING | EMITTING | DONE | ERROR | CANCELLED
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
     executar_modif("""
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,28 +186,6 @@ def init_db():
             role TEXT NOT NULL, -- 'user' | 'assistant'
             content TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    executar_modif("""
-        CREATE TABLE IF NOT EXISTS nfse_drafts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            conversation_id INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
-            nf TEXT NOT NULL DEFAULT '{}', -- JSON
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    executar_modif("""
-        CREATE TABLE IF NOT EXISTS nfse_emitidas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            conversation_id INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
-            numero_nota TEXT,
-            protocolo TEXT,
-            dados_enviados TEXT NOT NULL, -- JSON: payload exato enviado para a API fiscal
-            resposta_api TEXT NOT NULL, -- JSON: payload exato enviado para a API fiscal
-            emitida_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
 

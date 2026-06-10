@@ -1,5 +1,5 @@
 from src.flows.fluxo_prestador import fluxo_prestador
-from src.flows.fluxo_ativo import fluxo_ativo
+from src.flows.fluxo_ativo import fluxo_ativo_dispatcher
 from src.flows.fluxo_endereco import fluxo_endereco
 from src.flows.fluxo_endereco_manual import fluxo_endereco_manual
 from src.managers.user_manager import UserManager
@@ -9,14 +9,18 @@ from src.types.context_prestador import ContextPrestador, DadosPrestador
 from src.types.context_tomador import ContextTomador, DadosTomador
 from src.utils.debug import print_table
 from src.types.estado_user import EstadoUser
+from chatbot_wpp2.src.models.conversation_state import ConversationStatus
+from src.managers.conversation_manager import ConversationManager
 
 def fluxo_principal(ctx_meta: IncomingMessage):
 
     print(f"\n\n----------------TESTE FLUXO PRINCIPAL----------------\n\n")
 
+    user_manager = UserManager()
+    conversation = ConversationManager()
+
     phone = ctx_meta.phone
     text = ctx_meta.text
-    user_manager = UserManager()
     user = user_manager.get_user(phone)
 
     print_table(table_name="users", where=phone)
@@ -74,7 +78,7 @@ def fluxo_principal(ctx_meta: IncomingMessage):
            #send_msg_text(phone, "Ainda estamos configurando sua conta, aguarde um momento.")
 
         case EstadoUser.ATIVO:
-
+                
             ctx = ContextTomador(
             user=user,
             text=text,
@@ -82,7 +86,7 @@ def fluxo_principal(ctx_meta: IncomingMessage):
             dados_db=DadosTomador(),
             dados_completos=DadosTomador(),
         )
-            return fluxo_ativo(ctx)
+            return fluxo_ativo_dispatcher(ctx)
     
         case _:
 

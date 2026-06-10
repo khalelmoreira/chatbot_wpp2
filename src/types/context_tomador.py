@@ -81,3 +81,4 @@ class DadosTomador:
 @dataclass
 class ContextTomador(ContextBase[DadosTomador]):
     idempotency_key: str = ""
+    conversation_id: int

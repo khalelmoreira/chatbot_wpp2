@@ -6,7 +6,7 @@ from src.types.context_prestador import ContextPrestador, DadosPrestador, Endere
 from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.types.conversation_type import AIResponse
 from src.types.incoming_msg import IncomingMessage
-from src.models.prompts import AI_SYSTEM_PRESTADOR_GEMMA, AI_SYSTEM_ENDERECO_EXTRATOR_GEMMA, AI_SYSTEM_NF_GEMMA
+from src.models.prompts import AI_SYSTEM_PRESTADOR_GEMMA, AI_SYSTEM_ENDERECO_EXTRATOR_GEMMA, AI_SYSTEM_NF_GEMMA, AI_SYSTEM_HAS_INTENT, AI_SYSTM_NO_INTENT
 
 load_dotenv()
 
@@ -331,6 +331,56 @@ def extract_nf_gemma(ctx: ContextTomador) -> None:
         print("Erro ao converter respota da ia para json")
         print(conteudo)
         return
+    
+    except Exception as e:
+        print("Erro ao analisar mensagem:", str(e))
+        return
+    
+def has_intent(ctx: ContextTomador) -> bool:
+
+    try:
+        response = client.chat.completions.create(
+            model="google/gemma-4-e4b",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": AI_SYSTEM_HAS_INTENT},
+                {"role": "user", "content": ctx.text}
+            ],
+        )
+
+        print(f"{response}\n")
+        print(f"{response.choices[0].message.reasoning_content}\n")
+        print(f"{response.choices[0].message.content}\n")
+
+        conteudo = response.choices[0].message.content.strip()
+
+        return conteudo.strip().lower().startswith("true")
+    
+    except Exception as e:
+        print("Erro ao analisar mensagem:", str(e))
+        return
+    
+def no_intent_response(ctx: ContextTomador) -> str:
+
+    try:
+        response = client.chat.completions.create(
+            model="google/gemma-4-e4b",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": AI_SYSTM_NO_INTENT},
+                {"role": "user", "content": ctx.text}
+            ],
+        )
+
+        print(f"{response}\n")
+        print(f"{response.choices[0].message.reasoning_content}\n")
+        print(f"{response.choices[0].message.content}\n")
+
+        conteudo = response.choices[0].message.content.strip()
+
+        fallback = "Estou aqui apenas para emitir notas fiscais. Me envie os dados do tomador e do serviço."
+        resposta = conteudo.strip()
+        return resposta if resposta else fallback
     
     except Exception as e:
         print("Erro ao analisar mensagem:", str(e))
