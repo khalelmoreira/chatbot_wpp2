@@ -4,31 +4,45 @@ from src.types.context_tomador import ContextTomador
 from src.models.conversation_state import ConversationStatus
 from src.services.validador_tomador import ValidadorTomador
 from src.utils.debug import print_table
-from src.services.msg_service import send_msg_text
+from src.services.msg_service import send_msg_text, send_msg_botao
 from src.managers.conversation_manager import ConversationManager
+from src.types.botoes_types import BotaoResponse
+from src.utils.unpack_json import unpack_dados_db
 
-def fluxo_collecting(ctx: ContextTomador, conversation: ConversationManager):
+def fluxo_collecting(ctx: ContextTomador, conversation: ConversationManager) -> None:
     
     print(f"\n\n----------------TESTE FLUXO COLLECTING----------------\n\n")
 
-    tomador = TomadorManager()
     validador = ValidadorTomador()
 
     if ctx.conversation_id is None:
         intencao = has_intent(ctx)
+        print(f"INTENCAO: {intencao}\n")
 
         if not intencao:
             response = no_intent_response(ctx)
-            send_msg_text(ctx.user.phone, response)
+            print(f"RESPONSE: {response}\n")
+            #send_msg_text(ctx.user.phone, response)
             return
+        ctx.conversation_id = conversation.create_conversation(ctx)
+
+    else:
+        intencao = has_intent(ctx)
+        print(f"INTENCAO: {intencao}\n")
         
-        ctx.conversation_id = conversation.create_conversation(ctx.user.phone, ctx.user.id)
+        if not intencao:
+            response = no_intent_response(ctx)
+            print(f"RESPONSE: {response}\n")
+            #send_msg_text(ctx.user.phone, response)
+            return
     
 
     extract_nf_gemma(ctx)
     print(f"DADOS NOVOS: {ctx.dados_novos}\n")
 
-    conversation.get_draft(ctx.conversation_id)
+    draft = conversation.get_draft(ctx)
+    print(f"DRAFT: {draft}\n")
+    unpack_dados_db(draft, ctx)
     print(f"DADOS DRAFT:{ctx.dados_db}\n")
 
     ctx.dados_completos = ctx.dados_db.merge(ctx.dados_novos)
@@ -44,25 +58,46 @@ def fluxo_collecting(ctx: ContextTomador, conversation: ConversationManager):
         if not ctx.validacao.is_complete:
 
             pendencias = (ctx.validacao.invalidos + ctx.validacao.faltantes)
-            colunas = ["id", "prestador_id", "tomador_id", "idempotency_key", "status", "nome", "cnpj", "descricao_servico", "aliquota_iss", "valor_total"]
-
-            print(f"pendencias: {pendencias}\n")
-            print(f"DADOS DB ATUAL:")
-            print_table(table_name="tomador", columns=colunas, where=ctx.user.phone)
-
             #send_msg_text(ctx.user.phone, "Parece que ficou faltando esses dados:", pendencias)
-
+            print(f"pendencias: {pendencias}\n")
             return
         
-        tomador.update_nf_from_draft(ctx)
+        #SALVA NA FILA (nfs)
+        conversation.update_draft(ctx.conversation_id, ctx.validacao.validos)
         conversation.update_state(ctx.conversation_id, ConversationStatus.CONFIRMING)
+
+        # send_msg_botao(
+        #     phone=ctx.user.phone,
+        #     text=(
+        #         f"*Dados do tomador:*\n\n"
+        #         f"{ctx.dados_completos.tomador.nome}\n"
+        #         f"{ctx.dados_completos.tomador.cnpj}\n"
+        #         f"{ctx.dados_completos.servico.descricao}\n"
+        #         f"{ctx.dados_completos.valores.total}\n"
+        #         f"Esses dados estão corretos?"
+        #     ),
+        #     botoes=[
+        #         BotaoResponse(id="tomador_confirmado", title="✅ Confirmar"),
+        #         BotaoResponse(id="tomador_corrigir", title="✏️ Corrigir"),
+        #     ],
+        # )
+
+        print(
+            f"*Dados do tomador:*\n\n"
+            f"{ctx.dados_completos.tomador.nome}\n"
+            f"{ctx.dados_completos.tomador.cnpj}\n"
+            f"{ctx.dados_completos.servico.descricao}\n"
+            f"{ctx.dados_completos.valores.total}\n"
+            f"Esses dados estão corretos?"
+        )
+        print_table(table_name="tomador", where=ctx.user.phone)
         
         return
-        print("dados completos\n")
+        # print("dados completos\n")
 
-        tomador.add_fila(ctx)
+        # tomador.add_fila(ctx)
 
-        tomador.delete_nfse_draft(ctx)
+        # tomador.delete_nfse_draft(ctx)
 
     
     print(f"SEM DADOS VALIDOS\nVALIDOS: {ctx.validacao.validos}\n")

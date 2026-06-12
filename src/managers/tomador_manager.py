@@ -1,100 +1,90 @@
 import json
 from dataclasses import asdict
 import uuid
+import hashlib
 from operator import attrgetter
 from src.database.db import executar_modif, fetchone, fetchone_modif
 from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.utils.debug import print_table
+from src.managers.conversation_manager import ConversationManager
 
 class TomadorManager:
 
-    _VALIDOS_TOMADOR: dict[str, str] = {
-        "tomador.nome": "nome",
-        "tomador.cnpj": "cnpj",
-    }
+    def update_nf_from_draft(self, ctx: ContextTomador, conversation: ConversationManager) -> None:
 
-    _VALIDOS_NF: dict[str, str] = {
-        "servico.descricao": "descricao_servico",
-        "valores.total": "valor_total",
-    }
-
-    def update_nf_from_draft(self, ctx: ContextTomador) -> None:
+        draft = conversation.get_draft(ctx)
 
         prestador_id = ctx.user.id
-        tomador_id = self._upsert_tomador(prestador_id, ctx)
-        self._insert_nf(prestador_id, tomador_id, ctx, ctx)
+        conversation_id = ctx.conversation_id
 
-    def _upsert_tomador(self, prestador_id: int, ctx: ContextTomador) -> int:
+        nome        = draft["tomador.nome"]
+        cnpj        = draft["tomador.cnpj"]
+        descricao   = draft["servico.descricao"]
+        valor_total = draft["valores.total"]
 
-        campos_fixos = {"prestador_id": prestador_id}
+        tomador_id = self._upsert_tomador(prestador_id, nome, cnpj)
 
-        campos_dinamicos = {
-            col: attrgetter(chave)(ctx.dados_completos)
-            for chave, col in self._VALIDOS_TOMADOR.items()
+        payload = {
+            "tomador": {"nome": nome, "cnpj": cnpj},
+            "servico": {"descricao": descricao},
+            "valores": {"total": valor_total},
         }
 
-        all_campos = {**campos_fixos, **campos_dinamicos}
-        colunas = list(all_campos.keys())
-        valores = list(all_campos.values())
+        payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
-        set_clause = ", ".join(
-            f"{c} = excluded.{c}"
-            for c in colunas
-            if c != "prestador_id"
+        idempotency_key = hashlib.sha256(
+            f"{payload_json}:{prestador_id}".encode()
+        ).hexdigest()
+
+        return self._upsert_nf(
+            prestador_id, tomador_id, conversation_id,
+            idempotency_key, payload_json,
+            nome, cnpj, descricao, valor_total,
         )
+    
+    def _upsert_tomador(self, prestador_id: int, nome: str, cnpj: str) -> int:
 
-        row = fetchone_modif(f"""
-            INSERT INTO tomador ({', '.join(colunas)})
-            VALUES ({', '.join('?' * len(colunas))})
-            ON CONFLICT(prestador_id, cnpj) DO UPDATE SET
-                {set_clause}
+        row = fetchone_modif("""
+            INSERT INTO tomador (prestador_id, nome, cnpj)
+            VALUES (?, ?, ?)
+            ON CONFLICT (prestador_id, cnpj) DO UPDATE SET
+                nome       = execluded.nome,
+                updated_at = CURRENT_TIMESTAMP
             RETURNING id
-        """, tuple(valores))
+        """, (prestador_id, nome, cnpj),)
 
         return row["id"]
     
-    def _insert_nf(
-            self,
-            prestador_id: int,
-            tomador_id: int,
-            ctx: ContextTomador,
-    ) -> None:
-
-        campos_fixos = {
-            "conversation_id": ctx.conversation_id,
-            "prestador_id":    prestador_id,
-            "tomador_id":      tomador_id,
-            "idempotency_key": ctx.idempotency_key,
-            "payload_enviado": json.dumps(asdict(ctx.dados_completos)),
-            "status":          "queued",
-        }
-
-        campos_dinamicos = {
-            col: attrgetter(chave)(ctx.dados_completos)
-            for chave, col in self._VALIDOS_NF.items()
-        }
-
-        all_campos = {**campos_fixos, **campos_dinamicos}
-        colunas = list(all_campos.keys())
-        valores = list(all_campos.values())
-
-        # Chaves estruturais nunca são sobrescritas no conflito
-        IMUTAVEIS = {"prestador_id", "tomador_id", "idempotency_key", "status"}
-        set_clause = ", ".join(
-            f"{c} = excluded.{c}"
-            for c in colunas
-            if c not in IMUTAVEIS
+    def _upsert_nf(
+            self, prestador_id, tomador_id, conversation_id,
+            idempotency_key, payload_json,
+            nome, cnpj, descricao, valor_total
+    ) -> int:
+        
+        row = fetchone_modif("""
+            INSERT INTO nfs (
+                prestador_id, tomador_id, conversation_id,
+                idempotency_key, payload_json,
+                nome, cnpj, descricao, valor_total
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (conversation_id) DO UPDATE SET
+                tomador_id        = excluded.tomador_id,
+                idempotency_key   = excluded.idempotency_key,
+                payload_enviado   = excluded.payload_enviado,
+                nome              = excluded.nome,
+                cnpj              = excluded.cnpj,
+                descricao_servico = excluded.descricao_servico,
+                valor_total       = excluded.valor_total,
+                updated_at        = CURRENT_TIMESTAMP
+            RETURNING id
+        """, (
+            prestador_id, tomador_id, conversation_id,
+            idempotency_key, payload_json,
+            nome, cnpj, descricao, valor_total,
+            ),
         )
-        set_clause += ", updated_at = datetime('now')"
-
-        query = f"""
-            INSERT INTO nfs ({', '.join(colunas)})
-            VALUES ({', '.join('?' * len(colunas))})
-            ON CONFLICT (idempotency_key) DO UPDATE SET
-                {set_clause}
-        """
-
-        executar_modif(query, tuple(valores))
+        return row["id"]
 
     def get_db_data(self, ctx: ContextTomador) -> None:
 

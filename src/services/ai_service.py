@@ -299,7 +299,6 @@ def extract_nf_gemma(ctx: ContextTomador) -> None:
             ],
         )
 
-        print(f"{response}\n")
         print(f"{response.choices[0].message.reasoning_content}\n")
         print(f"{response.choices[0].message.content}\n")
 
@@ -348,9 +347,7 @@ def has_intent(ctx: ContextTomador) -> bool:
             ],
         )
 
-        print(f"{response}\n")
         print(f"{response.choices[0].message.reasoning_content}\n")
-        print(f"{response.choices[0].message.content}\n")
 
         conteudo = response.choices[0].message.content.strip()
 
@@ -372,9 +369,7 @@ def no_intent_response(ctx: ContextTomador) -> str:
             ],
         )
 
-        print(f"{response}\n")
         print(f"{response.choices[0].message.reasoning_content}\n")
-        print(f"{response.choices[0].message.content}\n")
 
         conteudo = response.choices[0].message.content.strip()
 

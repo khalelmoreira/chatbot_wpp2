@@ -5,7 +5,7 @@ import logging
 from config import MAX_TENTATIVAS
 from src.repositories.message_repo import limpar_msg_antigas
 from src.services.fila_service import calcular_backoff
-from src.repositories.fila_emissao_repo import FilaManager
+from chatbot_wpp2.src.managers.fila_emissao_manager import FilaManager, NfsWorkerManager
 from src.services.nfse_service import emitir_nf
 from src.utils.logger import logger
 
@@ -15,21 +15,21 @@ def worker_emissao() -> None:
 
     while True:
 
-        fila = FilaManager()
-
-        job = fila.get_reserva_job()
+        manager = NfsWorkerManager()
+        job = manager.get_reserva_job()
 
         if not job:
             time.sleep(2)
             continue
 
         job_id = job["id"]
+        conversation_id = job["conversation_id"]
         tentativas = job["tentativas"]
 
         try:
-            payload = json.loads(job["payload"])
+            payload = json.loads(job["payload_enviado"])
             emitir_nf(payload)
-            fila.marcar_emitido(job_id)
+            manager.marcar_emitido(job_id, conversation_id)
 
             logger.info(f"job {job_id} emitido com sucesso")
 
@@ -37,10 +37,10 @@ def worker_emissao() -> None:
 
         except Exception as e:
 
-            fila.marcar_erro(job_id, e)
+            manager.marcar_erro(job_id, e)
             espera = calcular_backoff(tentativas)
 
-            logger.info(f"job {job_id} falhou (tentativa {tentativas + 1}/{MAX_TENTATIVAS}): {e}")
+            logger.info(f"job {job_id} falhou (tentativa {tentativas}/{MAX_TENTATIVAS}): {e}")
             logger.info(f"aguardando {espera}s antes de tentar proximo job")
 
             time.sleep(espera)

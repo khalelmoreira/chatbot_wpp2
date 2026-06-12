@@ -32,8 +32,6 @@ def fluxo_endereco(
         user_manager.update_state(msg.phone, EstadoUser.ATIVO)
 
         print("USER ATIVO!\n")
-
-        return
         
         resultado = criar_project(msg.phone)
     

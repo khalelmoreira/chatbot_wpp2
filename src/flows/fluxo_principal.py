@@ -9,15 +9,12 @@ from src.types.context_prestador import ContextPrestador, DadosPrestador
 from src.types.context_tomador import ContextTomador, DadosTomador
 from src.utils.debug import print_table
 from src.types.estado_user import EstadoUser
-from chatbot_wpp2.src.models.conversation_state import ConversationStatus
-from src.managers.conversation_manager import ConversationManager
 
 def fluxo_principal(ctx_meta: IncomingMessage):
 
     print(f"\n\n----------------TESTE FLUXO PRINCIPAL----------------\n\n")
 
     user_manager = UserManager()
-    conversation = ConversationManager()
 
     phone = ctx_meta.phone
     text = ctx_meta.text
@@ -86,7 +83,7 @@ def fluxo_principal(ctx_meta: IncomingMessage):
             dados_db=DadosTomador(),
             dados_completos=DadosTomador(),
         )
-            return fluxo_ativo_dispatcher(ctx)
+            return fluxo_ativo_dispatcher(ctx, ctx_meta)
     
         case _:
 
