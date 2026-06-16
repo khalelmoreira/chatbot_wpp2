@@ -3,8 +3,8 @@ from src.managers.user_manager import UserManager
 from src.types.incoming_msg import IncomingMessage
 from src.types.estado_user import EstadoUser
 from src.managers.prestador_manager import PrestadorManager
-from src.services.ai_service import extract_endereco_gemma
-from src.services.msg_service import send_msg_text, send_msg_botao
+from chatbot_wpp2.src.services.shared.ai_service import extract_endereco_gemma
+from chatbot_wpp2.src.services.shared.msg_service import send_msg_text, send_msg_botao
 from src.types.botoes_types import BotaoResponse
 
 def fluxo_endereco_manual(

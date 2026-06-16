@@ -1,9 +1,8 @@
 import json
 import sqlite3
 from typing import Optional
-from src.types.context_tomador import DadosTomador, Tomador, Servico, Valores, ContextTomador
-from src.database.db import executar_modif, fetchall, fetchone, get_connection
-from src.utils.debug import print_table
+from src.types.context_tomador import ContextTomador
+from src.database.db import executar_modif, fetchone
 
 class ConversationManager:
 
@@ -47,24 +46,6 @@ class ConversationManager:
             WHERE id = ?
         """, (status, conversation_id))
 
-    def add_message(self, conversation_id: int, role: str, content: str) -> None:
-
-        executar_modif("""
-            INSERT INTO messages (conversation_id, role, content)
-            VALUE (?, ?, ?)
-        """, (conversation_id, role, content))
-
-    def get_history(self, conversation_id: int) -> list[dict]:
-
-        rows = fetchall("""
-            SELECT role, content
-            FROM messages
-            WHERE conversation_id = ?
-            ORDER BY created_at ASC
-        """, (conversation_id,))
-
-        return [{"role": row["role"], "content": row["content"]} for row in rows]
-    
     def get_draft(self, ctx: ContextTomador) -> None:
 
         row = fetchone("""
@@ -81,24 +62,3 @@ class ConversationManager:
             SET draft_json = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         """, (json.dumps(draft), conversation_id))
-
-    def save_nfse_emitida(
-            self,
-            conversation_id: int,
-            numero_nota: Optional[str],
-            protocolo: Optional[str],
-            dados_enviados: dict,
-            resposta_api: dict,
-    ) -> None:
-        
-        executar_modif("""
-            INSERT INTO nfse_emitidas
-                (conversation_id, numero_nota, protocolo, dados_enviados, resposta_api)
-            VALUE (?, ?, ?, ?, ?)
-        """, (
-            conversation_id,
-            numero_nota,
-            protocolo,
-            json.dumps(dados_enviados),
-            json.dumps(resposta_api),
-        ))

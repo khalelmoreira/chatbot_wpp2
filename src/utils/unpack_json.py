@@ -8,7 +8,6 @@ def unpack_dados_db(data: dict[str, Any], ctx: ContextTomador) -> DadosTomador:
 
     descricao = data.get("servico", {}).get("descricao")
     total = data.get("valores", {}).get("total")
-    aliquotaIss = data.get("valores", {}).get("aliquotaIss")
 
     ctx.dados_db = DadosTomador(
         tomador=Tomador(
@@ -20,6 +19,5 @@ def unpack_dados_db(data: dict[str, Any], ctx: ContextTomador) -> DadosTomador:
         ),
         valores=Valores(
             total=total,
-            aliquotaIss=aliquotaIss
         )
     )

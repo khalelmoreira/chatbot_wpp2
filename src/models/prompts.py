@@ -198,8 +198,7 @@ AI_SYSTEM_EXTRACT_NF = """
             "descricao": string or null
         },
         "valores": {
-            "total": number or null,
-            "aliquotaIss": number or null
+            "total": number or null
         }
     }
 
@@ -234,14 +233,6 @@ AI_SYSTEM_EXTRACT_NF = """
     - "89,90" → 89.90
     - "R$ 1.500,00" → 1500.00
 
-    ISS aliquot (aliquotaIss):
-    * Always return as a number without the percent symbol
-    * Examples:
-    - "2%" → 2
-    - "5 porcento" → 5
-    - "dois por cento" → 2
-    - "2 %" → 2
-
     Service description (descricao):
     * Should be concise and directly describe the informed service
     * Return in lowercase unless proper nouns are present
@@ -251,7 +242,7 @@ AI_SYSTEM_EXTRACT_NF = """
 
     EXAMPLES:
 
-    Input: "emitir nota para ACME LTDA cnpj 12.345.678/0001-99 serviço de manutenção valor 150 reais aliquota 2%"
+    Input: "emitir nota para ACME LTDA cnpj 12.345.678/0001-99 serviço de manutenção valor 150 reais"
     Output:
     {
         "tomador": {
@@ -262,8 +253,7 @@ AI_SYSTEM_EXTRACT_NF = """
             "descricao": "manutenção"
         },
         "valores": {
-            "total": 150,
-            "aliquotaIss": 2
+            "total": 150
         }
     }
 
@@ -278,12 +268,11 @@ AI_SYSTEM_EXTRACT_NF = """
             "descricao": "desenvolvimento"
         },
         "valores": {
-            "total": null,
-            "aliquotaIss": null
+            "total": null
         }
     }
 
-    Input: "nota pra Tech Solutions ME cnpj 44.555.666/0001-77 consultoria R$ 1.500,00 iss 2 %"
+    Input: "nota pra Tech Solutions ME cnpj 44.555.666/0001-77 consultoria R$ 1.500,00"
     Output:
     {
         "tomador": {
@@ -294,8 +283,7 @@ AI_SYSTEM_EXTRACT_NF = """
             "descricao": "consultoria"
         },
         "valores": {
-            "total": 1500.00,
-            "aliquotaIss": 2
+            "total": 1500.00
         }
     }
     """
@@ -517,27 +505,26 @@ AI_SYSTEM_NF_GEMMA = """
             "descricao": string or null
         },
         "valores": {
-            "total": number or null,
-            "aliquotaIss": number or null
+            "total": number or null
         }
     }
 
     EXAMPLES (follow these exactly):
 
-    Input: "emitir nota para ACME LTDA cnpj 12.345.678/0001-99 serviço de manutenção valor 150 reais aliquota 2%"
-    Output: {"tomador": {"nome": "ACME LTDA", "cnpj": "12345678000199"}, "servico": {"descricao": "manutenção"}, "valores": {"total": 150, "aliquotaIss": 2}}
+    Input: "emitir nota para ACME LTDA cnpj 12.345.678/0001-99 serviço de manutenção valor 150 reais"
+    Output: {"tomador": {"nome": "ACME LTDA", "cnpj": "12345678000199"}, "servico": {"descricao": "manutenção"}, "valores": {"total": 150}}
 
     Input: "nota para joao silva cpf 123.456.789-00 serviço de desenvolvimento"
-    Output: {"tomador": {"nome": null, "cnpj": null}, "servico": {"descricao": "desenvolvimento"}, "valores": {"total": null, "aliquotaIss": null}}
+    Output: {"tomador": {"nome": null, "cnpj": null}, "servico": {"descricao": "desenvolvimento"}, "valores": {"total": null}}
 
     Input: "nota pra Tech Solutions ME cnpj 44.555.666/0001-77 consultoria R$ 1.500,00 iss 2%"
-    Output: {"tomador": {"nome": "Tech Solutions ME", "cnpj": "44555666000177"}, "servico": {"descricao": "consultoria"}, "valores": {"total": 1500.0, "aliquotaIss": 2}}
-
-    Input: "emite nf, tomador Construtora Horizonte EIRELI 98.765.432/0001-10, serviço assessoria juridica, total 89,90, aliquota cinco por cento"
-    Output: {"tomador": {"nome": "Construtora Horizonte EIRELI", "cnpj": "98765432000110"}, "servico": {"descricao": "assessoria juridica"}, "valores": {"total": 89.9, "aliquotaIss": 5}}
+    Output: {"tomador": {"nome": "Tech Solutions ME", "cnpj": "44555666000177"}, "servico": {"descricao": "consultoria"}, "valores": {"total": 1500.0,}}
+izonte EIRELI 98.765.432/0001-10, serviço assessoria juridica, total 89,90
+    Input: "emite nf, tomador Construtora Hor"
+    Output: {"tomador": {"nome": "Construtora Horizonte EIRELI", "cnpj": "98765432000110"}, "servico": {"descricao": "assessoria juridica"}, "valores": {"total": 89.9}}
 
     Input: "olá tudo bem"
-    Output: {"tomador": {"nome": null, "cnpj": null}, "servico": {"descricao": null}, "valores": {"total": null, "aliquotaIss": null}}
+    Output: {"tomador": {"nome": null, "cnpj": null}, "servico": {"descricao": null}, "valores": {"total": null}}
 
     RULES:
 
@@ -557,10 +544,6 @@ AI_SYSTEM_NF_GEMMA = """
     Return as number, never string.
     Brazilian format: period = thousand separator, comma = decimal.
     "R$ 1.500,00" → 1500.0 | "89,90" → 89.9 | "150 reais" → 150
-
-    aliquotaIss:
-    Return as number, no percent symbol.
-    "2%" → 2 | "5 porcento" → 5 | "dois por cento" → 2 | "2 %" → 2
 
     NEVER invent missing data. Use null for absent fields.
     Return ONLY the JSON object. Nothing else.

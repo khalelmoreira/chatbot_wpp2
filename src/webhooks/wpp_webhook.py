@@ -1,13 +1,13 @@
 from typing import Optional, Any
 from dotenv import load_dotenv
-from src.flows.fluxo_principal import fluxo_principal
+from chatbot_wpp2.src.flows.initial_flow import fluxo_principal
 from src.types.incoming_msg import IncomingMessage
-from src.services.webhook_parser_service import WhatsappWebhookParser
+from chatbot_wpp2.src.services.wpp.webhook_parser_service import WhatsappWebhookParser
 # from src.repositories.message_repo import salvar_msg_se_nova
 
 load_dotenv()
 
-def processar_webhook(payload) -> Any:
+def wpp_webhook(payload) -> Any:
 
     print(f"\n\n----------------TESTE PROCESSAMENTO PAYLOAD WHATSAPP----------------\n\n")
 

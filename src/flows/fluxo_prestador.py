@@ -1,9 +1,9 @@
-from src.services.ai_service import extract_data_prestador, extract_data_prestador_gemma
+from chatbot_wpp2.src.services.shared.ai_service import extract_data_prestador, extract_data_prestador_gemma
 from src.managers.prestador_manager import PrestadorManager
 from src.managers.user_manager import UserManager
-from src.services.msg_service import send_msg_text, send_msg_botao
+from chatbot_wpp2.src.services.shared.msg_service import send_msg_text, send_msg_botao
 from src.types.context_prestador import ContextPrestador
-from src.services.validador_prestador import ValidadorPrestador
+from chatbot_wpp2.src.services.validators.validador_prestador import ValidadorPrestador
 from src.utils.debug import print_table
 from src.utils.get_endereco import get_endereco_by_cep
 from src.types.estado_user import EstadoUser

@@ -2,7 +2,7 @@ import json
 from dataclasses import asdict
 import uuid
 import hashlib
-from operator import attrgetter
+from src.models.aliquota_iss import ALIQUOTA_ISS
 from src.database.db import executar_modif, fetchone, fetchone_modif
 from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.utils.debug import print_table
@@ -21,25 +21,26 @@ class TomadorManager:
         cnpj        = draft["tomador.cnpj"]
         descricao   = draft["servico.descricao"]
         valor_total = draft["valores.total"]
+        aliquota_iss = ALIQUOTA_ISS
 
         tomador_id = self._upsert_tomador(prestador_id, nome, cnpj)
 
         payload = {
             "tomador": {"nome": nome, "cnpj": cnpj},
             "servico": {"descricao": descricao},
-            "valores": {"total": valor_total},
+            "valores": {"total": valor_total, "aliquotaIss": aliquota_iss},
         }
 
-        payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        payload_enviado = json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
         idempotency_key = hashlib.sha256(
-            f"{payload_json}:{prestador_id}".encode()
+            f"{payload_enviado}:{prestador_id}".encode()
         ).hexdigest()
 
         return self._upsert_nf(
             prestador_id, tomador_id, conversation_id,
-            idempotency_key, payload_json,
-            nome, cnpj, descricao, valor_total,
+            idempotency_key, payload_enviado,
+            nome, cnpj, descricao, valor_total, aliquota_iss,
         )
     
     def _upsert_tomador(self, prestador_id: int, nome: str, cnpj: str) -> int:
@@ -48,26 +49,27 @@ class TomadorManager:
             INSERT INTO tomador (prestador_id, nome, cnpj)
             VALUES (?, ?, ?)
             ON CONFLICT (prestador_id, cnpj) DO UPDATE SET
-                nome       = execluded.nome,
+                nome       = excluded.nome,
                 updated_at = CURRENT_TIMESTAMP
             RETURNING id
         """, (prestador_id, nome, cnpj),)
 
+        print(f"ROW[ID]: {row["id"]}\n")
         return row["id"]
     
     def _upsert_nf(
             self, prestador_id, tomador_id, conversation_id,
-            idempotency_key, payload_json,
-            nome, cnpj, descricao, valor_total
+            idempotency_key, payload_enviado,
+            nome, cnpj, descricao, valor_total, aliquota_iss
     ) -> int:
         
         row = fetchone_modif("""
             INSERT INTO nfs (
                 prestador_id, tomador_id, conversation_id,
-                idempotency_key, payload_json,
-                nome, cnpj, descricao, valor_total
+                idempotency_key, payload_enviado, nome,
+                cnpj, descricao_servico, valor_total, aliquota_iss
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (conversation_id) DO UPDATE SET
                 tomador_id        = excluded.tomador_id,
                 idempotency_key   = excluded.idempotency_key,
@@ -76,14 +78,16 @@ class TomadorManager:
                 cnpj              = excluded.cnpj,
                 descricao_servico = excluded.descricao_servico,
                 valor_total       = excluded.valor_total,
+                aliquota_iss      = excluded.aliquota_iss,
                 updated_at        = CURRENT_TIMESTAMP
             RETURNING id
         """, (
             prestador_id, tomador_id, conversation_id,
-            idempotency_key, payload_json,
-            nome, cnpj, descricao, valor_total,
+            idempotency_key, payload_enviado,nome,
+            cnpj, descricao, valor_total, aliquota_iss
             ),
         )
+        print(f"ROW[ID]: {row["id"]}\n")
         return row["id"]
 
     def get_db_data(self, ctx: ContextTomador) -> None:
@@ -137,41 +141,3 @@ class TomadorManager:
                 aliquotaIss=aliquotaIss
             )
         )
-
-    def delete_nfse_draft(self, ctx: ContextTomador) -> None:
-
-        phone = ctx.user.phone
-
-        query = """
-            DELETE FROM nfse_drafts
-            WHERE phone = ?
-        """
-        executar_modif(
-            query,
-            (phone,)
-        )
-        
-        print_table("nfse_drafts")
-
-    def add_fila(self, ctx: ContextTomador) -> None:
-
-        dados_nf = ctx.validacao.validos
-
-        query = """
-        INSERT INTO fila_emissao (
-            payload,
-            idempotency_key
-        )
-        VALUES (?, ?)
-        """
-
-        payload = json.dumps(dados_nf, ensure_ascii=False)
-        idempotency_key = str(uuid.uuid4())
-
-        executar_modif(
-            query,
-            (payload, idempotency_key)
-        )
-
-        print("\nadicionado a fila de emissao\n")
-        print_table("fila_emissao")

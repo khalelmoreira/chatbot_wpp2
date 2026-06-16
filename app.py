@@ -2,8 +2,10 @@ from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
 from src.database.tables_db import init_db
-from src.services.webhook_wpp_service import processar_webhook
-from src.services.notaas_service import processar_webhook_notaas, verificar_assinatura
+from chatbot_wpp2.src.webhooks.wpp_webhook import processar_webhook
+from chatbot_wpp2.src.workers.worker_service import start_workers
+from chatbot_wpp2.src.webhooks.notaas_webhook import processar_webhook_notaas
+from src.services.shared.security_service import verificar_ass
 
 load_dotenv()
 
@@ -35,12 +37,14 @@ def webhook():
 
         return "ok", 200
 
-@app.route("/webhook/notaas", methods=["POST"])
+@app.route("/webhook/notaas", methods=["POST", "GET"], strict_slashes=False)
 def webhook_notaas():
 
     payload_raw = request.get_data()
+    print(f"PAYLOAD RAW: {payload_raw}\n")
 
     assinatura = request.headers.get("X-Notaas-Signature")
+    print(f"ASSINATURA: {assinatura}\n")
 
     if not assinatura:
         return jsonify({
@@ -48,13 +52,14 @@ def webhook_notaas():
             "error": "assinatura ausente"
         }), 401
     
-    if not verificar_assinatura(payload_raw, assinatura):
+    if not verificar_ass(payload_raw, assinatura):
         return jsonify({
             "success": False,
             "error": "assinatura ausente"
         }), 401
     
     payload = request.get_json()
+    print(f"PAYLOAD: {payload}\n")
 
     resultado = processar_webhook_notaas(payload)
 
@@ -62,4 +67,5 @@ def webhook_notaas():
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True, port=5000)
+    start_workers()
+    app.run(debug=True, use_reloader=False, port=5000)

@@ -1,0 +1,1 @@
+ALIQUOTA_ISS: float = 5.0

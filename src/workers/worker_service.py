@@ -3,10 +3,9 @@ import json
 import threading
 import logging
 from config import MAX_TENTATIVAS
-from src.repositories.message_repo import limpar_msg_antigas
-from src.services.fila_service import calcular_backoff
-from chatbot_wpp2.src.managers.fila_emissao_manager import FilaManager, NfsWorkerManager
-from src.services.nfse_service import emitir_nf
+from chatbot_wpp2.src.services.worker.fila_service import calcular_backoff
+from chatbot_wpp2.src.managers.nfse_worker_manager import NfsWorkerManager
+from chatbot_wpp2.src.services.shared.emission_service import emitir_nf
 from src.utils.logger import logger
 
 def worker_emissao() -> None:
@@ -14,35 +13,37 @@ def worker_emissao() -> None:
     logger.info("Worker de emissao iniciado")
 
     while True:
+        
+        print(f"\n\n----------------TESTE WORKER EMISSAO----------------\n\n")
 
         manager = NfsWorkerManager()
+        manager.resetar_jobs_travados()
         job = manager.get_reserva_job()
+        print(f"JOB: {job}\n") if job is None else print(f"JOB: {dict(job)}\n")
 
         if not job:
-            time.sleep(2)
+            time.sleep(10)
             continue
 
-        job_id = job["id"]
-        conversation_id = job["conversation_id"]
+        job_id     = job["id"]
         tentativas = job["tentativas"]
 
         try:
-            payload = json.loads(job["payload_enviado"])
-            emitir_nf(payload)
-            manager.marcar_emitido(job_id, conversation_id)
+            payload  = json.loads(job["payload_enviado"])
+            response = emitir_nf(payload)
+
+            invoice_id = response["invoiceId"]
+            manager.save_invoice_id(job_id, invoice_id)
 
             logger.info(f"job {job_id} emitido com sucesso")
-
             time.sleep(10)
 
         except Exception as e:
-
             manager.marcar_erro(job_id, e)
             espera = calcular_backoff(tentativas)
 
             logger.info(f"job {job_id} falhou (tentativa {tentativas}/{MAX_TENTATIVAS}): {e}")
             logger.info(f"aguardando {espera}s antes de tentar proximo job")
-
             time.sleep(espera)
 
 def worker_limpeza_msg():
@@ -63,10 +64,4 @@ def start_workers() -> None:
         target=worker_emissao,
         daemon=True,
         name="worker-emissao"
-    ).start()
-
-    threading.Thread(
-        target=worker_limpeza_msg,
-        daemon=True,
-        name="worker-limpeza-msg"
     ).start()

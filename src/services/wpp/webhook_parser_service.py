@@ -1,13 +1,13 @@
 from typing import Optional
 from src.types.incoming_msg import IncomingMessage
-from src.services.audio_service import transcrever_audio_wpp
+from chatbot_wpp2.src.services.shared.audio_service import transcrever_audio_wpp
 
 class WhatsappWebhookParser:
 
     def parse(self, payload: dict) -> Optional[IncomingMessage]:
 
         try:
-            value = self.extrair_value(payload)
+            value = self._extrair_value(payload)
 
         except (KeyError, IndexError) as e:
             raise ValueError(f"payload malformado: {e}") from e
@@ -79,7 +79,7 @@ class WhatsappWebhookParser:
             #enviar_mensagem(message["from"], "text", "não entendi a mensagem.")
             return None
     
-    def extrair_value(self, payload: dict) -> dict:
+    def _extrair_value(self, payload: dict) -> dict:
         try:
             entry = payload["entry"][0]
 

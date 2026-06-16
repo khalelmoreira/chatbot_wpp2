@@ -2,7 +2,7 @@ from src.managers.user_manager import UserManager
 from src.types.incoming_msg import IncomingMessage
 from src.types.estado_user import EstadoUser
 from src.flows.fluxo_onboarding import criar_project
-from src.services.msg_service import send_msg_text
+from chatbot_wpp2.src.services.shared.msg_service import send_msg_text
 
 def fluxo_endereco(
         msg: IncomingMessage,

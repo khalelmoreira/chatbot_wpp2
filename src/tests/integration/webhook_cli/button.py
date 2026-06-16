@@ -7,8 +7,8 @@ def main():
 
     print("\n=== WEBHOOK TEST CLI ===\n")
 
-    print("1 - Mensagem interactive button")
-    print("2 - Status entregue")
+    print("1 - msg botao confirmar endereco")
+    print("2 - msg botao confimar tomador")
 
     option = input("\nEscolha: ")
 
@@ -16,7 +16,7 @@ def main():
 
         phone = input("Telefone: ")
 
-        print("1 = endereco_confirmado")
+        print("\n1 = endereco_confirmado")
         print("2 = endereco_corrigir")
 
         escolha = input("\nEscolha: ")
@@ -33,6 +33,29 @@ def main():
             payload = build_button_reply_message(
             phone=phone,
             button_id="endereco_corrigido"
+        )
+            
+    if option == "2":
+
+        phone = input("Telefone: ")
+
+        print("\n1 = tomador_confirmado")
+        print("2 = tomador_corrigir")
+
+        escolha = input("\nEscolha: ")
+
+        if escolha == "1":
+
+            payload = build_button_reply_message(
+            phone=phone,
+            button_id="tomador_confirmado"
+        )
+        
+        if escolha == "2":
+
+            payload = build_button_reply_message(
+            phone=phone,
+            button_id="tomador_corrigir"
         )
 
     else:

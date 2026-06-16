@@ -1,10 +1,10 @@
-from src.services.ai_service import analisar_msg_nota_ai, extract_nf_gemma, has_intent, no_intent_response
+from chatbot_wpp2.src.services.shared.ai_service import analisar_msg_nota_ai, extract_nf_gemma, has_intent, no_intent_response
 from src.managers.tomador_manager import TomadorManager
 from src.types.context_tomador import ContextTomador
 from src.models.conversation_state import ConversationStatus
-from src.services.validador_tomador import ValidadorTomador
+from chatbot_wpp2.src.services.validators.validador_tomador import ValidadorTomador
 from src.utils.debug import print_table
-from src.services.msg_service import send_msg_text, send_msg_botao
+from chatbot_wpp2.src.services.shared.msg_service import send_msg_text, send_msg_botao
 from src.managers.conversation_manager import ConversationManager
 from src.types.botoes_types import BotaoResponse
 from src.utils.unpack_json import unpack_dados_db
@@ -59,6 +59,7 @@ def fluxo_collecting(ctx: ContextTomador, conversation: ConversationManager) -> 
 
             pendencias = (ctx.validacao.invalidos + ctx.validacao.faltantes)
             #send_msg_text(ctx.user.phone, "Parece que ficou faltando esses dados:", pendencias)
+            print(f"Parece que ficou faltando esses dados:")
             print(f"pendencias: {pendencias}\n")
             return
         
@@ -90,7 +91,7 @@ def fluxo_collecting(ctx: ContextTomador, conversation: ConversationManager) -> 
             f"{ctx.dados_completos.valores.total}\n"
             f"Esses dados estão corretos?"
         )
-        print_table(table_name="tomador", where=ctx.user.phone)
+        print_table(table_name="conversations", where=ctx.user.phone)
         
         return
         # print("dados completos\n")

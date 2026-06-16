@@ -130,7 +130,6 @@ def analisar_msg_nota_ai(ctx: ContextTomador) -> None:
         cnpj = dados.get("tomador", {}).get("cnpj")
         descricao = dados.get("servico", {}).get("descricao")
         total = dados.get("valores", {}).get("total")
-        aliquotaIss = dados.get("valores", {}).get("aliquotaIss")
 
         ctx.dados_novos = DadosTomador(
             tomador=Tomador(
@@ -142,7 +141,6 @@ def analisar_msg_nota_ai(ctx: ContextTomador) -> None:
             ),
             valores=Valores(
                 total=total,
-                aliquotaIss=aliquotaIss
             )
         )
 
@@ -310,7 +308,6 @@ def extract_nf_gemma(ctx: ContextTomador) -> None:
         cnpj = dados.get("tomador", {}).get("cnpj")
         descricao = dados.get("servico", {}).get("descricao")
         total = dados.get("valores", {}).get("total")
-        aliquotaIss = dados.get("valores", {}).get("aliquotaIss")
 
         ctx.dados_novos = DadosTomador(
             tomador=Tomador(
@@ -322,7 +319,6 @@ def extract_nf_gemma(ctx: ContextTomador) -> None:
             ),
             valores=Valores(
                 total=total,
-                aliquotaIss=aliquotaIss
             )
         )
 

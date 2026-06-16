@@ -1,12 +1,13 @@
 from src.types.context_tomador import ContextTomador
 from src.managers.conversation_manager import ConversationManager
 from src.models.conversation_state import ConversationStatus
+from src.types.incoming_msg import IncomingMessage
 from src.flows.fluxo_collecting import fluxo_collecting
 from src.utils.debug import print_table
-from src.types.incoming_msg import IncomingMessage
 from src.flows.fluxo_confirming import fluxo_confirming
+from src.flows.fluxo_queued import fluxo_queued
 
-def fluxo_ativo_dispatcher(ctx: ContextTomador, ctx_meta: IncomingMessage):
+def dispatch_active_state(ctx: ContextTomador, msg: IncomingMessage):
 
     print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
 
@@ -26,14 +27,14 @@ def fluxo_ativo_dispatcher(ctx: ContextTomador, ctx_meta: IncomingMessage):
 
     match status:
 
-        case None | "COLLECTING":
+        case None | ConversationStatus.COLLECTING:
             return fluxo_collecting(ctx, conversation)
             
-        case "CONFIRMING":
-            return fluxo_confirming(ctx, conversation, ctx_meta)
+        case ConversationStatus.CONFIRMING:
+            return fluxo_confirming(ctx, conversation, msg)
 
-        case "QUEUED":
-            conversation.emitting()
+        case ConversationStatus.QUEUED:
+            fluxo_queued(ctx, conversation)
 
         case _:
             raise ValueError(f"Estado não mapeado no fluxo: {status}")

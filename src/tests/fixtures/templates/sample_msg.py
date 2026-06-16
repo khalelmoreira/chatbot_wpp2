@@ -88,7 +88,7 @@
                 "timestamp": "1748185200",
                 "type": "text",
                 "text": {
-                  "body": "quero emitir uma nota pra ABBa LTDA, valor 1500.00, cnpj 44555666000177, descrição: servico de marcenaria, aliquota ISS 3%"
+                  "body": "quero emitir uma nota pra ABBa LTDA, valor 1500.00, cnpj 44555666000177, descrição: servico de marcenaria"
                 },
                 "context": {
                   "forwarded": true,

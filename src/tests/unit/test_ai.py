@@ -1,4 +1,4 @@
-from src.services.ai_service import analisar_msg_nota_ai
+from chatbot_wpp2.src.services.shared.ai_service import analisar_msg_nota_ai
 import json
 
 mensagem = """

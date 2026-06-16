@@ -91,7 +91,7 @@ def init_db():
             tomador_id         INTEGER NOT NULL REFERENCES tomador(id),
             conversation_id    INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
             idempotency_key    TEXT UNIQUE NOT NULL,                                        -- sha256(payload + prestador_id)
-            status             TEXT NOT NULL DEFAULT 'COLLECTING',                          -- COLLECTING | CONFIRMING | EMITTING | DONE | ERROR | CANCELLED
+            status             TEXT NOT NULL DEFAULT 'QUEUED',                          -- COLLECTING | CONFIRMING | EMITTING | DONE | ERROR | CANCELLED
             tentativas         INTEGER NOT NULL DEFAULT 0,
             payload_enviado    TEXT NOT NULL,                                               -- JSON completo
             requested_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -106,12 +106,12 @@ def init_db():
                     descricao_servico  TEXT NOT NULL,
                 
                 -- valores                   
-                    aliquota_iss       REAL,
+                    aliquota_iss       REAL DEFAULT 5.0,
                     valor_total        REAL NOT NULL,
 
 
             phone              TEXT,
-            notaas_invoice_id  TEXT UNIQUE,          -- preenchido no 202
+            invoice_id         TEXT UNIQUE,          -- preenchido no 202
             cpf                TEXT,
             email              TEXT,
                    

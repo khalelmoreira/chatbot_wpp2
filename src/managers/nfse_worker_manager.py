@@ -4,61 +4,20 @@ import sqlite3
 from src.database.db import executar_modif, fetchone, fetchone_modif
 from src.database.get_connection import get_connection
 from src.models.conversation_state import NfseStatus
-
-class FilaManager:
-
-    def get_reserva_job(self) -> Optional[dict]:
-
-        return fetchone("""
-                        
-        UPDATE fila_emissao
-        SET status = 'processando'
-        WHERE id = (
-            SELECT id FROM fila_emissao
-            WHERE status = 'pendente'
-                AND tentativas < ?
-            ORDER BY id ASC
-            LIMIT 1
-        )
-        RETURNING id, payload, tentativas
-        """, (MAX_TENTATIVAS,)
-        )
-
-    def marcar_emitido(self, job_id: int) -> None:
-
-        executar_modif("""
-                    
-        UPDATE fila_emissao
-        SET status = 'emitido',
-            processado_em = CURRENT_TIMESTAMP
-        WHERE id = ?
-        """, (job_id,)
-        )
-
-    def marcar_erro(self, job_id: int, erro: Exception) -> None:
-
-        executar_modif("""
-                    
-        UPDATE fila_emissao
-        SET status = 'pendente',
-            erro = ?,
-            tentativas = tentativas + 1
-        WHERE id = ?
-        """, (str(erro), job_id)
-        )
+from src.utils.debug import print_table
 
 class NfsWorkerManager:
 
     def get_reserva_job(self) -> Optional[sqlite3.Row]:
 
-        return fetchone_modif(f"""
+        return fetchone_modif("""
             UPDATE nfs
-            SET status = '{NfseStatus.PROCESSING}',
+            SET status = 'PROCESSING',
                 processado_em = CURRENT_TIMESTAMP,
                 tentativas = tentativas + 1
             WHERE id = (
             SELECT id FROM nfs
-            WHERE status = '{NfseStatus.QUEUED}'
+            WHERE status = 'QUEUED'
                 AND tentativas < ?
             ORDER BY requested_at ASC
             LIMIT 1
@@ -67,6 +26,8 @@ class NfsWorkerManager:
         """, (MAX_TENTATIVAS,))
     
     def marcar_emitido(self, job_id: int, conversation_id: int) -> None:
+
+        print(f"\n\n----------------MARCAR EMITIDO----------------\n\n")
 
         with get_connection() as conn:
             conn.execute("BEGIN")
@@ -77,6 +38,7 @@ class NfsWorkerManager:
                     processado_em = CURRENT_TIMESTAMP
                 WHERE id = ?
             """, (job_id,))
+            print_table(table_name="nfs", columns=["status", "processado_em"], where="id = ?", params=(job_id,))
 
             conn.execute("""
                 UPDATE conversations
@@ -84,15 +46,34 @@ class NfsWorkerManager:
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             """, (conversation_id,))
+            print_table(table_name="conversations", columns=["status", "updated_at"], where="id = ?", params=(conversation_id,))
 
             conn.execute("COMMIT")
 
-    def marcar_erro(self, job_id: int, erro: Exception) -> None:
-
+    def marcar_erro(self, job_id: int, tentativas: int, erro: str) -> None:
+        novo_status = 'ERROR' if tentativas >= MAX_TENTATIVAS else 'QUEUED'
         executar_modif(f"""
-            UPDATE nfs
-            SET status = '{NfseStatus.QUEUED}',
-                erro_msg = ?,
+            UPDATE nfs SET
+                status     = ?,
+                erro_msg   = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        """, (str(erro), job_id))
+        """, (novo_status, erro, job_id))
+
+    def save_invoice_id(self, job_id: int, invoice_id: str) -> None:
+        executar_modif("""
+            UPDATE nfs SET
+                invoice_id = ?,
+                status     = 'EMITTING',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (invoice_id, job_id,))
+
+    def resetar_jobs_travados(self):
+        executar_modif("""
+            UPDATE nfs SET
+                status     = 'QUEUED',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE status = 'PROCESSING'
+              AND processado_em < DATETIME('now', '-5 minutes')
+        """, ())
