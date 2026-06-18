@@ -1,18 +1,17 @@
-from chatbot_wpp2.src.services.shared.ai_service import extract_data_prestador, extract_data_prestador_gemma
+from src.types import ContextPrestador, EstadoUser, BotaoResponse
+from src.services.shared.ai_service import extract_data_prestador_gemma
 from src.managers.prestador_manager import PrestadorManager
 from src.managers.user_manager import UserManager
-from chatbot_wpp2.src.services.shared.msg_service import send_msg_text, send_msg_botao
-from src.types.context_prestador import ContextPrestador
-from chatbot_wpp2.src.services.validators.validador_prestador import ValidadorPrestador
+from src.services.shared.msg_service import WhatsAppService
+from src.services.validators.validador_prestador import ValidadorPrestador
 from src.utils.debug import print_table
 from src.utils.get_endereco import get_endereco_by_cep
-from src.types.estado_user import EstadoUser
-from src.types.botoes_types import BotaoResponse
 
 def fluxo_prestador(ctx: ContextPrestador, user_manager: UserManager):
         
         prestador = PrestadorManager()
         validador = ValidadorPrestador()
+        wpp = WhatsAppService()
         
         print(f"\n\n----------------TESTE FLUXO PRESTADOR----------------\n\n")
 
@@ -42,7 +41,7 @@ def fluxo_prestador(ctx: ContextPrestador, user_manager: UserManager):
                 print(f"DADOS DB ATUAL:")
                 print_table(table_name="prestador", where=ctx.user.phone)
 
-                #send_msg_text(ctx.user.phone, "Parece que ficou faltando esses dados:", pendencias)
+                #wpp.send_msg_text(ctx.user.phone, "Parece que ficou faltando esses dados:", pendencias)
 
                 return
         
@@ -53,13 +52,13 @@ def fluxo_prestador(ctx: ContextPrestador, user_manager: UserManager):
             print(f"ENDERECO: {endereco}\n")
 
             if endereco is None:
-                #send_msg_text(ctx.user.phone, f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?")
+                #wpp.send_msg_text(ctx.user.phone, f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?")
                 print(f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?\n")
                 return
 
             user_manager.update_state(ctx.user.phone, EstadoUser.CADASTRO_ENDERECO)
 
-            # send_msg_botao(
+            # wpp.send_msg_botao(
             #     phone=ctx.user.phone,
             #     text=(
             #         f"📍 *Endereço encontrado:*\n\n"

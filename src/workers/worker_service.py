@@ -1,11 +1,10 @@
 import time
 import json
 import threading
-import logging
 from config import MAX_TENTATIVAS
-from chatbot_wpp2.src.services.worker.fila_service import calcular_backoff
-from chatbot_wpp2.src.managers.nfse_worker_manager import NfsWorkerManager
-from chatbot_wpp2.src.services.shared.emission_service import emitir_nf
+from src.services.worker.fila_service import calcular_backoff
+from src.managers.nfse_worker_manager import NfsWorkerManager
+from src.services.shared.emission_service import emitir_nf
 from src.utils.logger import logger
 
 def worker_emissao() -> None:
@@ -16,16 +15,17 @@ def worker_emissao() -> None:
         
         print(f"\n\n----------------TESTE WORKER EMISSAO----------------\n\n")
 
-        manager = NfsWorkerManager()
-        manager.resetar_jobs_travados()
-        job = manager.get_reserva_job()
-        print(f"JOB: {job}\n") if job is None else print(f"JOB: {dict(job)}\n")
-
-        if not job:
+        manager = NfsWorkerManager.reserva_job()
+        if not manager:
             time.sleep(10)
             continue
 
-        job_id     = job["id"]
+        job_id = manager.job_id
+        job    = manager.job
+
+        manager.resetar_jobs_travados()
+        print(f"JOB: {job}\n") if job is None else print(f"JOB: {dict(job)}\n")
+
         tentativas = job["tentativas"]
 
         try:

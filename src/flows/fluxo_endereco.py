@@ -1,22 +1,23 @@
 from src.managers.user_manager import UserManager
-from src.types.incoming_msg import IncomingMessage
-from src.types.estado_user import EstadoUser
+from src.types import IncomingMessage, EstadoUser
 from src.flows.fluxo_onboarding import criar_project
-from chatbot_wpp2.src.services.shared.msg_service import send_msg_text
+from src.services.shared.msg_service import WhatsAppService
 
 def fluxo_endereco(
         msg: IncomingMessage,
         user_manager: UserManager,
 ) -> None:
     
+    wpp = WhatsAppService()
+    
     if msg.tipo != "button_reply":
-        #send_msg_text(msg.phone, "Por favor, use os botões para confirmar ou corrigir o endereço.")
+        #wpp.send_msg_text(msg.phone, "Por favor, use os botões para confirmar ou corrigir o endereço.")
         print(f"Por favor, use os botões para confirmar ou corrigir o endereço.\n")
         return
     
     if msg.id_botao == "endereco_corrigir":
         user_manager.update_state(msg.phone, EstadoUser.CADASTRO_ENDERECO_MANUAL)
-        # send_msg_text(
+        # wpp.send_msg_text(
         #     msg.phone,
         #     "Sem problema. Por favor, envie seu endereço completo no seguinte formato:\n\n"
         #     "Logradouro, Número, Bairro, Cidade, UF, CEP",
@@ -37,7 +38,7 @@ def fluxo_endereco(
     
         if not resultado.sucesso:
             # Estado fica em CRIANDO_PROJETO_NOTAAS — permite retry
-            # send_msg_text(
+            # wpp.send_msg_text(
             #     msg.phone,
             #     "Ocorreu um erro ao configurar sua conta. "
             #     "Tente novamente em instantes.",
@@ -49,7 +50,7 @@ def fluxo_endereco(
             return
         
         user_manager.update_state(msg.phone, EstadoUser.AGUARDANDO_CERTIFICADO)
-        # send_msg_text(
+        # wpp.send_msg_text(
         #     msg.phone,
         #     "✅ Conta configurada com sucesso!\n\n"
         #     "O último passo é o envio do seu certificado digital (.pfx).\n"

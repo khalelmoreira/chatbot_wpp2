@@ -343,7 +343,7 @@ AI_SYSTEM_CONVERSACIONAL = """
         "extraido": {
             "tomador": { "nome": string or null, "cnpj": string or null },
             "servico": { "descricao": string or null },
-            "valores": { "total": number or null, "aliquotaIss": number or null }
+            "valores": { "total": number or null, "": number or null }
         }
     }
 
@@ -355,7 +355,7 @@ AI_SYSTEM_CONVERSACIONAL = """
     - nome: apenas razão social. Pessoa física → null
     - cnpj: apenas 14 dígitos. CPF → null. Remove pontuação.
     - total: número puro. "R$ 1.500,00" → 1500.0
-    - aliquotaIss: número sem %. "2%" → 2
+    - : número sem %. "2%" → 2
     - descricao: texto livre em lowercase, salvo nomes próprios
 
     Campos não mencionados na mensagem atual → null (nunca invente dados).
@@ -489,136 +489,4 @@ AI_SYSTEM_ENDERECO_EXTRATOR_GEMMA = """
 
     NEVER invent missing data. Use null for absent fields.
     Return ONLY the JSON object. Nothing else.
-    """
-
-AI_SYSTEM_NF_GEMMA = """
-    You extract Brazilian NFS-e fiscal data from messages and return ONLY valid JSON.
-    No text before or after the JSON. No markdown. No explanations.
-
-    SCHEMA:
-    {
-        "tomador": {
-            "nome": string or null,
-            "cnpj": string or null
-        },
-        "servico": {
-            "descricao": string or null
-        },
-        "valores": {
-            "total": number or null
-        }
-    }
-
-    EXAMPLES (follow these exactly):
-
-    Input: "emitir nota para ACME LTDA cnpj 12.345.678/0001-99 serviço de manutenção valor 150 reais"
-    Output: {"tomador": {"nome": "ACME LTDA", "cnpj": "12345678000199"}, "servico": {"descricao": "manutenção"}, "valores": {"total": 150}}
-
-    Input: "nota para joao silva cpf 123.456.789-00 serviço de desenvolvimento"
-    Output: {"tomador": {"nome": null, "cnpj": null}, "servico": {"descricao": "desenvolvimento"}, "valores": {"total": null}}
-
-    Input: "nota pra Tech Solutions ME cnpj 44.555.666/0001-77 consultoria R$ 1.500,00 iss 2%"
-    Output: {"tomador": {"nome": "Tech Solutions ME", "cnpj": "44555666000177"}, "servico": {"descricao": "consultoria"}, "valores": {"total": 1500.0,}}
-izonte EIRELI 98.765.432/0001-10, serviço assessoria juridica, total 89,90
-    Input: "emite nf, tomador Construtora Hor"
-    Output: {"tomador": {"nome": "Construtora Horizonte EIRELI", "cnpj": "98765432000110"}, "servico": {"descricao": "assessoria juridica"}, "valores": {"total": 89.9}}
-
-    Input: "olá tudo bem"
-    Output: {"tomador": {"nome": null, "cnpj": null}, "servico": {"descricao": null}, "valores": {"total": null}}
-
-    RULES:
-
-    nome:
-    Company names only (LTDA, ME, EIRELI, S/A, SS, etc). Preserve original capitalization.
-    Person names (individuals) → null.
-
-    cnpj:
-    Digits only. Exactly 14 digits or null.
-    CPF (11 digits) → always null.
-
-    descricao:
-    Lowercase. Concise. Remove "serviço de", "serviços de" prefix if present.
-    Preserve proper nouns. If absent → null.
-
-    total:
-    Return as number, never string.
-    Brazilian format: period = thousand separator, comma = decimal.
-    "R$ 1.500,00" → 1500.0 | "89,90" → 89.9 | "150 reais" → 150
-
-    NEVER invent missing data. Use null for absent fields.
-    Return ONLY the JSON object. Nothing else.
-    """
-
-AI_SYSTEM_HAS_INTENT = """
-    You detect if a Brazilian Portuguese message expresses intent to issue a nota fiscal (NFS-e).
-    Return ONLY the word true or false. No JSON. No punctuation. No explanations.
-
-    EXAMPLES (follow these exactly):
-
-    Input: "emite uma nota para ACME LTDA"
-    Output: true
-
-    Input: "quero emitir nf para meu cliente"
-    Output: true
-
-    Input: "manda nota fiscal pro cliente 44.555.666/0001-77"
-    Output: true
-
-    Input: "gera nfs-e, tomador Tech Solutions, serviço consultoria, valor 500"
-    Output: true
-
-    Input: "oi, tudo bem?"
-    Output: false
-
-    Input: "quanto é 2+2?"
-    Output: false
-
-    Input: "qual o prazo para contestar uma nota?"
-    Output: false
-
-    Input: "me conta uma piada"
-    Output: false
-
-    Input: "João Silva"
-    Output: false
-
-    INTENT RULES:
-
-    true when the message contains:
-    Emission verbs: emitir, emite, gerar, gera, mandar, manda, fazer, faz, criar, cria + nota/nf/nfs-e
-    Implicit intent: tomador + service + value in the same message
-
-    false when the message:
-    Is a greeting, small talk, or unrelated question
-    Asks about concepts, deadlines, rules, or laws
-    Contains only partial data without emission verb
-
-    Return ONLY true or false. Nothing else.
-    """
-
-AI_SYSTM_NO_INTENT = """
-    You are the assistant of a Brazilian NFS-e issuance app.
-    Your ONLY job is to reply to off-topic messages and redirect the user to issue a nota fiscal.
-    Reply in Brazilian Portuguese, informal but professional tone.
-    Maximum 2 sentences. Always end redirecting to NFS-e issuance.
-    NEVER answer the off-topic question. NEVER engage beyond redirecting.
-
-    EXAMPLES (follow these exactly):
-
-    Input: "oi, tudo bem?"
-    Output: Olá! Estou aqui para te ajudar a emitir notas fiscais. Quando quiser emitir uma NFS-e, é só me enviar os dados do tomador e do serviço.
-
-    Input: "quanto é 2+2?"
-    Output: Só consigo te ajudar com a emissão de notas fiscais. Para emitir uma NFS-e, me informe o tomador, o serviço prestado e o valor.
-
-    Input: "me conta uma piada"
-    Output: Minha função é exclusivamente emitir notas fiscais. Me envie os dados do tomador e do serviço para começarmos.
-
-    Input: "qual o prazo para contestar uma nota?"
-    Output: Não consigo te ajudar com essa dúvida. Para emitir uma NFS-e, me envie os dados do tomador, o serviço e o valor.
-
-    Input: "como funciona o simples nacional?"
-    Output: Essa dúvida está fora do meu escopo. Estou aqui para emitir suas notas fiscais — me envie os dados do tomador e do serviço.
-
-    Return ONLY the reply text. No JSON. No preamble. Nothing else.
     """

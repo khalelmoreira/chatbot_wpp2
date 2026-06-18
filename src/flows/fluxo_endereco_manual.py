@@ -1,11 +1,9 @@
 from dataclasses import fields
 from src.managers.user_manager import UserManager
-from src.types.incoming_msg import IncomingMessage
-from src.types.estado_user import EstadoUser
+from src.types import IncomingMessage, EstadoUser, BotaoResponse
 from src.managers.prestador_manager import PrestadorManager
-from chatbot_wpp2.src.services.shared.ai_service import extract_endereco_gemma
-from chatbot_wpp2.src.services.shared.msg_service import send_msg_text, send_msg_botao
-from src.types.botoes_types import BotaoResponse
+from src.services.shared.ai_service import extract_endereco_gemma
+from src.services.shared.msg_service import WhatsAppService
 
 def fluxo_endereco_manual(
         msg: IncomingMessage,
@@ -13,10 +11,11 @@ def fluxo_endereco_manual(
 ):
     
     prestador_manager = PrestadorManager()
+    wpp = WhatsAppService()
     endereco = extract_endereco_gemma(msg.text)
 
     if endereco is None:
-        # send_msg_text(
+        # wpp.send_msg_text(
         #     msg.phone,
         #     "Não consegui identificar o endereço. Tente no formato:\n\n"
         #     "Logradouro, Número, Bairro, Cidade, UF, CEP",
@@ -34,7 +33,7 @@ def fluxo_endereco_manual(
     ]
     
     if campos_faltantes:
-        # send_msg_text(
+        # wpp.send_msg_text(
         #     msg.phone,
         #     f"Parece que ficou faltando esses campos {', '.join(campos_faltantes)} envie-os para terminarmos seu cadasto.",
         # )
@@ -46,7 +45,7 @@ def fluxo_endereco_manual(
     prestador_manager.update_endereco(msg.phone, endereco)
     user_manager.update_state(msg.phone, EstadoUser.CADASTRO_ENDERECO)
 
-    # send_msg_botao(
+    # wpp.send_msg_botao(
     #     phone=msg.phone,
     #     text=(
     #         f"📍 *Endereço informado:*\n\n"

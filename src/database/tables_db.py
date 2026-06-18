@@ -1,8 +1,10 @@
-from src.database.db import executar_modif
+from src.database.db import DB
 
 def init_db():
 
-    executar_modif("""
+    db = DB()
+
+    db.executar_modif("""
         CREATE TABLE IF NOT EXISTS users (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
             phone         TEXT UNIQUE NOT NULL,
@@ -14,7 +16,7 @@ def init_db():
 
     # PRESTADOR
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE TABLE IF NOT EXISTS prestador (
             id                   INTEGER PRIMARY KEY REFERENCES users(id),
             phone                TEXT UNIQUE NOT NULL REFERENCES users(phone),
@@ -49,7 +51,7 @@ def init_db():
 
     # TOMADOR
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE TABLE IF NOT EXISTS tomador (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id INTEGER NOT NULL REFERENCES prestador(id),
@@ -81,7 +83,7 @@ def init_db():
         )
     """)
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE TABLE IF NOT EXISTS nfs (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
                    
@@ -155,7 +157,7 @@ def init_db():
         )
     """)
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE TABLE IF NOT EXISTS conversations (
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id        INTEGER NOT NULL REFERENCES prestador(id),
@@ -167,7 +169,7 @@ def init_db():
         )
     """)
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
@@ -177,7 +179,7 @@ def init_db():
         )
     """)
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE TABLE IF NOT EXISTS webhook_ntaas_events (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             delivery_id TEXT UNIQUE NOT NULL,  -- X-Notaas-Delivery; chave de idempotência
@@ -188,17 +190,17 @@ def init_db():
         )
     """)
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE INDEX IF NOT EXISTS idx_conversations_wpp_status
             ON conversations(phone, status)
     """)
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE INDEX IF NOT EXISTS idx_messages_conversations
             ON messages(conversation_id)
     """)
 
-    executar_modif("""
+    db.executar_modif("""
         CREATE INDEX IF NOT EXISTS idx_prestador_phone
             ON prestador(phone)
     """)

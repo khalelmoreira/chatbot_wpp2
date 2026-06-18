@@ -1,9 +1,8 @@
 import re
 from operator import attrgetter
 from typing import Any
-from src.types.context_tomador import ContextTomador, DadosTomador
-from src.types.context_base import ResultadoValidacao
-from chatbot_wpp2.src.services.validators.validador_prestador import validar_cnpj
+from src.types import ContextTomador, DadosTomador, ResultadoValidacao
+from src.services.validators.validador_prestador import validar_cnpj
 
 def validar_nome(nome: str | None) -> bool:
 

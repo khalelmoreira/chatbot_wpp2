@@ -1,9 +1,6 @@
-from src.types.estado_user import EstadoUser
+from src.types import EstadoUser, User, ContextTomador, DadosPrestador, DadosTomador, ContextPrestador, IncomingMessage
 from src.managers.user_manager import UserManager
-from src.types.context_base import User
-from src.types.context_prestador import ContextPrestador, DadosPrestador
-from src.types.context_tomador import ContextTomador, DadosTomador
-from src.types.incoming_msg import IncomingMessage
+from src.services.shared.msg_service import WhatsAppService
 from src.flows.fluxo_prestador import fluxo_prestador
 from src.services.core.dispatch_active_state import dispatch_active_state
 from src.flows.fluxo_endereco import fluxo_endereco
@@ -12,11 +9,12 @@ from src.flows.fluxo_endereco_manual import fluxo_endereco_manual
 def dispatch_state(user_manager: UserManager, user: User, msg: IncomingMessage):
 
     estado = EstadoUser(user.estado)
+    wpp = WhatsAppService()
 
     match estado:
 
         case EstadoUser.NOVO:
-            #send_msg_text(phone, "Vamos iniciar seu cadastro...")
+            #wpp.send_msg_text(phone, "Vamos iniciar seu cadastro...")
             user_manager.update_state(user, EstadoUser.CADASTRO_PRESTADOR)
             return
 
@@ -38,9 +36,9 @@ def dispatch_state(user_manager: UserManager, user: User, msg: IncomingMessage):
             return fluxo_endereco_manual(msg, user_manager)
         
         case EstadoUser.CRIANDO_PROJETO_NOTAAS:
-
             print("ok")
-        #send_msg_text(phone, "Ainda estamos configurando sua conta, aguarde um momento.")
+            #wpp.send_msg_text(phone, "Ainda estamos configurando sua conta, aguarde um momento.")
+            return
 
         case EstadoUser.ATIVO:
                 

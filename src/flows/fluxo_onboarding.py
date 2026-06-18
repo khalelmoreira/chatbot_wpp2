@@ -1,7 +1,6 @@
 import httpx
 import os
-from src.types.context_prestador import Endereco, ProjectPrestador
-from src.types.context_prestador import ResultadoOnboarding
+from src.types import Endereco, ProjectPrestador, ResultadoOnboarding
 from src.managers.prestador_manager import PrestadorManager
 
 NOTAAS_BASE_URL = "https://platform.notaas.com.br/api/v1"

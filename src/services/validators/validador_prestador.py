@@ -2,8 +2,7 @@ import re
 from enum import StrEnum
 from dataclasses import fields as dataclass_fields
 from typing import Any
-from src.types.context_prestador import ContextPrestador
-from src.types.context_base import ResultadoValidacao
+from src.types import ContextPrestador, ResultadoValidacao
 
 class RegimeTributario(StrEnum):
     NORMAL = "1"

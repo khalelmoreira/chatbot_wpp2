@@ -1,16 +1,30 @@
-from typing import Optional
-from config import MAX_TENTATIVAS
 import sqlite3
-from src.database.db import executar_modif, fetchone, fetchone_modif
+from typing import Optional
+from src.types.conversation_state import NfseStatus
+from config import MAX_TENTATIVAS
+from src.database.db import DB
 from src.database.get_connection import get_connection
-from src.models.conversation_state import NfseStatus
 from src.utils.debug import print_table
 
 class NfsWorkerManager:
+    def __init__(self, job: int):
+        self.db     = DB()
+        self.job    = job
+        self.job_id = job["id"]
 
-    def get_reserva_job(self) -> Optional[sqlite3.Row]:
+    @classmethod
+    def reserva_job(cls) -> "NfsWorkerManager | None":
+        job = cls._get_next_job()
+        
+        if not job:
+            return None
+        return cls(job)
+    
+    @staticmethod
+    def _get_next_job() -> Optional[sqlite3.Row]:
 
-        return fetchone_modif("""
+        db = DB()
+        return db.fetchone_modif("""
             UPDATE nfs
             SET status = 'PROCESSING',
                 processado_em = CURRENT_TIMESTAMP,
@@ -25,7 +39,7 @@ class NfsWorkerManager:
             RETURNING id, conversation_id, payload_enviado, tentativas
         """, (MAX_TENTATIVAS,))
     
-    def marcar_emitido(self, job_id: int, conversation_id: int) -> None:
+    def marcar_emitido(self) -> None:
 
         print(f"\n\n----------------MARCAR EMITIDO----------------\n\n")
 
@@ -37,40 +51,40 @@ class NfsWorkerManager:
                 SET status = '{NfseStatus.ISSUED}',
                     processado_em = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (job_id,))
-            print_table(table_name="nfs", columns=["status", "processado_em"], where="id = ?", params=(job_id,))
+            """, (self.job_id,))
+            print_table(table_name="nfs", columns=["status", "processado_em"], where="id = ?", params=(self.job_id,))
 
             conn.execute("""
                 UPDATE conversations
                 SET status = 'DONE',
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (conversation_id,))
+            """, (self.ctx.conversation_id,))
             print_table(table_name="conversations", columns=["status", "updated_at"], where="id = ?", params=(conversation_id,))
 
             conn.execute("COMMIT")
 
-    def marcar_erro(self, job_id: int, tentativas: int, erro: str) -> None:
+    def marcar_erro(self, tentativas: int, erro: str) -> None:
         novo_status = 'ERROR' if tentativas >= MAX_TENTATIVAS else 'QUEUED'
-        executar_modif(f"""
+        self.db.executar_modif(f"""
             UPDATE nfs SET
                 status     = ?,
                 erro_msg   = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        """, (novo_status, erro, job_id))
+        """, (novo_status, erro, self.job_id))
 
-    def save_invoice_id(self, job_id: int, invoice_id: str) -> None:
-        executar_modif("""
+    def save_invoice_id(self, invoice_id: str) -> None:
+        self.db.executar_modif("""
             UPDATE nfs SET
                 invoice_id = ?,
                 status     = 'EMITTING',
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        """, (invoice_id, job_id,))
+        """, (invoice_id, self.job_id,))
 
     def resetar_jobs_travados(self):
-        executar_modif("""
+        self.db.executar_modif("""
             UPDATE nfs SET
                 status     = 'QUEUED',
                 updated_at = CURRENT_TIMESTAMP

@@ -1,5 +1,5 @@
 import requests
-from src.types.context_prestador import Endereco
+from src.types import Endereco
 
 def get_endereco_by_cep(cep: str) -> Endereco | None:
 

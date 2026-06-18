@@ -1,18 +1,17 @@
-from src.types.context_tomador import ContextTomador
+from src.types import ContextTomador, IncomingMessage
 from src.managers.conversation_manager import ConversationManager
-from src.models.conversation_state import ConversationStatus
-from src.types.incoming_msg import IncomingMessage
-from src.flows.fluxo_collecting import fluxo_collecting
+from src.types.conversation_state import ConversationStatus
+from src.flows.collecting_flow import fluxo_collecting
 from src.utils.debug import print_table
-from src.flows.fluxo_confirming import fluxo_confirming
-from src.flows.fluxo_queued import fluxo_queued
+from src.flows.confirming_flow import fluxo_confirming
+from src.flows.queued_flow import fluxo_queued
 
 def dispatch_active_state(ctx: ContextTomador, msg: IncomingMessage):
 
     print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
 
-    conversation = ConversationManager()
-    conversa = conversation.get_ativa(ctx.user.id)
+    conversation = ConversationManager(ctx)
+    conversa = conversation.get_ativa()
     print(f"CONVERSA: {conversa}\n") if conversa is None else print(f"CONVERSA: {dict(conversa)}\n")
 
     if not conversa:

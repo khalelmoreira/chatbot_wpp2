@@ -1,4 +1,4 @@
-from src.database.db import fetchall
+from src.database.db import DB
 
 def print_table(
         table_name: str, 
@@ -11,7 +11,7 @@ def print_table(
     """
     Imprime tabela com tratamento para campos longos (como JSON).
     """
-    
+    db = DB()
     col_str = ", ".join(columns) if columns else "*"
     query = f"SELECT {col_str} FROM {table_name}"
     
@@ -20,7 +20,7 @@ def print_table(
     if limit:
         query += f" LIMIT {limit}"
     
-    rows = fetchall(query, params)
+    rows = db.fetchall(query, params)
     
     if not rows:
         print(f"Tabela '{table_name}' está vazia.\n")

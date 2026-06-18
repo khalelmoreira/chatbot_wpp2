@@ -1,19 +1,25 @@
-from src.database.db import executar_modif, fetchall
+from src.database.db import DB
+from src.types import ContextTomador
 
-def get_msg_history(self, conversation_id: int) -> list[dict]:
+class MsgManager:
+    def __init__(self, ctx: ContextTomador):
+        self.db  = DB()
+        self.ctx = ctx
 
-        rows = fetchall("""
-            SELECT role, content
-            FROM messages
-            WHERE conversation_id = ?
-            ORDER BY created_at ASC
-        """, (conversation_id,))
+    def get_msg_history(self) -> list[dict]:
 
-        return [{"role": row["role"], "content": row["content"]} for row in rows]
+            rows = self.db.fetchall("""
+                SELECT role, content
+                FROM messages
+                WHERE conversation_id = ?
+                ORDER BY created_at ASC
+            """, (self.ctx.conversation_id,))
 
-def add_message(self, conversation_id: int, role: str, content: str) -> None:
+            return [{"role": row["role"], "content": row["content"]} for row in rows]
 
-    executar_modif("""
-        INSERT INTO messages (conversation_id, role, content)
-        VALUE (?, ?, ?)
-    """, (conversation_id, role, content))
+    def add_message(self, role: str, content: str) -> None:
+
+        self.db.executar_modif("""
+            INSERT INTO messages (conversation_id, role, content)
+            VALUE (?, ?, ?)
+        """, (self.ctx.conversation_id, role, content))

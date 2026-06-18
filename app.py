@@ -2,9 +2,9 @@ from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
 from src.database.tables_db import init_db
-from chatbot_wpp2.src.webhooks.wpp_webhook import processar_webhook
-from chatbot_wpp2.src.workers.worker_service import start_workers
-from chatbot_wpp2.src.webhooks.notaas_webhook import processar_webhook_notaas
+from src.webhooks.wpp_webhook import wpp_webhook
+from src.workers.worker_service import start_workers
+from src.webhooks.notaas_webhook import notaas_webhook
 from src.services.shared.security_service import verificar_ass
 
 load_dotenv()
@@ -33,7 +33,7 @@ def webhook():
         if not data:
             return "ok", 200
         
-        processar_webhook(data)
+        wpp_webhook(data)
 
         return "ok", 200
 
@@ -61,7 +61,7 @@ def webhook_notaas():
     payload = request.get_json()
     print(f"PAYLOAD: {payload}\n")
 
-    resultado = processar_webhook_notaas(payload)
+    resultado = notaas_webhook(payload)
 
     return jsonify(resultado), 200
 

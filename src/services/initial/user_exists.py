@@ -1,11 +1,12 @@
-from src.types.incoming_msg import IncomingMessage
-from src.types.context_base import User
+from src.types import IncomingMessage, User
 from src.managers.user_manager import UserManager
+from src.services.shared.msg_service import WhatsAppService
 from src.utils.debug import print_table
 
 def user_exists(msg: IncomingMessage, user_manager: UserManager) -> User:
 
-        user = user_manager.get_user(msg.phone)
+        wpp = WhatsAppService()
+        user = user_manager.get_user()
         print_table(table_name="users", where=msg.phone)
 
         if not user:
@@ -14,7 +15,7 @@ def user_exists(msg: IncomingMessage, user_manager: UserManager) -> User:
             print(f"USER CRIADO:\n")
             print_table(table_name="users", where=msg.phone)
 
-            # send_msg_text(
+            # wpp.send_msg_text(
             #     phone,
             #     "Olá! Seja bem-vindo à automação de notas fiscais.\n\n"
             #     "Para começar, me informe:\n"

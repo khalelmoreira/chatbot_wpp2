@@ -1,0 +1,2 @@
+class NfNotFoundError(Exception):
+    pass

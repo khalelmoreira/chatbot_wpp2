@@ -1,7 +1,10 @@
-from src.types.context_prestador import ContextPrestador, DadosPrestador, Endereco, ProjectPrestador
-from src.database.db import executar_modif, fetchone, fetchall
+from src.types import ContextPrestador, DadosPrestador, Endereco, ProjectPrestador
+from src.database.db import DB
 
 class PrestadorManager:
+    def __init__(self, ctx: ContextPrestador):
+        self.db  = DB()
+        self.ctx = ctx
 
     CAMPOS_EDITAVEIS = [
         "razao_social",
@@ -12,10 +15,10 @@ class PrestadorManager:
         "inscricao_municipal",
     ]
 
-    def update_validos(self, ctx: ContextPrestador) -> None:
+    def update_validos(self) -> None:
 
-        phone = ctx.user.phone
-        validos = ctx.validacao.validos
+        phone = self.ctx.user.phone
+        validos = self.ctx.validacao.validos
 
         if not validos:
             return
@@ -34,11 +37,11 @@ class PrestadorManager:
             ON CONFLICT(phone) DO UPDATE SET {set_clause}
         """
 
-        executar_modif(query, tuple(valores_insert))
+        self.db.executar_modif(query, tuple(valores_insert))
 
-    def get_db_data(self, ctx: ContextPrestador) -> None:
+    def get_db_data(self) -> None:
 
-        phone = ctx.user.phone
+        phone = self.ctx.user.phone
 
         query = """
             SELECT
@@ -51,15 +54,15 @@ class PrestadorManager:
             FROM prestador
             WHERE phone = ?
         """
-        row = fetchone(query, (phone,))
+        row = self.db.fetchone(query, (phone,))
 
         if not row:
             
-            ctx.dados_db = DadosPrestador()
+            self.ctx.dados_db = DadosPrestador()
 
             return
 
-        ctx.dados_db = DadosPrestador(
+        self.ctx.dados_db = DadosPrestador(
             razao_social=row["razao_social"],
             cnpj=row["cnpj"],
             email=row["email"],
@@ -68,7 +71,7 @@ class PrestadorManager:
             inscricao_municipal=row["inscricao_municipal"],
         )
 
-    def update_endereco(self, phone: str, endereco: Endereco) -> None:
+    def update_endereco(self, endereco: Endereco) -> None:
 
         query = """
             INSERT INTO prestador (phone, logradouro, numero, complemento, bairro, cidade, uf, cep)
@@ -84,8 +87,8 @@ class PrestadorManager:
                 updated_at  = CURRENT_TIMESTAMP
         """
 
-        executar_modif(query, (
-        phone,
+        self.db.executar_modif(query, (
+        self.ctx.user.phone,
         endereco.logradouro,
         endereco.numero,
         endereco.complemento,
@@ -95,7 +98,7 @@ class PrestadorManager:
         endereco.cep,
     ))
         
-    def get_all(self, phone: str) -> ProjectPrestador:
+    def get_all(self) -> ProjectPrestador:
 
         query = """
             SELECT
@@ -113,7 +116,7 @@ class PrestadorManager:
             FROM prestador
             WHERE phone = ?
         """
-        row = fetchone(query, (phone,))
+        row = self.db.fetchone(query, (self.ctx.user.phone,))
 
         if not row:
             return

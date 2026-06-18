@@ -2,11 +2,17 @@ from openai import OpenAI
 import json
 import os
 from dotenv import load_dotenv
-from src.types.context_prestador import ContextPrestador, DadosPrestador, Endereco
-from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
-from src.types.conversation_type import AIResponse
-from src.types.incoming_msg import IncomingMessage
-from src.models.prompts import AI_SYSTEM_PRESTADOR_GEMMA, AI_SYSTEM_ENDERECO_EXTRATOR_GEMMA, AI_SYSTEM_NF_GEMMA, AI_SYSTEM_HAS_INTENT, AI_SYSTM_NO_INTENT
+from src.integrations.ai_client import GemmaClient
+from src.types import ContextTomador, ContextPrestador, DadosPrestador, DadosTomador, Endereco
+from src.services.shared.ai_extractors import (
+    AIExtractor,
+    parse_tomador_data,
+)
+from src.models.prompts import (
+    PROMPT_EXTRACT_NFSE_GEMMA,
+    PROMPT_HAS_INTENT,
+    PROMPT_NO_INTENT_RESPONSE,
+)
 
 load_dotenv()
 
@@ -212,9 +218,6 @@ def _resumir_draft(draft: dict) -> str:
 
 # GEMMA
 
-client = OpenAI(base_url="http://localhost:1234/v1", api_key="lm-studio")
-
-
 def extract_data_prestador_gemma(ctx: ContextPrestador) -> None:
     
     try:
@@ -285,94 +288,41 @@ def extract_endereco_gemma(msg: IncomingMessage) -> Endereco:
     except Exception as e:
         print("Erro ao analisar mensagem:", e)
 
-def extract_nf_gemma(ctx: ContextTomador) -> None:
+    
+class AIService:
+    def __init__(self):
 
-    try:
-        response = client.chat.completions.create(
-            model="google/gemma-4-e4b",
-            temperature=0,
-            messages=[
-                {"role": "system", "content": AI_SYSTEM_NF_GEMMA},
-                {"role": "user", "content": ctx.text}
-            ],
+        self.client = GemmaClient(model="google/gemma-4-e4b")
+        self.extrator_nfse = AIExtractor(
+            client=self.client,
+            prompt=PROMPT_EXTRACT_NFSE_GEMMA,
+            output_type=DadosTomador,
+            parser=parse_tomador_data
         )
 
-        print(f"{response.choices[0].message.reasoning_content}\n")
-        print(f"{response.choices[0].message.content}\n")
+    def extract_nfse_data(self, ctx: ContextTomador) -> None:
+        ctx.dados_novos = self.extrator_nfse.extract(ctx.text)
 
-        conteudo = response.choices[0].message.content.strip()
+    def has_intent(self, ctx: ContextTomador) -> bool:
 
-        dados = json.loads(conteudo)
-
-        nome = dados.get("tomador", {}).get("nome")
-        cnpj = dados.get("tomador", {}).get("cnpj")
-        descricao = dados.get("servico", {}).get("descricao")
-        total = dados.get("valores", {}).get("total")
-
-        ctx.dados_novos = DadosTomador(
-            tomador=Tomador(
-                nome=nome,
-                cnpj=cnpj
-            ),
-            servico=Servico(
-                descricao=descricao
-            ),
-            valores=Valores(
-                total=total,
+        try:
+            response = self.client.extract_text(
+                system_prompt=str(PROMPT_HAS_INTENT),
+                user_msg=ctx.text
             )
-        )
+            return response.lower().startswith("true")
+        
+        except:
+            return False
+        
+    def not_intent_response(self, ctx: ContextTomador) -> str:
 
-    except json.JSONDecodeError:
-        print("Erro ao converter respota da ia para json")
-        print(conteudo)
-        return
-    
-    except Exception as e:
-        print("Erro ao analisar mensagem:", str(e))
-        return
-    
-def has_intent(ctx: ContextTomador) -> bool:
+        print(f"NO INTENT RESPONSE\n")
 
-    try:
-        response = client.chat.completions.create(
-            model="google/gemma-4-e4b",
-            temperature=0,
-            messages=[
-                {"role": "system", "content": AI_SYSTEM_HAS_INTENT},
-                {"role": "user", "content": ctx.text}
-            ],
-        )
-
-        print(f"{response.choices[0].message.reasoning_content}\n")
-
-        conteudo = response.choices[0].message.content.strip()
-
-        return conteudo.strip().lower().startswith("true")
-    
-    except Exception as e:
-        print("Erro ao analisar mensagem:", str(e))
-        return
-    
-def no_intent_response(ctx: ContextTomador) -> str:
-
-    try:
-        response = client.chat.completions.create(
-            model="google/gemma-4-e4b",
-            temperature=0,
-            messages=[
-                {"role": "system", "content": AI_SYSTM_NO_INTENT},
-                {"role": "user", "content": ctx.text}
-            ],
-        )
-
-        print(f"{response.choices[0].message.reasoning_content}\n")
-
-        conteudo = response.choices[0].message.content.strip()
-
-        fallback = "Estou aqui apenas para emitir notas fiscais. Me envie os dados do tomador e do serviço."
-        resposta = conteudo.strip()
-        return resposta if resposta else fallback
-    
-    except Exception as e:
-        print("Erro ao analisar mensagem:", str(e))
-        return
+        try:
+            return self.client.extract_text(
+                system_prompt=str(PROMPT_NO_INTENT_RESPONSE),
+                user_msg=ctx.text
+            )
+        except:
+            return "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."

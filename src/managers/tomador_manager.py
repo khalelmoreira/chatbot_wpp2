@@ -2,20 +2,20 @@ import json
 from dataclasses import asdict
 import uuid
 import hashlib
-from src.models.aliquota_iss import ALIQUOTA_ISS
-from src.database.db import executar_modif, fetchone, fetchone_modif
-from src.types.context_tomador import ContextTomador, DadosTomador, Tomador, Servico, Valores
+from src.models.aliquota_iss_constant import ALIQUOTA_ISS
+from src.database.db import DB
+from src.types import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.utils.debug import print_table
-from src.managers.conversation_manager import ConversationManager
 
 class TomadorManager:
+    def __init__(self, ctx: ContextTomador):
+        self.ctx = ctx
+        self.db  = DB()
 
-    def update_nf_from_draft(self, ctx: ContextTomador, conversation: ConversationManager) -> None:
+    def update_nf_from_draft(self, draft: dict) -> None:
 
-        draft = conversation.get_draft(ctx)
-
-        prestador_id = ctx.user.id
-        conversation_id = ctx.conversation_id
+        prestador_id = self.ctx.user.id
+        conversation_id = self.ctx.conversation_id
 
         nome        = draft["tomador.nome"]
         cnpj        = draft["tomador.cnpj"]
@@ -45,7 +45,7 @@ class TomadorManager:
     
     def _upsert_tomador(self, prestador_id: int, nome: str, cnpj: str) -> int:
 
-        row = fetchone_modif("""
+        row = self.db.fetchone_modif("""
             INSERT INTO tomador (prestador_id, nome, cnpj)
             VALUES (?, ?, ?)
             ON CONFLICT (prestador_id, cnpj) DO UPDATE SET
@@ -63,7 +63,7 @@ class TomadorManager:
             nome, cnpj, descricao, valor_total, aliquota_iss
     ) -> int:
         
-        row = fetchone_modif("""
+        row = self.db.fetchone_modif("""
             INSERT INTO nfs (
                 prestador_id, tomador_id, conversation_id,
                 idempotency_key, payload_enviado, nome,
@@ -90,9 +90,9 @@ class TomadorManager:
         print(f"ROW[ID]: {row["id"]}\n")
         return row["id"]
 
-    def get_db_data(self, ctx: ContextTomador) -> None:
+    def get_db_data(self) -> None:
 
-        prestador_id = ctx.user.id
+        prestador_id = self.ctx.user.id
 
         query = """
             SELECT
@@ -105,16 +105,16 @@ class TomadorManager:
             WHERE prestador_id = ?
         """
 
-        result = fetchone(query, (prestador_id,))
+        result = self.db.fetchone(query, (prestador_id,))
 
         if not result:
-            ctx.dados_db = DadosTomador()
+            self.ctx.dados_db = DadosTomador()
             return
         
         nf = result["nf"]
 
         if not nf:
-            ctx.dados_db = DadosTomador()
+            self.ctx.dados_db = DadosTomador()
             return
         
         data = json.loads(nf)
@@ -128,7 +128,7 @@ class TomadorManager:
         total = data.get("valores", {}).get("total")
         aliquotaIss = data.get("valores", {}).get("aliquotaIss")
 
-        ctx.dados_db = DadosTomador(
+        self.ctx.dados_db = DadosTomador(
             tomador=Tomador(
                 nome=nome,
                 cnpj=cnpj

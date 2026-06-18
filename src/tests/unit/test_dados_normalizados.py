@@ -1,6 +1,6 @@
-from chatbot_wpp2.src.services.shared.ai_service import analisar_msg_nota_ai
+from src.services.shared.ai_service import analisar_msg_nota_ai
 from src.tests.generators.gen_msg_ai import gen_msg_fake
-from chatbot_wpp2.src.services.validators.validador_tomador import normalizar_dados_nf
+from src.services.validators.validador_tomador import normalizar_dados_nf
 
 qtd = 1
 msg = gen_msg_fake(tipo="nfse", quantidade=qtd)

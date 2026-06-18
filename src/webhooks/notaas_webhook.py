@@ -1,5 +1,6 @@
 import json
-from chatbot_wpp2.src.services.notaas.nfse_service import NfseService, NfNotFoundError
+from src.services.notaas.nfse_service import NfseService
+from src.types import NfNotFoundError
 
 def notaas_webhook(payload: dict):
 
