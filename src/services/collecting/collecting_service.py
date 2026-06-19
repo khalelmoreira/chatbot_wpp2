@@ -5,6 +5,7 @@ from src.types.conversation_state import ConversationStatus
 from src.services.shared.ai_service import AIService
 from src.services.shared.msg_service import WhatsAppService
 from src.utils.unpack_json import unpack_dados_db
+from src.utils.unflatten import unflatten
 from src.utils.debug import print_table
 
 class CollectingService:
@@ -40,8 +41,8 @@ class CollectingService:
         self.ai.extract_nfse_data(self.ctx)
         print(f"DADOS NOVOS: {self.ctx.dados_novos}\n")
 
-        draft = self.conversation.get_draft(self.ctx)
-        unpack_dados_db(draft, self.ctx)
+        draft = self.conversation.get_draft()
+        self.ctx.dados_db = unpack_dados_db(draft)
         print(f"DADOS DRAFT:{self.ctx.dados_db}\n")
 
         self.ctx.dados_completos = self.ctx.dados_db.merge(self.ctx.dados_novos)
@@ -53,13 +54,14 @@ class CollectingService:
     def valido_e_completo(self):
 
         if self.ctx.validacao.validos:
-            self._valido()
+            self._update_draft()
 
             if not self.ctx.validacao.is_complete:
                 self._incompleto()
                 return
 
-            self._updates()
+            self._update_draft()
+            self._update_state()
             self._msg_confirm()
             return
         
@@ -77,14 +79,14 @@ class CollectingService:
         print(f"RESPONSE: {response}\n")
 
     def _create_conversation_id(self):
-        self.ctx.conversation_id = self.conversation.create_conversation(self.ctx)
+        self.ctx.conversation_id = self.conversation.create_conversation()
     
-    def _valido(self):
-        self.conversation.update_draft(self.ctx.conversation_id, self.ctx.validacao.validos)
+    def _update_draft(self):
+        draft_dict = unflatten(self.ctx.validacao.validos)
+        self.conversation.update_draft(draft_dict)
     
-    def _updates(self):
-        self.conversation.update_draft(self.ctx.conversation_id, self.ctx.validacao.validos)
-        self.conversation.update_state(self.ctx.conversation_id, ConversationStatus.CONFIRMING)
+    def _update_state(self):
+        self.conversation.update_state(ConversationStatus.CONFIRMING)
 
     def _msg_confirm(self):
         # send_msg_botao(

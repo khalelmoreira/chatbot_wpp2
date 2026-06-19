@@ -1,8 +1,9 @@
 import json
 import sqlite3
-from typing import Optional
+from typing import Optional, Any
 from src.types import ContextTomador
 from src.database.db import DB
+from src.utils.debug import print_table
 
 class ConversationManager:
     def __init__(self, ctx: ContextTomador):
@@ -49,7 +50,7 @@ class ConversationManager:
             WHERE id = ?
         """, (novo_status, self.ctx.conversation_id))
 
-    def get_draft(self) -> None:
+    def get_draft(self) -> dict[str, Any]:
 
         row = self.db.fetchone("""
             SELECT draft_json FROM conversations
@@ -61,7 +62,10 @@ class ConversationManager:
     def update_draft(self, draft: dict) -> None:
 
         self.db.executar_modif("""
-            UPDATE conversations
-            SET draft_json = ?, updated_at = CURRENT_TIMESTAMP
+            UPDATE conversations SET
+                draft_json = ?,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         """, (json.dumps(draft), self.ctx.conversation_id))
+
+        print_table(table_name="conversations", columns=["draft_json"], where="id = ?", params=(self.ctx.conversation_id,))

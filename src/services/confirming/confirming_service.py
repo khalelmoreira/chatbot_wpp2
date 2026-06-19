@@ -9,10 +9,10 @@ class ConfirmingService:
         self.ctx = ctx
         self.msg = msg
         self.conversation = conversation
-        self.tomador = TomadorManager()
+        self.tomador = TomadorManager(ctx)
         self.wpp = WhatsAppService()
         
-    def parse(self):
+    def dispatch(self):
         if self.msg.tipo != "button_reply":
             self._use_botoes_msg()
             return
@@ -29,20 +29,20 @@ class ConfirmingService:
             return
 
     def _use_botoes_msg(self):
-        #self.wpp.send_msg_text(msg.phone, "Por favor, use os botões para confirmar ou corrigir o endereço.")
-        print(f"Por favor, use os botões para confirmar ou corrigir os dados.\n")
+        self._notf_user(msg="Por favor, use os botões para confirmar ou corrigir o endereço.")
 
     def _tomador_confirmado(self):
-        self.conversation.update_state(self.ctx.conversation_id, ConversationStatus.QUEUED)
+
+        self.conversation.update_state(ConversationStatus.QUEUED)
         draft = self.conversation.get_draft()
+        
         self.tomador.update_nf_from_draft(draft)
-        #self.wpp.send_msg_text(ctx.user.phone, "Sua nota fiscal já entrou na fila e será emitida em instantes.")
-        print("Sua nota fiscal já entrou na fila e será emitida em instantes.\n")
+        self._notf_user(msg="Sua nota fiscal já entrou na fila e será emitida em instantes.")
 
     def _tomador_corrigir(self):
-        self.conversation.update_state(self.ctx.conversation_id, ConversationStatus.COLLECTING)
-        # self.wpp.send_msg_text(
-        #     msg.text,
-        #     "Por favor, digite os dados do tomador novamente para podermos continuar"
-        # )
-        print("Por favor, digite os dados do tomador novamente para podermos continuar\n")
+        self.conversation.update_state(ConversationStatus.COLLECTING)
+        self._notf_user(msg="Por favor, digite os dados do tomador novamente para podermos continuar")
+
+    def _notf_user(self, msg: str) -> None:
+        #self.wpp.send_msg_text(self.msg.phone, msg)
+        print(f"{msg}\n")

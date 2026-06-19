@@ -40,6 +40,9 @@ def notaas_webhook(payload: dict):
         elif evento == "nfse.documents_ready":
             return service.docs_ready()
         
+        elif evento == "webhook.test":
+            return 200
+        
         else:
             print("evento não conhecido")
             return {

@@ -312,7 +312,8 @@ class AIService:
             )
             return response.lower().startswith("true")
         
-        except:
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
             return False
         
     def not_intent_response(self, ctx: ContextTomador) -> str:
@@ -324,5 +325,6 @@ class AIService:
                 system_prompt=str(PROMPT_NO_INTENT_RESPONSE),
                 user_msg=ctx.text
             )
-        except:
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
             return "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."

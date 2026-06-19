@@ -8,9 +8,10 @@ from src.utils.debug import print_table
 
 class NfsWorkerManager:
     def __init__(self, job: int):
-        self.db     = DB()
-        self.job    = job
-        self.job_id = job["id"]
+        self.db              = DB()
+        self.job             = job
+        self.job_id          = job["id"]
+        self.conversation_id = job["conversation_id"]
 
     @classmethod
     def reserva_job(cls) -> "NfsWorkerManager | None":
@@ -36,7 +37,15 @@ class NfsWorkerManager:
             ORDER BY requested_at ASC
             LIMIT 1
             )
-            RETURNING id, conversation_id, payload_enviado, tentativas
+            RETURNING 
+                id,
+                conversation_id,
+                nome,
+                cnpj,
+                descricao_servico,
+                valor_total,
+                aliquota_iss,
+                tentativas
         """, (MAX_TENTATIVAS,))
     
     def marcar_emitido(self) -> None:
@@ -59,8 +68,8 @@ class NfsWorkerManager:
                 SET status = 'DONE',
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (self.ctx.conversation_id,))
-            print_table(table_name="conversations", columns=["status", "updated_at"], where="id = ?", params=(conversation_id,))
+            """, (self.conversation_id,))
+            print_table(table_name="conversations", columns=["status", "updated_at"], where="id = ?", params=(self.conversation_id,))
 
             conn.execute("COMMIT")
 

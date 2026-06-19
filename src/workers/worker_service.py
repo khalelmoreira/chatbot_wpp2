@@ -1,50 +1,51 @@
 import time
-import json
 import threading
-from config import MAX_TENTATIVAS
-from src.services.worker.fila_service import calcular_backoff
 from src.managers.nfse_worker_manager import NfsWorkerManager
-from src.services.shared.emission_service import emitir_nf
+from src.services.worker.processar_job import processar_job
 from src.utils.logger import logger
 
-def worker_emissao() -> None:
-
-    logger.info("Worker de emissao iniciado")
-
-    while True:
+class EmissaoWorker:
+    def __init__(self, intervalo_poll: float = 2.0):
+        self._stop_event = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._intevalo_poll = intervalo_poll
         
-        print(f"\n\n----------------TESTE WORKER EMISSAO----------------\n\n")
+    def _loop(self) -> None:
 
-        manager = NfsWorkerManager.reserva_job()
-        if not manager:
-            time.sleep(10)
-            continue
+        logger.info("Worker de emissao iniciado")
 
-        job_id = manager.job_id
-        job    = manager.job
+        while not self._stop_event.is_set():
 
-        manager.resetar_jobs_travados()
-        print(f"JOB: {job}\n") if job is None else print(f"JOB: {dict(job)}\n")
+            try:
+                manager = NfsWorkerManager.reserva_job()
+            except Exception:
+                logger.exception("erro ao reservar job")
+                self._stop_event.wait(timeout=self._intevalo_poll)
+                continue
 
-        tentativas = job["tentativas"]
+            if not manager:
+                self._stop_event.wait(timeout=self._intevalo_poll)
+                continue
 
-        try:
-            payload  = json.loads(job["payload_enviado"])
-            response = emitir_nf(payload)
+            espera = processar_job(manager)
+            self._stop_event.wait(timeout=espera or self._intevalo_poll)
+        
+        logger.info("worker finalizado")
 
-            invoice_id = response["invoiceId"]
-            manager.save_invoice_id(job_id, invoice_id)
+    def start(self) -> None:
 
-            logger.info(f"job {job_id} emitido com sucesso")
-            time.sleep(10)
+        if self._thread and self._thread.is_alive():
+            return
+        self._stop_event.clear()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
 
-        except Exception as e:
-            manager.marcar_erro(job_id, e)
-            espera = calcular_backoff(tentativas)
-
-            logger.info(f"job {job_id} falhou (tentativa {tentativas}/{MAX_TENTATIVAS}): {e}")
-            logger.info(f"aguardando {espera}s antes de tentar proximo job")
-            time.sleep(espera)
+    def stop(self, timeout: float = 5.0) -> None:
+        self._stop_event.set()
+        if self._thread:
+            self._thread.join(timeout=timeout)
+            if self._thread.is_alive():
+                logger.warning("worker não finalizou dentro do timeout")
 
 def worker_limpeza_msg():
 
@@ -58,10 +59,3 @@ def worker_limpeza_msg():
 
         time.sleep(3600)
 
-def start_workers() -> None:
-
-    threading.Thread(
-        target=worker_emissao,
-        daemon=True,
-        name="worker-emissao"
-    ).start()

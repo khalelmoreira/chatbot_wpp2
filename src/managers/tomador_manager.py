@@ -6,6 +6,7 @@ from src.models.aliquota_iss_constant import ALIQUOTA_ISS
 from src.database.db import DB
 from src.types import ContextTomador, DadosTomador, Tomador, Servico, Valores
 from src.utils.debug import print_table
+from src.utils.unpack_json import unpack_dados_db
 
 class TomadorManager:
     def __init__(self, ctx: ContextTomador):
@@ -17,20 +18,17 @@ class TomadorManager:
         prestador_id = self.ctx.user.id
         conversation_id = self.ctx.conversation_id
 
-        nome        = draft["tomador.nome"]
-        cnpj        = draft["tomador.cnpj"]
-        descricao   = draft["servico.descricao"]
-        valor_total = draft["valores.total"]
+        data = unpack_dados_db(draft)
+
+        nome         = data.tomador.nome
+        cnpj         = data.tomador.cnpj
+        descricao    = data.servico.descricao
+        valor_total  = data.valores.total
         aliquota_iss = ALIQUOTA_ISS
 
         tomador_id = self._upsert_tomador(prestador_id, nome, cnpj)
 
-        payload = {
-            "tomador": {"nome": nome, "cnpj": cnpj},
-            "servico": {"descricao": descricao},
-            "valores": {"total": valor_total, "aliquotaIss": aliquota_iss},
-        }
-
+        payload = asdict(data)
         payload_enviado = json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
         idempotency_key = hashlib.sha256(

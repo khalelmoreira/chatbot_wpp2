@@ -14,8 +14,6 @@ def main():
 
     if option == "1":
 
-        phone = input("Telefone: ")
-
         print("\n1 = endereco_confirmado")
         print("2 = endereco_corrigir")
 
@@ -24,20 +22,18 @@ def main():
         if escolha == "1":
 
             payload = build_button_reply_message(
-            phone=phone,
+            phone="22666666666",
             button_id="endereco_confirmado"
         )
         
         if escolha == "2":
 
             payload = build_button_reply_message(
-            phone=phone,
+            phone="22666666666",
             button_id="endereco_corrigido"
         )
             
     if option == "2":
-
-        phone = input("Telefone: ")
 
         print("\n1 = tomador_confirmado")
         print("2 = tomador_corrigir")
@@ -47,14 +43,14 @@ def main():
         if escolha == "1":
 
             payload = build_button_reply_message(
-            phone=phone,
+            phone="22666666666",
             button_id="tomador_confirmado"
         )
         
         if escolha == "2":
 
             payload = build_button_reply_message(
-            phone=phone,
+            phone="22666666666",
             button_id="tomador_corrigir"
         )
 

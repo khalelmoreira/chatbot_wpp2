@@ -2,7 +2,7 @@ from src.services.collecting.collecting_service import CollectingService
 from src.managers.conversation_manager import ConversationManager
 from src.types import ContextTomador
 
-def fluxo_collecting(ctx: ContextTomador, conversation: ConversationManager) -> None:
+def collecting_flow(ctx: ContextTomador, conversation: ConversationManager) -> None:
     
     print(f"\n\n----------------TESTE FLUXO COLLECTING----------------\n\n")
 

@@ -91,54 +91,39 @@ class ProjectPrestador:
     codigoMunicipio: str = "3304557"
 
 @dataclass
-class Tomador:
+class MergeableMixin:
+    def merge(self, novos: "Self") -> "Self":
+        kwargs = {
+            f.name: getattr(novos, f.name) if getattr(novos, f.name) is not None else getattr(self, f.name)
+            for f in fields(self)
+        }
+        return type(self)(**kwargs)
+
+@dataclass
+class Tomador(MergeableMixin):
     nome: Optional[str] = None
     cnpj: Optional[str] = None
 
     OBRIGATORIOS: ClassVar[set[str]] = {"nome", "cnpj"}
-
-    def merge(self, novos: "Tomador") -> "Tomador":
-
-        kwargs = {
-            f.name: getattr(novos, f.name) if getattr(novos, f.name) is not None else getattr(self, f.name)
-            for f in fields(self)
-        }
-
-        return Tomador(**kwargs)
     
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
     
 @dataclass
-class Servico:
+class Servico(MergeableMixin):
     descricao: Optional[str] = None
 
     OBRIGATORIOS: ClassVar[set[str]] = {"descricao"}
-
-    def merge(self, novos: "Servico") -> "Servico":
-
-        kwargs = {
-            f.name: getattr(novos, f.name) if getattr(novos, f.name) is not None else getattr(self, f.name)
-            for f in fields(self)
-        }
-        return Servico(**kwargs)
     
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
 
 @dataclass
-class Valores:
+class Valores(MergeableMixin):
     total: Optional[float] = None
     aliquotaIss: Optional[float] = None
 
     OBRIGATORIOS: ClassVar[set[str]] = {"total"}
-
-    def merge(self, novos: "Valores") -> "Valores":
-        kwargs = {
-            f.name: getattr(novos, f.name) if getattr(novos, f.name) is not None else getattr(self, f.name)
-            for f in fields(self)
-        }
-        return Valores(**kwargs)
     
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]

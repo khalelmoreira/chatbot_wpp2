@@ -14,11 +14,10 @@ def main():
 
     if option == "1":
 
-        phone = input("Telefone: ")
         text = input("Mensagem: ")
 
         payload = build_text_message(
-            phone=phone,
+            phone="22666666666",
             text=text
         )
 

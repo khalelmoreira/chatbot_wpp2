@@ -1,23 +1,14 @@
 from typing import Any
-from src.types import DadosTomador, ContextTomador, Tomador, Servico, Valores
+from src.types import DadosTomador, Tomador, Servico, Valores
 
-def unpack_dados_db(data: dict[str, Any], ctx: ContextTomador) -> DadosTomador:
+def unpack_dados_db(data: dict[str, Any]) -> DadosTomador:
 
-    nome = data.get("tomador", {}).get("nome")
-    cnpj = data.get("tomador", {}).get("cnpj")
+    tomador_data = data.get("tomador") or {}
+    servico_data = data.get("servico") or {}
+    valores_data = data.get("valores") or {}
 
-    descricao = data.get("servico", {}).get("descricao")
-    total = data.get("valores", {}).get("total")
-
-    ctx.dados_db = DadosTomador(
-        tomador=Tomador(
-            nome=nome,
-            cnpj=cnpj
-        ),
-        servico=Servico(
-            descricao=descricao
-        ),
-        valores=Valores(
-            total=total,
-        )
+    return DadosTomador(
+        tomador=Tomador(**tomador_data),
+        servico=Servico(**servico_data),
+        valores=Valores(**valores_data),
     )

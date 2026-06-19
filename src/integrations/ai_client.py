@@ -55,7 +55,6 @@ class GemmaClient(AIClient):
                     {"role": "user", "content": user_msg}
                 ]
             )
-            print(f"EXTRACT_TEXT: {response.choices[0].message.content.split()}")
-            return response.choices[0].message.content.split()
+            return response.choices[0].message.content
         except Exception as e:
             raise Exception(f"Erro ao chamar IA: {e}")

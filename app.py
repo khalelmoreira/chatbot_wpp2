@@ -1,13 +1,14 @@
 from flask import Flask, request, jsonify
 import os
+from src.workers.worker_service import EmissaoWorker
 from dotenv import load_dotenv
 from src.database.tables_db import init_db
 from src.webhooks.wpp_webhook import wpp_webhook
-from src.workers.worker_service import start_workers
 from src.webhooks.notaas_webhook import notaas_webhook
 from src.services.shared.security_service import verificar_ass
 
 load_dotenv()
+worker = EmissaoWorker(intervalo_poll=2.0)
 
 app = Flask(__name__)
 
@@ -40,23 +41,23 @@ def webhook():
 @app.route("/webhook/notaas", methods=["POST", "GET"], strict_slashes=False)
 def webhook_notaas():
 
-    payload_raw = request.get_data()
-    print(f"PAYLOAD RAW: {payload_raw}\n")
+    # payload_raw = request.get_data()
+    # print(f"PAYLOAD RAW: {payload_raw}\n")
 
-    assinatura = request.headers.get("X-Notaas-Signature")
-    print(f"ASSINATURA: {assinatura}\n")
+    # assinatura = request.headers.get("X-Notaas-Signature")
+    # print(f"ASSINATURA: {assinatura}\n")
 
-    if not assinatura:
-        return jsonify({
-            "success": False,
-            "error": "assinatura ausente"
-        }), 401
+    # if not assinatura:
+    #     return jsonify({
+    #         "success": False,
+    #         "error": "assinatura ausente"
+    #     }), 401
     
-    if not verificar_ass(payload_raw, assinatura):
-        return jsonify({
-            "success": False,
-            "error": "assinatura ausente"
-        }), 401
+    # if not verificar_ass(payload_raw, assinatura):
+    #     return jsonify({
+    #         "success": False,
+    #         "error": "assinatura ausente"
+    #     }), 401
     
     payload = request.get_json()
     print(f"PAYLOAD: {payload}\n")
@@ -67,5 +68,5 @@ def webhook_notaas():
 
 if __name__ == "__main__":
     init_db()
-    start_workers()
+    worker.start()
     app.run(debug=True, use_reloader=False, port=5000)
