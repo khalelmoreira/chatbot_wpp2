@@ -24,9 +24,9 @@ from src.types.conversation import (
 )
 
 # De models (enums de estado que deveriam estar em types)
-from src.types.conversation_state import ConversationStatus, NfseStatus
+from src.types.conversation_state import ConversationStatus
 
-from src.types.nfse import NfNotFoundError
+from src.types.nfse import NfNotFoundError, EventsNotaas, StatusInvoice, NfseStatus, PayloadNotaas
 
 __all__ = [
     # Contexts
@@ -50,5 +50,8 @@ __all__ = [
     "BotaoResponse",
     "ConversationStatus",
     "NfseStatus",
+    "EventsNotaas",
+    "PayloadNotaas",
+    "StatusInvoice"
     "NfNotFoundError",
 ]

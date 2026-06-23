@@ -7,10 +7,3 @@ class ConversationStatus(str, Enum):
     DONE        = "DONE"
     ERROR       = "ERROR"
     CANCELLED   = "CANCELLED"
-
-class NfseStatus(str, Enum):
-    QUEUED      = "QUEUED"
-    PROCESSING  = "PROCESSING"
-    ISSUED      = "ISSUED"
-    ERROR       = "ERROR"
-    CANCELLED   = "CANCELLED"

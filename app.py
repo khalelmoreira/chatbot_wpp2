@@ -1,21 +1,22 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import os
-from src.workers.worker_service import EmissaoWorker
+import logging
+import atexit
+from src.workers import EmissaoWorker, PollingWorker
+from src.webhooks import WppWebhook, NotaasWebhook
+from src.services.shared.security_service import verificar_ass
 from dotenv import load_dotenv
 from src.database.tables_db import init_db
-from src.webhooks.wpp_webhook import wpp_webhook
-from src.webhooks.notaas_webhook import notaas_webhook
-from src.services.shared.security_service import verificar_ass
 
 load_dotenv()
-worker = EmissaoWorker(intervalo_poll=2.0)
-
+logger = logging.getLogger(__name__)
+emissao_worker = EmissaoWorker(intervalo_poll=2.0)
+polling_worker = PollingWorker(intervalo_poll=20.0)
 app = Flask(__name__)
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
 
-    #Verificacao da Meta
     if request.method == "GET":
         token = request.args.get("hub.verify_token")
         challenge = request.args.get("hub.challenge")
@@ -27,15 +28,12 @@ def webhook():
 
     if request.method == "POST":
 
-        print(f"\nentrou post\n")
-        #Separa dados do json
         data = request.get_json()
-        print(f"recebeu json: {data}\n")
         if not data:
             return "ok", 200
         
-        wpp_webhook(data)
-
+        wpp = WppWebhook(data)
+        wpp.wpp_webhook()
         return "ok", 200
 
 @app.route("/webhook/notaas", methods=["POST", "GET"], strict_slashes=False)
@@ -60,13 +58,26 @@ def webhook_notaas():
     #     }), 401
     
     payload = request.get_json()
-    print(f"PAYLOAD: {payload}\n")
+    print(f"PAYLOAD RECEBIDO: {payload}\n")
 
-    resultado = notaas_webhook(payload)
+    try:
+        notaas = NotaasWebhook(payload)
+        notaas.processar_webhook_notaas()
+    except Exception as e:
+        logger.exception("erro ao processar webhook notaas")
+        return "ok", 200
+    
+    return "ok", 200
 
-    return jsonify(resultado), 200
+def _shutdown():
+    logger.info("sinal de shutdown recebido")
+    emissao_worker.stop()
+    polling_worker.stop()
+
+atexit.register(_shutdown)
 
 if __name__ == "__main__":
     init_db()
-    worker.start()
+    emissao_worker.start()
+    polling_worker.start()
     app.run(debug=True, use_reloader=False, port=5000)

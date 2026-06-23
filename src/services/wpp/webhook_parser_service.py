@@ -3,11 +3,13 @@ from src.types import IncomingMessage
 from src.services.shared.audio_service import transcrever_audio_wpp
 
 class WhatsappWebhookParser:
+    def __init__(self, payload):
+        self.payload = payload
 
-    def parse(self, payload: dict) -> Optional[IncomingMessage]:
+    def parse(self) -> Optional[IncomingMessage]:
 
         try:
-            value = self._extrair_value(payload)
+            value = self._extrair_value()
 
         except (KeyError, IndexError) as e:
             raise ValueError(f"payload malformado: {e}") from e
@@ -79,9 +81,9 @@ class WhatsappWebhookParser:
             #enviar_mensagem(message["from"], "text", "não entendi a mensagem.")
             return None
     
-    def _extrair_value(self, payload: dict) -> dict:
+    def _extrair_value(self) -> dict:
         try:
-            entry = payload["entry"][0]
+            entry = self.payload["entry"][0]
 
             change = entry["changes"][0]
 
@@ -89,5 +91,5 @@ class WhatsappWebhookParser:
         except (KeyError, IndexError) as e:
             raise ValueError(
                 f"campo ausente no payload: {e}"
-                f"payload recebido: {payload}"
+                f"payload recebido: {self.payload}"
             ) from e 

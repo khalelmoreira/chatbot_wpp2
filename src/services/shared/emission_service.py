@@ -9,6 +9,7 @@ API_KEY = os.getenv("NOTAAS_API_KEY")
 def emitir_nf(dados):
 
     print(f"\n\n----------------TESTE EMITIR NF----------------\n\n")
+    print(f"PAYLOAD ENVIADO: {dict(dados)}")
 
     url = "https://platform.notaas.com.br/api/v1/emitir"
 

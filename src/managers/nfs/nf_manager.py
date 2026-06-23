@@ -35,7 +35,7 @@ class NfsManager:
         self.db.executar_modif("""
             UPDATE conversations SET
                 status     = ?,
-                draft_json = NULL,
+                draft_json = '{}',
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         """, (novo_status, self.conversation_id))
@@ -46,7 +46,7 @@ class NfsManager:
             UPDATE nfs SET
                 status       = 'DONE',
                 ch_nfse      = ?,
-                numero_nfse  = ?,
+                n_nfse       = ?,
                 emitido_em   = ?,
                 updated_at   = CURRENT_TIMESTAMP
             WHERE id = ?
@@ -64,8 +64,8 @@ class NfsManager:
         self.db.executar_modif("""
             UPDATE nfs SET
                 status           = 'ERROR',
-                error_code       = ?,
-                error_msg        = ?,
+                erro_code        = ?,
+                erro_msg         = ?,
                 updated_at       = CURRENT_TIMESTAMP
             WHERE id = ?
         """, (self.data.get("errorCode"), error_msg, self.nf["id"]))

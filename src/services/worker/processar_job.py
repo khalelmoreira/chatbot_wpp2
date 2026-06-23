@@ -1,8 +1,10 @@
+import logging
 from config import MAX_TENTATIVAS
-from src.managers.nfse_worker_manager import NfsWorkerManager
+from src.managers.nfs.nf_worker_manager import NfsWorkerManager
 from src.services.shared.emission_service import emitir_nf
 from src.services.worker.fila_service import calcular_backoff
-from src.utils.logger import logger
+
+logger = logging.getLogger(__name__)
 
 def processar_job(manager: NfsWorkerManager) -> float | None:
     """
@@ -24,7 +26,7 @@ def processar_job(manager: NfsWorkerManager) -> float | None:
 
     try:
         response = emitir_nf(payload)
-        manager.save_invoice_id(job_id, response["invoice_id"])
+        manager.save_invoice_id(response["invoiceId"])
         logger.info("job %s emitido com sucesso", job_id)
         return 10.0
     

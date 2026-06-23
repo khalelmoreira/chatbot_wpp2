@@ -1,4 +1,4 @@
-from src.managers.conversation_manager import ConversationManager
+from src.managers.conversations.conversation_manager import ConversationManager
 from src.types import ContextTomador, IncomingMessage
 from src.services.confirming.confirming_service import ConfirmingService
 

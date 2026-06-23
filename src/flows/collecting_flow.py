@@ -1,5 +1,5 @@
 from src.services.collecting.collecting_service import CollectingService
-from src.managers.conversation_manager import ConversationManager
+from src.managers.conversations.conversation_manager import ConversationManager
 from src.types import ContextTomador
 
 def collecting_flow(ctx: ContextTomador, conversation: ConversationManager) -> None:

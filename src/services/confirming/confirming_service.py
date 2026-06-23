@@ -1,6 +1,6 @@
 from src.types import IncomingMessage, ContextTomador
-from src.managers.conversation_manager import ConversationManager
-from src.managers.tomador_manager import TomadorManager
+from src.managers.conversations.conversation_manager import ConversationManager
+from src.managers.tomador.tomador_manager import TomadorManager
 from src.types.conversation_state import ConversationStatus
 from src.services.shared.msg_service import WhatsAppService
 

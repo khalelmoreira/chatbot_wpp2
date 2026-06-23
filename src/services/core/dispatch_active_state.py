@@ -1,5 +1,5 @@
 from src.types import ContextTomador, IncomingMessage
-from src.managers.conversation_manager import ConversationManager
+from src.managers.conversations.conversation_manager import ConversationManager
 from src.types.conversation_state import ConversationStatus
 from src.flows.collecting_flow import collecting_flow
 from src.utils.debug import print_table

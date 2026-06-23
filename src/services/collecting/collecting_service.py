@@ -1,6 +1,6 @@
 from src.services.validators.validador_tomador import ValidadorTomador
 from src.types import ContextTomador
-from src.managers.conversation_manager import ConversationManager
+from src.managers.conversations.conversation_manager import ConversationManager
 from src.types.conversation_state import ConversationStatus
 from src.services.shared.ai_service import AIService
 from src.services.shared.msg_service import WhatsAppService

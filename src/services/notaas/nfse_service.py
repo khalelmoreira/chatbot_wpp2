@@ -1,5 +1,5 @@
 from src.services.shared.msg_service import WhatsAppService
-from src.managers.nfse_manager import NfsManager
+from src.managers.nfs.nf_manager import NfsManager
 
 class NfseService:
     def __init__(self, data: dict):
@@ -16,6 +16,8 @@ class NfseService:
 
     def issued(self):
 
+        print(f"\n\n----------------NF ISSUED----------------\n\n")
+
         self.manager.update_nf_done()
         self.manager.reset_conv(novo_status="COLLECTING")
 
@@ -30,6 +32,8 @@ class NfseService:
         return {"success": True}
 
     def error(self):
+
+        print(f"\n\n----------------NF ERROR----------------\n\n")
 
         error_msg = self.data.get("errorMessage", "Erro desconhecido")
         errors    = self.data.get("errors", [])
@@ -53,6 +57,8 @@ class NfseService:
         return {"success": True}
 
     def cancelled(self):
+
+        print(f"\n\n----------------NF CANCELLED----------------\n\n")
         
         self.manager.update_nf_cancelled()
         self.manager.reset_conv(novo_status="COLLECTING") 
@@ -61,6 +67,8 @@ class NfseService:
         return {"success": True}
 
     def docs_ready(self):
+
+        print(f"\n\n----------------NF DOCS READY----------------\n\n")
 
         document_status = self.data.get("documentStatus")   # "partial" | "complete"
         pdf_url         = self.data.get("pdfUrl")

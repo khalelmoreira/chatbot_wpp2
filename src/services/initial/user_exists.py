@@ -1,5 +1,5 @@
 from src.types import IncomingMessage, User
-from src.managers.user_manager import UserManager
+from src.managers.users.user_manager import UserManager
 from src.services.shared.msg_service import WhatsAppService
 from src.utils.debug import print_table
 

@@ -1,8 +1,10 @@
 import time
 import threading
-from src.managers.nfse_worker_manager import NfsWorkerManager
+import logging
+from src.managers.nfs.nf_worker_manager import NfsWorkerManager
 from src.services.worker.processar_job import processar_job
-from src.utils.logger import logger
+
+logger = logging.getLogger(__name__)
 
 class EmissaoWorker:
     def __init__(self, intervalo_poll: float = 2.0):
@@ -41,21 +43,10 @@ class EmissaoWorker:
         self._thread.start()
 
     def stop(self, timeout: float = 5.0) -> None:
+        
         self._stop_event.set()
         if self._thread:
             self._thread.join(timeout=timeout)
             if self._thread.is_alive():
                 logger.warning("worker não finalizou dentro do timeout")
-
-def worker_limpeza_msg():
-
-    print(f"worker limpeza iniciado\n")
-
-    while True:
-        try:
-            limpar_msg_antigas()
-        except Exception as e:
-            print(f"[ERRO LIMPEZA MENSAGENS DB] {e}")
-
-        time.sleep(3600)
 

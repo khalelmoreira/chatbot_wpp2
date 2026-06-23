@@ -135,7 +135,8 @@ def init_db():
             -- campos preenchidos por webhook/polling (issued)
                    
             ch_nfse            TEXT,                 -- chNFSe / código de verificação
-            numero_nfse        TEXT,                 -- nNFSe
+            n_nfse             TEXT,                 -- nNFSe
+            issued_at          TEXT,
             ambiente           TEXT,                 -- "producao" | "homologacao"
             pdf_url            TEXT,
             xml_url            TEXT,
@@ -145,14 +146,14 @@ def init_db():
                    
             -- campos preenchidos por webhook/polling (error)
                    
-            erro_codigo        TEXT,
-            erro_msg           TEXT,
-            erros_json         TEXT,                 -- array [{Codigo, Descricao, Complemento}]
+            erro_code        TEXT,
+            erro_msg         TEXT,
+            erro_json        TEXT,                 -- array [{Codigo, Descricao, Complemento}]
                    
             -- campos preenchidos por webhook/polling (cancelled)
             
             processado_em TIMESTAMP,
-            cancelado_em       TEXT,
+            cancelled_at       TEXT,
             cancel_xml_url     TEXT
         )
     """)

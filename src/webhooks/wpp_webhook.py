@@ -6,24 +6,28 @@ from src.services.wpp.webhook_parser_service import WhatsappWebhookParser
 
 load_dotenv()
 
-def wpp_webhook(payload) -> Any:
+class WppWebhook:
+    def __init__(self, payload_raw):
+        self.payload_raw = payload_raw
 
-    print(f"\n\n----------------TESTE PROCESSAMENTO PAYLOAD WHATSAPP----------------\n\n")
-    parser = WhatsappWebhookParser()
+    def wpp_webhook(self) -> Any:
 
-    msg = parser.parse(payload)
-    print(f"msg: {msg}\n")
-    
-    # mensagem_nova(msg)
-    print(f"processou webhook\ndados msg: {msg}\n")
+        print(f"\n\n----------------TESTE PROCESSAMENTO PAYLOAD WHATSAPP----------------\n\n")
+        parser = WhatsappWebhookParser(self.payload_raw)
+
+        msg = parser.parse()
+        print(f"msg: {msg}\n")
+        
+        # mensagem_nova(msg)
+        print(f"processou webhook\ndados msg: {msg}\n")
 
 
-    initial_flow(msg)
+        initial_flow(msg)
 
-    # fila.enqueue(
-    #     fluxo_principal,
-    #     msg
-    # )
+        # fila.enqueue(
+        #     fluxo_principal,
+        #     msg
+        # )
 
 
 # def mensagem_nova(msg: IncomingMessage) -> Optional[Any]:

@@ -1,59 +1,57 @@
-import json
 from src.services.notaas.nfse_service import NfseService
-from src.types import NfNotFoundError
+from src.types import NfNotFoundError, EventsNotaas, PayloadNotaas
 
-def notaas_webhook(payload: dict):
+class NotaasWebhook:
+    def __init__(self, payload_raw):
+        self.payload_raw = payload_raw
 
-    try:
-        print("\n========== WEBHOOK RECEBIDO ==========")
-        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    def processar_webhook_notaas(self):
 
-        #EVENTO PRINCIPAL
+        payload = self._parse()
+        return self._dispatch(payload=payload)
+        
+    def _parse(self) -> PayloadNotaas | dict:
 
-        evento = payload.get("event")
-        print(f"EVENTO: {evento}\n")
+        try:
+            event = self.payload_raw.get("event")
+            print(f"EVENTO: {event}\n")
 
-        data = payload.get("data")
-        print(f"DATA: {data}\n")
+            if not event:
+                return {
+                    "success": False,
+                    "error": "evento não informado"
+                }
 
-        if not evento:
+            data = self.payload_raw.get("data")
+            print(f"DATA: {data}\n")
+
+            return PayloadNotaas(event=event, data=data)
+
+        except NfNotFoundError as e:
+            print(f"\n[ERRO WEBHOOK] {str(e)}")
+
             return {
                 "success": False,
-                "error": "evento não informado"
+                "error": str(e)
             }
         
-        print(f"\n[INFO] Evento recebido: {evento}")
+    def _dispatch(self, payload: PayloadNotaas):
 
-        service = NfseService(data)
+        events = EventsNotaas(payload.event)
+        service = NfseService(payload.data)
 
-        #roteamento de eventos
-
-        if evento == "nfse.issued":
-            return service.issued()
-        
-        elif evento == "nfse.error":
-            return service.error()
-        
-        elif evento == "nfse.cancelled":
-            return service.cancelled()
-        
-        elif evento == "nfse.documents_ready":
-            return service.docs_ready()
-        
-        elif evento == "webhook.test":
-            return 200
-        
-        else:
-            print("evento não conhecido")
-            return {
-                "success": True,
-                "mensagem": "evento ignorado"
-            }
-        
-    except NfNotFoundError as e:
-        print(f"\n[ERRO WEBHOOK] {str(e)}")
-
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        match events:
+            case EventsNotaas.NFSE_ISSUED:
+                return service.issued()
+            
+            case EventsNotaas.NFSE_ERROR:
+                return service.error()
+            
+            case EventsNotaas.NFSE_CANCELLED:
+                return service.cancelled()
+            
+            case EventsNotaas.NFSE_DOCS_READY:
+                return service.docs_ready()
+            
+            case EventsNotaas.WEBHOOK_TEST:
+                return "OK", 200

@@ -1,6 +1,6 @@
 import sqlite3
 from typing import Optional
-from src.types.conversation_state import NfseStatus
+from src.types import NfseStatus
 from config import MAX_TENTATIVAS
 from src.database.db import DB
 from src.database.get_connection import get_connection
@@ -31,11 +31,11 @@ class NfsWorkerManager:
                 processado_em = CURRENT_TIMESTAMP,
                 tentativas = tentativas + 1
             WHERE id = (
-            SELECT id FROM nfs
-            WHERE status = 'QUEUED'
-                AND tentativas < ?
-            ORDER BY requested_at ASC
-            LIMIT 1
+                SELECT id FROM nfs
+                WHERE status = 'QUEUED'
+                    AND tentativas < ?
+                ORDER BY requested_at ASC
+                LIMIT 1
             )
             RETURNING 
                 id,
@@ -49,8 +49,6 @@ class NfsWorkerManager:
         """, (MAX_TENTATIVAS,))
     
     def marcar_emitido(self) -> None:
-
-        print(f"\n\n----------------MARCAR EMITIDO----------------\n\n")
 
         with get_connection() as conn:
             conn.execute("BEGIN")
@@ -84,6 +82,7 @@ class NfsWorkerManager:
         """, (novo_status, erro, self.job_id))
 
     def save_invoice_id(self, invoice_id: str) -> None:
+        print(f"UPDATE nfs SET invoice_id\n")
         self.db.executar_modif("""
             UPDATE nfs SET
                 invoice_id = ?,

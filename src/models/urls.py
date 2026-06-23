@@ -1,0 +1,1 @@
+NOTAAS_BASE_URL = "https://platform.notaas.com.br/api/v1"

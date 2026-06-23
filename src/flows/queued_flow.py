@@ -1,5 +1,5 @@
 from src.types import ContextTomador
-from src.managers.conversation_manager import ConversationManager
+from src.managers.conversations.conversation_manager import ConversationManager
 from src.services.shared.msg_service import WhatsAppService
 
 def fluxo_queued(ctx: ContextTomador, conversation: ConversationManager):

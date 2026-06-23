@@ -1,4 +1,4 @@
-from src.managers.user_manager import UserManager
+from src.managers.users.user_manager import UserManager
 from src.types import IncomingMessage
 from src.services.initial.dispatch_state import dispatch_state
 from src.services.initial.user_exists import user_exists

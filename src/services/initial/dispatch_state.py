@@ -1,5 +1,5 @@
 from src.types import EstadoUser, User, ContextTomador, DadosPrestador, DadosTomador, ContextPrestador, IncomingMessage
-from src.managers.user_manager import UserManager
+from src.managers.users.user_manager import UserManager
 from src.services.shared.msg_service import WhatsAppService
 from src.flows.fluxo_prestador import fluxo_prestador
 from src.services.core.dispatch_active_state import dispatch_active_state
