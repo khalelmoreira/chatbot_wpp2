@@ -1,8 +1,11 @@
 from src.models.prompts.nfse_prompts import PROMPT_EXTRACT_NFSE_GEMMA
+from src.models.prompts.onboard_prompts import PROMPT_CONSULTA
 
 from src.models.prompts.conversation_prompts import (
     PROMPT_HAS_INTENT,
     PROMPT_NO_INTENT_RESPONSE,
+    PROMPT_CLASSIFICA_INTENT,
+    PROMPT_PARECE_PERGUNTA,
 )
 
 __all__ = [
@@ -11,4 +14,9 @@ __all__ = [
     "TOOL_EXTRACT_NFSE",
     "PROMPT_PRESTADOR_CADASTRO",
     "PROMPT_ENDERECO_GEMMA",
+    "PROMPT_CONSULTA",
+    "PROMPT_CLASSIFICA_INTENT",
+    "PROMPT_NO_INTENT_RESPONSE",
+    "PROMPT_HAS_INTENT",
+    "PROMPT_PARECE_PERGUNTA",
 ]

@@ -10,6 +10,17 @@ class ConversationManager:
         self.db = DB()
         self.ctx = ctx
 
+    def get_all(self) -> sqlite3.Row:
+
+        return self.db.fetchone("""
+            SELECT
+                *
+            FROM conversations
+            WHERE prestador_id = ?
+            ORDER BY created_at DESC
+            LIMIT 1;
+        """, (self.ctx.user.id,))
+
     def get_status(self):
 
         row = self.db.fetchone("""
@@ -34,7 +45,13 @@ class ConversationManager:
     def create_conversation(self) -> int:
 
         row = self.db.fetchone("""
-            INSERT INTO conversations (phone, prestador_id, status, draft_json, created_at)
+            INSERT INTO conversations (
+                phone,
+                prestador_id,
+                status,
+                draft_json,
+                created_at
+            )
             VALUES (?, ?, 'COLLECTING', '{}', datetime('now'))
             RETURNING id
         """, (self.ctx.user.phone, self.ctx.user.id))
@@ -44,16 +61,18 @@ class ConversationManager:
     def update_state(self, novo_status: str) -> None:
 
         self.db.executar_modif("""
-            UPDATE conversations
-            SET status = ?,
-            updated_at = CURRENT_TIMESTAMP
+            UPDATE conversations SET
+                status = ?,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         """, (novo_status, self.ctx.conversation_id))
 
     def get_draft(self) -> dict[str, Any]:
 
         row = self.db.fetchone("""
-            SELECT draft_json FROM conversations
+            SELECT
+                draft_json
+            FROM conversations
             WHERE id = ?
         """, (self.ctx.conversation_id,))
 

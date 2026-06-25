@@ -1,4 +1,4 @@
-from src.services.shared.ai_service import analisar_msg_nota_ai
+from chatbot_wpp2.src.services.ai.ai_service import analisar_msg_nota_ai
 from src.services.shared.emission_service import emitir_nf
 
 mensagem = """

@@ -155,3 +155,4 @@ class DadosTomador:
 class ContextTomador(ContextBase[DadosTomador]):
     conversation_id: int | None = None
     idempotency_key: str = ""
+    conv_status: str | None = None

@@ -97,6 +97,7 @@ def init_db():
             tentativas         INTEGER NOT NULL DEFAULT 0,
             payload_enviado    TEXT NOT NULL,                                               -- JSON completo
             requested_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                    
             -- OBRIGATORIOS NFSe

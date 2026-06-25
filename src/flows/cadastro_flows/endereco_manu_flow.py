@@ -2,10 +2,9 @@ from dataclasses import fields
 from src.managers.users.user_manager import UserManager
 from src.types import IncomingMessage, EstadoUser, BotaoResponse
 from src.managers.prestador.prestador_manager import PrestadorManager
-from src.services.shared.ai_service import extract_endereco_gemma
 from src.services.shared.msg_service import WhatsAppService
 
-def fluxo_endereco_manual(
+def endereco_manu_flow(
         msg: IncomingMessage,
         user_manager: UserManager
 ):

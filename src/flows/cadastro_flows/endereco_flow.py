@@ -1,9 +1,9 @@
 from src.managers.users.user_manager import UserManager
 from src.types import IncomingMessage, EstadoUser
-from src.flows.fluxo_onboarding import criar_project
+from chatbot_wpp2.src.flows.onboarding_flow import criar_project
 from src.services.shared.msg_service import WhatsAppService
 
-def fluxo_endereco(
+def endereco_flow(
         msg: IncomingMessage,
         user_manager: UserManager,
 ) -> None:

@@ -16,16 +16,16 @@ from src.types.context import (
 
 # Enums (tipos de estado)
 from src.types.user import User, EstadoUser
-from src.types.conversation import (
+from src.types.wpp_msg import (
     IncomingMessage,
     AIResponse,
     AIClient,
     BotaoResponse,
+    MessageType,
+    Role,
 )
 
-# De models (enums de estado que deveriam estar em types)
-from src.types.conversation_state import ConversationStatus
-
+from src.types.conversation import ConversationStatus, StatusResumo, IntentTipo
 from src.types.nfse import NfNotFoundError, EventsNotaas, StatusInvoice, NfseStatus, PayloadNotaas
 
 __all__ = [
@@ -47,6 +47,7 @@ __all__ = [
     "IncomingMessage",
     "AIResponse",
     "AIClient",
+    "StatusResumo",
     "BotaoResponse",
     "ConversationStatus",
     "NfseStatus",
@@ -54,4 +55,7 @@ __all__ = [
     "PayloadNotaas",
     "StatusInvoice"
     "NfNotFoundError",
+    "IntentTipo",
+    "Role",
+    "MessageType",
 ]

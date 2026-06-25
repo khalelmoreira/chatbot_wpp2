@@ -2,7 +2,7 @@ from src.types import ContextTomador
 from src.managers.conversations.conversation_manager import ConversationManager
 from src.services.shared.msg_service import WhatsAppService
 
-def fluxo_queued(ctx: ContextTomador, conversation: ConversationManager):
+def queued_flow(ctx: ContextTomador, conversation: ConversationManager):
 
     wpp = WhatsAppService()
     # wpp.send_msg_text(

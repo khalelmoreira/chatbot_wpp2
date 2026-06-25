@@ -1,7 +1,7 @@
 from src.types import IncomingMessage, ContextTomador
 from src.managers.conversations.conversation_manager import ConversationManager
 from src.managers.tomador.tomador_manager import TomadorManager
-from src.types.conversation_state import ConversationStatus
+from src.types import ConversationStatus
 from src.services.shared.msg_service import WhatsAppService
 
 class ConfirmingService:
@@ -32,7 +32,6 @@ class ConfirmingService:
         self._notf_user(msg="Por favor, use os botões para confirmar ou corrigir o endereço.")
 
     def _tomador_confirmado(self):
-
         self.conversation.update_state(ConversationStatus.QUEUED)
         draft = self.conversation.get_draft()
         

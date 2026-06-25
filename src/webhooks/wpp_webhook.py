@@ -2,6 +2,7 @@ from typing import Any
 from dotenv import load_dotenv
 from src.flows.initial_flow import initial_flow
 from src.services.wpp.webhook_parser_service import WhatsappWebhookParser
+from src.managers.messages.msg_manager import MsgManager
 # from src.repositories.message_repo import salvar_msg_se_nova
 
 load_dotenv()
@@ -9,6 +10,7 @@ load_dotenv()
 class WppWebhook:
     def __init__(self, payload_raw):
         self.payload_raw = payload_raw
+        self.msg_manager = MsgManager()
 
     def wpp_webhook(self) -> Any:
 
@@ -18,10 +20,6 @@ class WppWebhook:
         msg = parser.parse()
         print(f"msg: {msg}\n")
         
-        # mensagem_nova(msg)
-        print(f"processou webhook\ndados msg: {msg}\n")
-
-
         initial_flow(msg)
 
         # fila.enqueue(

@@ -1,5 +1,4 @@
 from src.types import ContextPrestador, EstadoUser, BotaoResponse
-from src.services.shared.ai_service import extract_data_prestador_gemma
 from src.managers.prestador.prestador_manager import PrestadorManager
 from src.managers.users.user_manager import UserManager
 from src.services.shared.msg_service import WhatsAppService
@@ -7,7 +6,7 @@ from src.services.validators.validador_prestador import ValidadorPrestador
 from src.utils.debug import print_table
 from src.utils.get_endereco import get_endereco_by_cep
 
-def fluxo_prestador(ctx: ContextPrestador, user_manager: UserManager):
+def prestador_flow(ctx: ContextPrestador, user_manager: UserManager):
         
         prestador = PrestadorManager()
         validador = ValidadorPrestador()
