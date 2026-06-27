@@ -1,8 +1,8 @@
-from src.types import IncomingMessage, ContextTomador
+from src.types import IncomingMessage, ContextTomador, ConversationStatus, TypeMessage, BotaoId, Role
 from src.managers.conversations.conversation_manager import ConversationManager
 from src.managers.tomador.tomador_manager import TomadorManager
-from src.types import ConversationStatus
-from src.services.shared.msg_service import WhatsAppService
+from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
+from src.managers.messages.msg_manager import MsgManager
 
 class ConfirmingService:
     def __init__(self, ctx: ContextTomador, msg: IncomingMessage, conversation: ConversationManager):
@@ -13,20 +13,22 @@ class ConfirmingService:
         self.wpp = WhatsAppService()
         
     def dispatch(self):
-        if self.msg.tipo != "button_reply":
+
+        if self.msg.tipo != TypeMessage.BUTTON:
             self._use_botoes_msg()
             return
         
-        if self.msg.id_botao == "tomador_confirmado":
-            self._tomador_confirmado()
-            return
-        
-        if self.msg.id_botao == "tomador_corrigir":
-            self._tomador_corrigir()
-            return
-        
-        else:
-            return
+        match self.msg.id_botao:
+            case BotaoId.TOMADOR_CONFIRMADO:
+                self._tomador_confirmado()
+                return
+            
+            case BotaoId.TOMADOR_CORRIGIR:
+                self._tomador_corrigir()
+                return
+            
+            case _:
+                raise ValueError(f"Button ID não encontrado: {self.msg.id_botao}")
 
     def _use_botoes_msg(self):
         self._notf_user(msg="Por favor, use os botões para confirmar ou corrigir o endereço.")
@@ -43,5 +45,6 @@ class ConfirmingService:
         self._notf_user(msg="Por favor, digite os dados do tomador novamente para podermos continuar")
 
     def _notf_user(self, msg: str) -> None:
+        MsgManager(self.ctx).save_msg(Role.AI, msg)
         #self.wpp.send_msg_text(self.msg.phone, msg)
         print(f"{msg}\n")

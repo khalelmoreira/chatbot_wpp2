@@ -134,6 +134,11 @@ class WhatsAppService:
                 }
             }
         }
+    
+    def format_msg_botao(self, text: str, botoes: list[BotaoResponse]) -> str:
+        opcoes = " / ".join(f"[{b.title}]" for b in botoes)
+        conteudo = f"{text}\n\nOpções: {opcoes}"
+        return conteudo
 
     def formatar_lista(lista: Sequence[str]) -> str:
         return "\n".join(f"- {item}" for item in lista)

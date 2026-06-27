@@ -29,17 +29,37 @@ class IncomingMessage:
     def is_duplicate(self, processed_ids: set[str]) -> bool:
         return self.msg_id in processed_ids
     
-#PAYLOAD RAW
+class TypeMessage(str, Enum):
+    TEXT     = "text"
+    IMAGE    = "image"
+    AUDIO    = "audio"
+    DOC      = "document"
+    VIDEO    = "video"
+    REACTION = "reaction"
+    BUTTON   = "button"
 
-TypeMessage = Literal [
-    "text",
-    "image",
-    "audio",
-    "document",
-    "video",
-    "reaction",
-    "button"
-]
+class BotaoId(str, Enum):
+    TOMADOR_CONFIRMADO  = "tomador_confirmado"
+    TOMADOR_CORRIGIR    = "tomador_corrigir"
+
+    ENDERECO_CONFIRMADO = "endereco_confirmado"
+    ENDERECO_CORRIGIR   = "endereco_corrigir"
+
+@dataclass
+class BotaoResponse:
+    id: str
+    title: str
+
+class Role(str, Enum):
+    USER = "USER"
+    AI   = "AI"
+
+@dataclass
+class MsgConvType:
+    conversation_id: int
+    role: Role
+    content: str
+    created_at: str
 
 class TextMessageDict(TypedDict):
     body: str
@@ -64,19 +84,3 @@ class ValueDict(TypedDict, total=False):
 
 class WebhookPayload(TypedDict):
     entry: list[dict]
-
-@dataclass
-class BotaoResponse:
-    id: str
-    title: str
-
-class Role(str, Enum):
-    USER = "USER"
-    AI   = "AI"
-
-@dataclass
-class MessageType:
-    conversation_id: int
-    role: Role
-    content: str
-    created_at: str

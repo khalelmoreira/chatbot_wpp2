@@ -1,6 +1,6 @@
-from src.types import ContextTomador, IncomingMessage, ConversationStatus
+from src.types import ContextTomador, IncomingMessage, ConversationStatus, Role
 from src.managers.conversations import ConversationManager
-from src.managers.
+from src.managers.messages.msg_manager import MsgManager
 from src.flows.active_flows import collecting_flow, confirming_flow, queued_flow
 from src.utils.debug import print_table
 
@@ -9,19 +9,23 @@ class DispatchService:
         self.ctx = ctx
         self.msg = msg
         self.conversation = ConversationManager(ctx)
-        
-    def dispatch(self):
-        print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
 
+    def criar_conv_se(self):
         conversa = self._get_conv
         if not conversa:
             self._save_msg()
+            return conversa
+
+        self._conv_id(conversa)
+        self._save_msg()
+        return conversa
+        
+    def dispatch(self, conversa):
+        print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
+
+        if not conversa:
             return self._collecting_flow()
-
-        else:
-            self._conv_id(conversa)
-            self._save_msg()
-
+        
         self.ctx.conv_status = self._status(conversa)
 
         dispatchers = {
@@ -36,7 +40,8 @@ class DispatchService:
         return dispatcher()
     
     def _save_msg(self):
-
+        msg = MsgManager(self.ctx)
+        msg.save_msg(role=Role.USER, content=self.ctx.text)
     
     def _collecting_flow(self):
         return collecting_flow(self.ctx, self.conversation)
@@ -57,6 +62,6 @@ class DispatchService:
         print(f"CTX.CONVERSATION_ID: {self.ctx.conversation_id}\n")
 
     def _status(self, conversa):
-        status = conversa["status"] if conversa else None
+        status = conversa["status"]
         print(f"STATUS: {status}\n")
         return status

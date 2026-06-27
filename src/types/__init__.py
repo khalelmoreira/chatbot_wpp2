@@ -16,14 +16,7 @@ from src.types.context import (
 
 # Enums (tipos de estado)
 from src.types.user import User, EstadoUser
-from src.types.wpp_msg import (
-    IncomingMessage,
-    AIResponse,
-    AIClient,
-    BotaoResponse,
-    MessageType,
-    Role,
-)
+from src.types.wpp_msg import IncomingMessage, AIResponse, AIClient, BotaoResponse, MsgConvType, Role, TypeMessage, BotaoId
 
 from src.types.conversation import ConversationStatus, StatusResumo, IntentTipo
 from src.types.nfse import NfNotFoundError, EventsNotaas, StatusInvoice, NfseStatus, PayloadNotaas
@@ -33,6 +26,8 @@ __all__ = [
     "ContextBase",
     "DadosPrestador",
     "DadosTomador",
+    "ContextTomador",
+    "ContextPrestador",
     "Tomador",
     "Servico",
     "Valores",
@@ -40,6 +35,8 @@ __all__ = [
     "Endereco",
     "ProjectPrestador",
     "ResultadoOnboarding",
+    "NfNotFoundError",
+    "StatusInvoice",
     # User
     "User",
     "EstadoUser",
@@ -57,5 +54,7 @@ __all__ = [
     "NfNotFoundError",
     "IntentTipo",
     "Role",
-    "MessageType",
+    "MsgConvType",
+    "TypeMessage",
+    "BotaoId",
 ]

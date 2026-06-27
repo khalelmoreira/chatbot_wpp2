@@ -1,7 +1,7 @@
 import json
 import time
 from src.database.db import marcar_processamento, marcar_emitido, marcar_erro, executar_modif
-from src.services.shared.emission_service import emitir_nf
+from chatbot_wpp2.src.services.notaas.emission_service import emitir_nf
 
 def processar_job(job):
 

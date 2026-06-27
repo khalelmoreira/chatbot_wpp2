@@ -1,7 +1,7 @@
 from src.types import ContextPrestador, EstadoUser, BotaoResponse
 from src.managers.prestador.prestador_manager import PrestadorManager
 from src.managers.users.user_manager import UserManager
-from src.services.shared.msg_service import WhatsAppService
+from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
 from src.services.validators.validador_prestador import ValidadorPrestador
 from src.utils.debug import print_table
 from src.utils.get_endereco import get_endereco_by_cep

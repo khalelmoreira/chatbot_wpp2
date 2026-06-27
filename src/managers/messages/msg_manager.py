@@ -20,7 +20,7 @@ class MsgManager:
             mensagens = [MessageType(**row) for row in rows]
             return list(reversed(mensagens))
 
-    def save_message(self, role: Role, content: str) -> int:
+    def save_msg(self, role: Role, content: str) -> int:
 
         row = self.db.fetchone_modif("""
             INSERT INTO messages (

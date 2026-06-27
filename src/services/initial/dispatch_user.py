@@ -1,6 +1,6 @@
 from src.types import EstadoUser, User, ContextTomador, DadosPrestador, DadosTomador, ContextPrestador, IncomingMessage
 from src.managers.users.user_manager import UserManager
-from src.services.shared.msg_service import WhatsAppService
+from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
 from chatbot_wpp2.src.flows.cadastro_flows.prestador_flow import prestador_flow
 from chatbot_wpp2.src.flows.cadastro_flows.endereco_flow import endereco_flow
 from src.flows.active_flows import active_flow

@@ -1,5 +1,5 @@
 from chatbot_wpp2.src.services.ai.ai_service import analisar_msg_nota_ai
-from src.services.shared.emission_service import emitir_nf
+from chatbot_wpp2.src.services.notaas.emission_service import emitir_nf
 
 mensagem = """
 emitir nota para empresa ACME LTDA

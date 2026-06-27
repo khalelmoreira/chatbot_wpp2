@@ -4,7 +4,7 @@ import logging
 import atexit
 from src.workers import EmissaoWorker, PollingWorker
 from src.webhooks import WppWebhook, NotaasWebhook
-from src.services.shared.security_service import verificar_ass
+from chatbot_wpp2.src.services.validators.security_service import verificar_ass
 from dotenv import load_dotenv
 from src.database.tables_db import init_db
 

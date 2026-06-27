@@ -1,7 +1,7 @@
 from src.managers.users.user_manager import UserManager
 from src.types import IncomingMessage, EstadoUser
 from chatbot_wpp2.src.flows.onboarding_flow import criar_project
-from src.services.shared.msg_service import WhatsAppService
+from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
 
 def endereco_flow(
         msg: IncomingMessage,
@@ -10,7 +10,7 @@ def endereco_flow(
     
     wpp = WhatsAppService()
     
-    if msg.tipo != "button_reply":
+    if msg.tipo != "button":
         #wpp.send_msg_text(msg.phone, "Por favor, use os botões para confirmar ou corrigir o endereço.")
         print(f"Por favor, use os botões para confirmar ou corrigir o endereço.\n")
         return

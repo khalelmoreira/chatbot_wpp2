@@ -1,89 +1,58 @@
 from src.services.validators.validador_tomador import ValidadorTomador
-from src.types import ContextTomador, ConversationStatus, IntentTipo
+from src.types import ContextTomador, ConversationStatus, IntentTipo, Role, BotaoResponse
 from src.managers.conversations.conversation_manager import ConversationManager
+from src.managers.messages.msg_manager import MsgManager
 from chatbot_wpp2.src.services.ai.ai_service import AIService, AIAssitant
 from src.services.onboarding.resumo import ResumoBuilder
-from src.services.shared.msg_service import WhatsAppService
+from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
 from src.utils.unpack_json import unpack_dados_db
 from src.utils.unflatten import unflatten
 from src.utils.debug import print_table
 
-class CollectingService:
-    def __init__(self, ctx: ContextTomador, conversation: ConversationManager):
-        self.ctx = ctx
-        self.conversation = conversation
-        self.validador = ValidadorTomador()
-        self.ai = AIService(self.ctx)
-        self.assistant = AIAssitant(self.ctx)
-        self.wpp = WhatsAppService()
-    
-    def _update_draft(self):
-        draft_dict = unflatten(self.ctx.validacao.validos)
-        self.conversation.update_draft(draft_dict)
-    
-    def _update_state(self):
-        self.conversation.update_state(ConversationStatus.CONFIRMING)
-
-    def _msg_confirm(self):
-        # send_msg_botao(
-        #     phone=self.ctx.user.phone,
-        #     text=(
-        #         f"*Dados do tomador:*\n\n"
-        #         f"{self.ctx.dados_completos.tomador.nome}\n"
-        #         f"{self.ctx.dados_completos.tomador.cnpj}\n"
-        #         f"{self.ctx.dados_completos.servico.descricao}\n"
-        #         f"{self.ctx.dados_completos.valores.total}\n"
-        #         f"Esses dados estão corretos?"
-        #     ),
-        #     botoes=[
-        #         BotaoResponse(id="tomador_confirmado", title="✅ Confirmar"),
-        #         BotaoResponse(id="tomador_corrigir", title="✏️ Corrigir"),
-        #     ],
-        # )
-
-        print(
-            f"*Dados do tomador:*\n\n"
-            f"{self.ctx.dados_completos.tomador.nome}\n"
-            f"{self.ctx.dados_completos.tomador.cnpj}\n"
-            f"{self.ctx.dados_completos.servico.descricao}\n"
-            f"{self.ctx.dados_completos.valores.total}\n"
-            f"Esses dados estão corretos?"
-        )
-        print_table(table_name="conversations", where=self.ctx.user.phone)
-
-    def _incompleto(self):
-        pendencias = (self.ctx.validacao.invalidos + self.ctx.validacao.faltantes)
-        #self.wpp.send_msg_text(ctx.user.phone, "Parece que ficou faltando esses dados:", pendencias)
-        print(f"Parece que ficou faltando esses dados:")
-        print(f"pendencias: {pendencias}\n")
+def notf_user(msg: str) -> None:
+    #self.wpp.send_msg_text(self.msg.phone, msg)
+    print(f"{msg}\n")
 
 class IntentService:
     def __init__(self, ctx: ContextTomador, conversation: ConversationManager):
         self.ctx = ctx
         self.assistant = AIAssitant(ctx)
         self.conversation = conversation
-        self.resumo = ResumoBuilder(self.ctx, self.ctx.conv_status)
+        self.resumo = ResumoBuilder(ctx, ctx.conv_status)
+        self.msg = MsgManager(ctx)
 
-    def criar_conv_se(self):
+    def criar_conv_se(self) -> bool:
 
         if self.ctx.conversation_id is None:
-            return True
-        
-        intencao = self._intent()
+            intencao = self._intent()
 
-        handlers = {
-            IntentTipo.EMITIR:   self._emitir,
-            IntentTipo.CONSULTA: self._consulta,
-            IntentTipo.NENHUM:   self._no_intent,
-        }
-        handler = handlers.get(intencao)
-        if not handler:
-            raise ValueError(f"Intenção de usuario não tratada: {intencao}")
-        return handler()
+            match intencao:
+                case IntentTipo.EMITIR:
+                    self.ctx.conversation_id = self.conversation.create_conversation()
+                    return True
+                
+                case IntentTipo.CONSULTA:
+
+                    resumo_data = self.resumo.resumo_status()
+                    response = self.assistant.status_response(resumo_data)
+
+                    self.msg.save_msg(role=Role.AI, content=response)
+                    notf_user(response)
+                    return False
+                
+                case IntentTipo.NENHUM:
+
+                    response = self.assistant.no_intent_response()
+                    self.msg.save_msg(role=Role.AI, content=response)
+
+                    notf_user(response)
+                    return False
+                
+                case _:
+                    raise ValueError(f"Intenção de usuario não tratada: {intencao}")
     
-    def handle_active(self, extraction: ExtractionService) -> bool:
-        extraction.extract_e_merge()
-
+        return True
+    
     def _intent(self):
         intencao = self.assistant.classificar_intent()
         print(f"INTENCAO: {intencao}\n")
@@ -94,18 +63,7 @@ class IntentService:
         #self.wpp.send_msg_text(self.ctx.user.phone, response)
         print(f"RESPONSE: {response}\n")
         return False
-
-    def _emitir(self) -> bool:
-        self.ctx.conversation_id = self.conversation.create_conversation()
-        return True
     
-    def _consulta(self) -> bool:
-        resumo_data = self.resumo.resumo_status()
-        response = self.assistant.status_response(resumo_data)
-        _notf_user(response)
-        return False
-    
-
 class ExtractionService:
     def __init__(self, ctx: ContextTomador, conversation: ConversationManager):
         self.ctx = ctx
@@ -130,11 +88,12 @@ class ValidationService:
         self.ctx = ctx
         self.validador = ValidadorTomador()
         self.conversation = conversation
+        self.msg = MsgManager(ctx)
+        self.wpp = WhatsAppService()
 
     def valido_e_completo(self):
 
         self.validador.validar(self.ctx)
-        print(f"VALIDACAO: {self.ctx.validacao}\n")
 
         if self.ctx.validacao.validos:
             self._update_draft()
@@ -150,3 +109,59 @@ class ValidationService:
         
         print(f"SEM DADOS VALIDOS\nVALIDOS: {self.ctx.validacao.validos}\n")
         return
+    
+    def _update_draft(self):
+        draft_dict = unflatten(self.ctx.validacao.validos)
+        self.conversation.update_draft(draft_dict)
+        print(f"VALIDACAO: {self.ctx.validacao}\n")
+    
+    def _update_state(self):
+        self.conversation.update_state(ConversationStatus.CONFIRMING)
+
+    def _msg_confirm(self):
+
+        confirmar = BotaoResponse(id="tomador_confirmado", title="✅ Confirmar")
+        corrigir = BotaoResponse(id="tomador_corrigir", title="✏️ Corrigir")
+
+        msg_button = self.wpp.format_msg_botao(
+            text=(f"*Dados do tomador:*\n\n"
+            f"{self.ctx.dados_completos.tomador.nome}\n"
+            f"{self.ctx.dados_completos.tomador.cnpj}\n"
+            f"{self.ctx.dados_completos.servico.descricao}\n"
+            f"{self.ctx.dados_completos.valores.total}\n"
+            f"Esses dados estão corretos?"
+            ),
+            botoes=[confirmar, corrigir],
+        )
+        self.msg.save_msg(Role.AI, msg_button)
+
+        # send_msg_botao(
+        #     phone=self.ctx.user.phone,
+        #     text=(
+        #         f"*Dados do tomador:*\n\n"
+        #         f"{self.ctx.dados_completos.tomador.nome}\n"
+        #         f"{self.ctx.dados_completos.tomador.cnpj}\n"
+        #         f"{self.ctx.dados_completos.servico.descricao}\n"
+        #         f"{self.ctx.dados_completos.valores.total}\n"
+        #         f"Esses dados estão corretos?"
+        #     ),
+        #     botoes=[confirmar, corrigir],
+        # )
+        
+
+        print(
+            f"*Dados do tomador:*\n\n"
+            f"{self.ctx.dados_completos.tomador.nome}\n"
+            f"{self.ctx.dados_completos.tomador.cnpj}\n"
+            f"{self.ctx.dados_completos.servico.descricao}\n"
+            f"{self.ctx.dados_completos.valores.total}\n"
+            f"Esses dados estão corretos?"
+        )
+        print_table(table_name="conversations", where=self.ctx.user.phone)
+
+    def _incompleto(self):
+        pendencias = (self.ctx.validacao.invalidos + self.ctx.validacao.faltantes)
+        self.msg.save_msg(Role.AI, f"Parece que ficou faltando esses dados: {pendencias}")
+        #self.wpp.send_msg_text(ctx.user.phone, "Parece que ficou faltando esses dados:", pendencias)
+        print(f"Parece que ficou faltando esses dados:")
+        print(f"pendencias: {pendencias}\n")

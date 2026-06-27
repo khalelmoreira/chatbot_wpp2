@@ -1,4 +1,4 @@
-from src.services.shared.msg_service import WhatsAppService
+from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
 from src.managers.nfs.nf_manager import NfsManager
 
 class NfseService:
