@@ -1,7 +1,13 @@
-from src.models.prompts.nfse_prompts import PROMPT_EXTRACT_NFSE_GEMMA
+from src.models.prompts.nfse_prompts import (
+    PROMPT_EXTRACT_NFSE_GEMMA,
+    PROMPT_INCOMPLETE_RESPONSE,
+    PROMPT_INVALIDOS_RESPONSE,
+    PROMPT_NO_DATA_RESPONSE,
+)
 from src.models.prompts.onboard_prompts import (
     PROMPT_CONSULTA,
     PROMPT_REF_PAST,
+    PROMPT_HISTORY_RESPONSE,
 )
 
 from src.models.prompts.conversation_prompts import (
@@ -23,4 +29,8 @@ __all__ = [
     "PROMPT_HAS_INTENT",
     "PROMPT_PARECE_PERGUNTA",
     "PROMPT_REF_PAST",
+    "PROMPT_HISTORY_RESPONSE",
+    "PROMPT_INCOMPLETE_RESPONSE",
+    "PROMPT_INVALIDOS_RESPONSE",
+    "PROMPT_NO_DATA_RESPONSE",
 ]

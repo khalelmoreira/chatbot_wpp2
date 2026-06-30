@@ -164,7 +164,7 @@ def init_db():
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id        INTEGER NOT NULL REFERENCES prestador(id),
             phone               TEXT NOT NULL REFERENCES users(phone),
-            status              TEXT NOT NULL DEFAULT 'COLLECTING', -- COLLECTING | CONFIRMING | QUEUED | DONE | ERROR | CANCELLED
+            status              TEXT NOT NULL,                          -- COLLECTING | CONFIRMING | QUEUED | DONE | ERROR | CANCELLED
             draft_json          TEXT NOT NULL DEFAULT '{}',
             created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -174,8 +174,8 @@ def init_db():
     db.executar_modif("""
         CREATE TABLE IF NOT EXISTS messages (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            prestador_id    INTEGER NOT NULL REFERENCES prestador(id),
             phone           TEXT NOT NULL REFERENCES users(phone),
-            conversation_id INTEGER REFERENCES conversations(id) ON DELETE CASCADE,
             role            TEXT NOT NULL, -- 'user' | 'assistant'
             content         TEXT NOT NULL,
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -196,11 +196,6 @@ def init_db():
     db.executar_modif("""
         CREATE INDEX IF NOT EXISTS idx_conversations_wpp_status
             ON conversations(phone, status)
-    """)
-
-    db.executar_modif("""
-        CREATE INDEX IF NOT EXISTS idx_messages_conversations
-            ON messages(conversation_id)
     """)
 
     db.executar_modif("""

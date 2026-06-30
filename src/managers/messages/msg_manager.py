@@ -24,10 +24,10 @@ class MsgManager:
 
         self.db.fetchone_modif("""
             INSERT INTO messages (
-                conversation_id,
+                prestador_id,
                 role,
                 content,
                 phone
             )
             VALUES (?, ?, ?, ?)
-        """, (self.ctx.conversation_id, role, content, self.ctx.user.phone))
+        """, (self.ctx.user.id, role, content, self.ctx.user.phone))

@@ -32,7 +32,10 @@ class OnboardingManager:
                 status,
                 conversation_id,
                 tentativas,
-                payload_enviado,
+                nome,
+                cnpj,
+                descricao_servico,
+                valor_total,
                 requested_at,
                 created_at,
                 invoice_id,
@@ -44,7 +47,7 @@ class OnboardingManager:
             FROM nfs
             WHERE prestador_id = ?
                 AND status IN ('DONE', 'ERROR', 'CANCELLED')
-            ORDER BY created_at DESC
+            ORDER BY created_at ASC
             LIMIT ?
         """, (self.ctx.user.id, limit))
     
@@ -56,6 +59,6 @@ class OnboardingManager:
                 content
             FROM messages
             WHERE prestador_id = ?
-            ORDER BY id DESC
+            ORDER BY id ASC
             LIMIT ?
         """, (self.ctx.user.id, limit))

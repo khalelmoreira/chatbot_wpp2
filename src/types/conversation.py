@@ -1,5 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
+from src.types import Tomador, Servico, Valores
 
 class ConversationStatus(str, Enum):
     COLLECTING  = "COLLECTING"
@@ -37,7 +38,10 @@ class HistoryResumo:
     status: str | None = None
     conversation_id: int | None = None
     tentativas: int | None = None
-    payload_enviado: dict | None = None
+    nome: str | None = None
+    cnpj: str | None = None
+    descricao_servico: str | None = None
+    valor_total: str | None = None
     requested_at: str | None = None
     created_at: str | None = None
     invoice_id: str | None = None
@@ -46,3 +50,8 @@ class HistoryResumo:
     erro_code: str | None = None
     erro_msg: str | None = None
     cancelled_at: str | None = None
+
+@dataclass
+class MsgResumo:
+    role: str | None = None
+    content: str | None = None

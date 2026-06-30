@@ -1,6 +1,8 @@
+import json
+import logging
 from src.integrations.ai_client import GemmaClient
-from src.types import ContextTomador, DadosTomador, StatusResumo, IntentTipo, HistoryResumo
-from src.utils.build_prompt import build_prompt
+from src.types import ContextTomador, DadosTomador, StatusResumo, IntentTipo, HistoryResumo, MsgResumo
+from src.utils.build_prompt import build_list_prompt
 from src.services.ai.ai_extractors import (
     AIExtractor,
     parse_tomador_data,
@@ -13,7 +15,13 @@ from src.models.prompts import (
     PROMPT_CLASSIFICA_INTENT,
     PROMPT_PARECE_PERGUNTA,
     PROMPT_REF_PAST,
+    PROMPT_HISTORY_RESPONSE,
+    PROMPT_INCOMPLETE_RESPONSE,
+    PROMPT_INVALIDOS_RESPONSE,
+    PROMPT_NO_DATA_RESPONSE,
 )
+
+logger = logging.getLogger(__name__)
 
 class AIService:
     def __init__(self, ctx: ContextTomador):
@@ -46,8 +54,6 @@ class AIService:
         
     def no_intent_response(self) -> str:
 
-        print(f"NO INTENT RESPONSE\n")
-
         try:
             return self.client.extract_text(
                 system_prompt=str(PROMPT_NO_INTENT_RESPONSE.system),
@@ -57,6 +63,38 @@ class AIService:
             print(f"Erro ao responder: {e}")
             return "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."
         
+    def incomplete_response(self) -> str:
+        try:
+            prompt = build_list_prompt(PROMPT_INCOMPLETE_RESPONSE, [self.ctx.validacao.validos, self.ctx.validacao.faltantes])
+            return self.client.extract_text(
+                system_prompt=prompt,
+                user_msg=self.ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+        
+    def invalidos_response(self) -> str:
+        try:
+            prompt = build_list_prompt(PROMPT_INVALIDOS_RESPONSE, (self.ctx.validacao.invalidos,))
+            return self.client.extract_text(
+                system_prompt=prompt,
+                user_msg=self.ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+        
+    def no_data_response(self) -> str:
+        try:
+            return self.client.extract_text(
+                system_prompt=PROMPT_NO_DATA_RESPONSE,
+                user_msg=self.ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+        
 class AIAssitant(AIService):
     def __init__(self, ctx: ContextTomador):
         super().__init__(ctx)
@@ -64,7 +102,7 @@ class AIAssitant(AIService):
     def status_response(self, resumo: StatusResumo):
         try:
             response = self.client.extract_text(
-                system_prompt=build_prompt(
+                system_prompt=build_list_prompt(
                     template=PROMPT_CONSULTA.system,
                     params=self._resumo_to_params(resumo)
                 ),
@@ -112,13 +150,58 @@ class AIAssitant(AIService):
             print(f"Erro ao identificar referencia_passado: {e}")
             return False
         
-    def history_response(self, resumo: HistoryResumo):
+    def history_response(self, nf_resumo: list[HistoryResumo] | None, msg_resumo: list[MsgResumo] | None):
+
+        print(f"ENTROU EM HISTORY_RESPONSE\n")
         try:
+            nf_history_str = self._nf_history_to_str(nf_resumo)
+            msg_history_str = self._msg_history_to_str(msg_resumo)
+            prompt = build_list_prompt(PROMPT_HISTORY_RESPONSE.system, [nf_history_str, msg_history_str])
+            print(f"NF_HISTORY_STR: \n{nf_history_str}\n")
+            print(f"MSG_HISTORY_STR: \n{msg_history_str}\n")
+
             response = self.client.extract_text(
-                system_prompt=
-            )
+                system_prompt=prompt,
+                user_msg=self.ctx.text
+                )
+            return response
         
-    def _resumo_to_params(self, resumo: StatusResumo) -> dict:
+        except Exception as e:
+            logger.warning(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+
+    def _nf_history_to_str(self, nfs: list[HistoryResumo]) -> str:
+        rows = []
+        for i, nf in enumerate(nfs, 1):
+            row = (
+                f"{i}. Id: {nf.id} | "
+                f"Status: {nf.status} | "
+                f"Tentativas: {nf.tentativas} | "
+                f"Nome tomador: {nf.nome} | "
+                f"Cnpj tomador: {nf.cnpj} | "
+                f"Descricao do serviço: {nf.descricao_servico} | "
+                f"Valor total: {nf.valor_total} | "
+                f"Invoice_id: {nf.invoice_id or 'não informado'} | "
+                f"Criada em: {nf.created_at} | "
+                f"Emitida em: {nf.emitido_em or 'não informado'} | "
+                f"Codigo de erro: {nf.erro_code or 'não informado'} | "
+                f"Mensagem de erro: {nf.erro_msg or 'não informado'} | "
+                f"Cancelado em: {nf.cancelled_at or 'não informado'}"
+            )
+            rows.append(row)
+        return "\n".join(rows)
+        
+    def _msg_history_to_str(self, msgs: list[MsgResumo]) -> str:
+        rows = []
+        for i, msg in enumerate(msgs, 1):
+            row = (
+                f"{i}. Role: {msg.role} | "
+                f"Content: {msg.content} | "
+            )
+            rows.append(row)
+        return "\n".join(rows)
+        
+    def _resumo_to_params(self, resumo: StatusResumo) -> list:
         return [
             resumo.nf_status or "NENHUMA",
             resumo.erro_msg or "nenhum",

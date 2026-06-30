@@ -15,7 +15,7 @@ class ResultadoValidacao:
 
     @property
     def is_complete(self) -> bool:
-        return not self.invalidos and not self.faltantes
+        return not self.faltantes
 
 @dataclass
 class ContextBase(Generic[T]):

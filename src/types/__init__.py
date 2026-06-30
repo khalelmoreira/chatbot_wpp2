@@ -32,6 +32,7 @@ from src.types.conversation import (
     StatusResumo,
     IntentTipo,
     HistoryResumo,
+    MsgResumo,
 )
 from src.types.nfse import (
     NfNotFoundError,
@@ -78,4 +79,5 @@ __all__ = [
     "TypeMessage",
     "BotaoId",
     "HistoryResumo",
+    "MsgResumo",
 ]

@@ -1,4 +1,5 @@
-from src.types import ContextTomador, ConversationStatus, StatusResumo, HistoryResumo
+import sqlite3
+from src.types import ContextTomador, ConversationStatus, StatusResumo, HistoryResumo, MsgResumo
 from src.managers.conversations import ConversationManager, OnboardingManager
 
 class ResumoBuilder:
@@ -42,24 +43,30 @@ class ResumoBuilder:
             emitido_em=conv.get("emitido_em"),
         )
     
-    def _get_history(self):
-        return dict(self.on_manager.get_nf_history(limit=5))
-    
-    def resumo_history(self) -> HistoryResumo:
-        history = self._get_history()
-        
+    def resumo_nfs_history(self) -> list[HistoryResumo]:
+        rows = self.on_manager.get_nf_history(limit=5)
+        return [self._row_to_resumo(row) for row in rows]
+
+    def resumo_msg_history(self) -> list[MsgResumo]:
+        rows = self.on_manager.get_msg_history(limit=5)
+        return [MsgResumo(role=row["role"], content=row["content"]) for row in rows]
+
+    def _row_to_resumo(self, row: sqlite3.Row) -> HistoryResumo:
         return HistoryResumo(
-            id=history.get("id"),
-            status=history.get("status"),
-            conversation_id=history.get("conversation_id"),
-            tentativas=history.get("tentativas"),
-            payload_enviado=history.get("payload_enviado"),
-            requested_at=history.get("requested_at"),
-            created_at=history.get("created_at"),
-            invoice_id=history.get("invoice_id"),
-            emitido_em=history.get("emitido_em"),
-            issued_at=history.get("issued_at"),
-            erro_code=history.get("erro_code"),
-            erro_msg=history.get("erro_msg"),
-            cancelled_at=history.get("cancelled_at"),
+            id=row["id"],
+            status=row["status"],
+            conversation_id=row["conversation_id"],
+            tentativas=row["tentativas"],
+            nome=row["nome"],
+            cnpj=row["cnpj"],
+            descricao_servico=row["descricao_servico"],
+            valor_total=row["valor_total"],
+            requested_at=row["requested_at"],
+            created_at=row["created_at"],
+            invoice_id=row["invoice_id"],
+            emitido_em=row["emitido_em"],
+            issued_at=row["issued_at"],
+            erro_code=row["erro_code"],
+            erro_msg=row["erro_msg"],
+            cancelled_at=row["cancelled_at"],
         )

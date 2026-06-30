@@ -4,6 +4,7 @@ from src.managers.messages.msg_manager import MsgManager
 from src.flows.active_flows.collecting_flow import collecting_flow
 from src.flows.active_flows.confirming_flow import confirming_flow
 from src.flows.active_flows.queued_flow import queued_flow
+from src.flows.active_flows.idle_flow import idle_flow
 from src.utils.debug import print_table
 
 class ConvActiveService:
@@ -45,8 +46,7 @@ class DispatchActiveService:
         print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
 
         if not conversa:
-            print(f"-> COLLECTING FLOW\n")
-            return self._collecting_flow()
+            return idle_flow(self.ctx, self.conversation)
         
         self.ctx.conv_status = self._status(conversa)
 
@@ -59,7 +59,7 @@ class DispatchActiveService:
         dispatcher = dispatchers.get(self.ctx.conv_status)
         print(dispatcher)
         if dispatcher is None:
-            raise ValueError(f"Estado não mapeado no fluxo: {self.ctx.conv_status}")
+            return idle_flow(self.ctx, self.conversation)
         return dispatcher()
     
     
