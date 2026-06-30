@@ -2,9 +2,9 @@ from src.services.validators.validador_tomador import ValidadorTomador
 from src.types import ContextTomador, ConversationStatus, IntentTipo, Role, BotaoResponse
 from src.managers.conversations.conversation_manager import ConversationManager
 from src.managers.messages.msg_manager import MsgManager
-from chatbot_wpp2.src.services.ai.ai_service import AIService, AIAssitant
+from src.services.ai.ai_service import AIService, AIAssitant
 from src.services.onboarding.resumo import ResumoBuilder
-from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
+from src.services.wpp.msg_service import WhatsAppService
 from src.utils.unpack_json import unpack_dados_db
 from src.utils.unflatten import unflatten
 from src.utils.debug import print_table
@@ -33,7 +33,16 @@ class IntentService:
                 
                 case IntentTipo.CONSULTA:
 
+                    if self.assistant.ref_past():
+                        resumo_data = self.resumo.resumo_history()
+                        print(f"RESUMO: {resumo_data}\n")
+                        response = self.assistant.status_response(resumo_data)
+                        self.msg.save_msg(role=Role.AI, content=response)
+                        notf_user(response)
+                        return False
+
                     resumo_data = self.resumo.resumo_status()
+                    print(f"RESUMO: {resumo_data}\n")
                     response = self.assistant.status_response(resumo_data)
 
                     self.msg.save_msg(role=Role.AI, content=response)
@@ -72,7 +81,7 @@ class ExtractionService:
 
     def extract_e_merge(self):
 
-        self.ai.extract_nfse_data(self.ctx)
+        self.ai.extract_nfse_data()
         print(f"DADOS NOVOS: {self.ctx.dados_novos}\n")
 
         draft = self.conversation.get_draft()

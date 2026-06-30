@@ -1,6 +1,6 @@
 from src.managers.users.user_manager import UserManager
 from src.types import IncomingMessage
-from chatbot_wpp2.src.services.initial.dispatch_user import DispatchUser
+from src.services.initial.dispatch_user import DispatchUser
 from src.services.initial.user_exists import user_exists
 from src.utils.debug import print_table
 

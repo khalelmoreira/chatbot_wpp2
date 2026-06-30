@@ -1,7 +1,7 @@
 from src.managers.users.user_manager import UserManager
 from src.types import IncomingMessage, EstadoUser
-from chatbot_wpp2.src.flows.onboarding_flow import criar_project
-from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
+from src.flows.active_flows.onboarding_flow import criar_project
+from src.services.wpp.msg_service import WhatsAppService
 
 def endereco_flow(
         msg: IncomingMessage,

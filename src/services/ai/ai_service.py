@@ -1,7 +1,7 @@
 from src.integrations.ai_client import GemmaClient
-from src.types import ContextTomador, DadosTomador, StatusResumo, IntentTipo
+from src.types import ContextTomador, DadosTomador, StatusResumo, IntentTipo, HistoryResumo
 from src.utils.build_prompt import build_prompt
-from chatbot_wpp2.src.services.ai.ai_extractors import (
+from src.services.ai.ai_extractors import (
     AIExtractor,
     parse_tomador_data,
 )
@@ -12,6 +12,7 @@ from src.models.prompts import (
     PROMPT_CONSULTA,
     PROMPT_CLASSIFICA_INTENT,
     PROMPT_PARECE_PERGUNTA,
+    PROMPT_REF_PAST,
 )
 
 class AIService:
@@ -22,12 +23,13 @@ class AIService:
         self.ctx = ctx
 
     def extract_nfse_data(self) -> None:
-        self.ctx.dados_novos = self.extractor(
+        extractor = self.extractor(
             client=self.client,
             prompt=PROMPT_EXTRACT_NFSE_GEMMA,
             output_type=DadosTomador,
             parser=parse_tomador_data
         )
+        self.ctx.dados_novos = extractor.extract(self.ctx.text)
 
     def has_intent(self) -> bool:
 
@@ -48,7 +50,7 @@ class AIService:
 
         try:
             return self.client.extract_text(
-                system_prompt=str(PROMPT_NO_INTENT_RESPONSE),
+                system_prompt=str(PROMPT_NO_INTENT_RESPONSE.system),
                 user_msg=self.ctx.text
             )
         except Exception as e:
@@ -60,13 +62,13 @@ class AIAssitant(AIService):
         super().__init__(ctx)
         
     def status_response(self, resumo: StatusResumo):
-
         try:
             response = self.client.extract_text(
                 system_prompt=build_prompt(
                     template=PROMPT_CONSULTA.system,
                     params=self._resumo_to_params(resumo)
-                )
+                ),
+                user_msg=self.ctx.text
             )
             return response
         
@@ -77,7 +79,7 @@ class AIAssitant(AIService):
     def classificar_intent(self) -> IntentTipo:
         try:
             response = self.client.extract_text(
-                system_prompt=PROMPT_CLASSIFICA_INTENT,
+                system_prompt=PROMPT_CLASSIFICA_INTENT.system,
                 user_msg=self.ctx.text
             )
             return IntentTipo(response.strip().upper())
@@ -89,7 +91,7 @@ class AIAssitant(AIService):
     def parece_pergunta(self) -> bool:
         try:
             response = self.client.extract_text(
-                system_prompt=PROMPT_PARECE_PERGUNTA,
+                system_prompt=PROMPT_PARECE_PERGUNTA.system,
                 user_msg=self.ctx.text
             )
             return response.strip().lower().startswith("true")
@@ -98,17 +100,33 @@ class AIAssitant(AIService):
             print(f"Erro ao classificar parece_pergunta: {e}")
             return False
         
+    def ref_past(self) -> bool:
+        try:
+            response = self.client.extract_text(
+                system_prompt=PROMPT_REF_PAST.system,
+                user_msg=self.ctx.text
+            )
+            return response.strip().lower().startswith("true")
+        
+        except Exception as e:
+            print(f"Erro ao identificar referencia_passado: {e}")
+            return False
+        
+    def history_response(self, resumo: HistoryResumo):
+        try:
+            response = self.client.extract_text(
+                system_prompt=
+            )
+        
     def _resumo_to_params(self, resumo: StatusResumo) -> dict:
         return [
-            self.resumo.nf_status or "NENHUMA",
-            self.resumo.erro_msg or "nenhum",
-            self.resumo.created_at or "—",
-            self.resumo.updated_at or "—",
-            self.resumo.invoice_id or "—",
-            self.resumo.draft or "_",
-            self.resumo.requested_at or "_",
-            self.resumo.cancelled_at or "_",
-            self.resumo.emitido_em or "_",
-            self.resumo.created_at or '—',
-            self.resumo.erro_msg or 'erro desconhecido',
+            resumo.nf_status or "NENHUMA",
+            resumo.erro_msg or "nenhum",
+            resumo.created_at or "—",
+            resumo.updated_at or "—",
+            resumo.invoice_id or "—",
+            resumo.draft or "_",
+            resumo.requested_at or "_",
+            resumo.cancelled_at or "_",
+            resumo.emitido_em or "_",
         ]

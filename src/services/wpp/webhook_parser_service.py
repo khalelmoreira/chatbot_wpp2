@@ -1,6 +1,6 @@
 from typing import Optional
 from src.types import IncomingMessage
-from chatbot_wpp2.src.services.ai.audio_service import transcrever_audio_wpp
+from src.services.ai.audio_service import transcrever_audio_wpp
 
 class WhatsappWebhookParser:
     def __init__(self, payload):

@@ -10,7 +10,6 @@ load_dotenv()
 class WppWebhook:
     def __init__(self, payload_raw):
         self.payload_raw = payload_raw
-        self.msg_manager = MsgManager()
 
     def wpp_webhook(self) -> Any:
 

@@ -32,7 +32,6 @@ class ConversationManager:
         return row["status"]
 
     def get_ativa(self) -> Optional[sqlite3.Row]:
-        # Retorna a conversa ativa do número, ou None se estiver em IDLE
 
         return self.db.fetchone("""
             SELECT * FROM conversations

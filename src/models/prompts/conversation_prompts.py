@@ -89,31 +89,29 @@ PROMPT_CLASSIFICA_INTENT = AIPrompt(
     model="google/gemma-4-e4b",
     description="classifica se usuario tem intençao de emitir ou tirar duvida",
     system="""
-    Você classifica mensagens de WhatsApp de um prestador de serviços que usa um \
-    sistema de emissão de notas fiscais (NFS-e).
+    Responda APENAS com uma palavra: EMITIR, CONSULTA ou NENHUM.
 
-    Classifique a mensagem do usuário em EXATAMENTE uma das categorias abaixo. \
-    Responda APENAS com a palavra da categoria, sem pontuação, sem explicação.
+    Exemplos:
+    "quero emitir uma nota" → EMITIR
+    "preciso fazer uma nf pro João" → EMITIR
+    "500 reais de consultoria pra empresa X" → EMITIR
+    "nota para CNPJ 12.345.678/0001-99" → EMITIR
+    "cadê minha nota?" → CONSULTA
+    "já foi emitida?" → CONSULTA
+    "por que deu erro?" → CONSULTA
+    "como faço pra emitir?" → CONSULTA
+    "quanto tempo demora?" → CONSULTA
+    "oi" → NENHUM
+    "bom dia" → NENHUM
+    "obrigado" → NENHUM
+    "tudo bem?" → NENHUM
 
-    EMITIR
-    Use quando o usuário expressa intenção de emitir uma nova nota fiscal, \
-    mesmo que de forma indireta ou incompleta. Inclui início de dados fiscais \
-    (nome de cliente, CNPJ, valor, descrição de serviço) ou pedidos diretos.
-    Exemplos: "quero emitir uma nota", "preciso fazer uma nf pro João", \
-    "500 reais de consultoria pra empresa X"
+    Categorias:
+    EMITIR — intenção de criar uma nota fiscal, mesmo parcial ou indireta
+    CONSULTA — pergunta sobre status, histórico ou funcionamento, sem criar nota
+    NENHUM — saudação, agradecimento ou mensagem sem relação com notas fiscais
 
-    CONSULTA
-    Use quando o usuário pergunta sobre o andamento, status, histórico ou \
-    funcionamento de algo relacionado ao processo de emissão — sem intenção de \
-    iniciar uma nova emissão agora.
-    Exemplos: "cadê minha nota?", "já foi emitida?", "por que deu erro?", \
-    "quanto tempo demora", "como faço pra emitir", "minha última nota saiu certo?"
-
-    NENHUM
-    Use quando a mensagem não se encaixa em nenhuma das categorias acima: \
-    saudações, agradecimentos, conversa solta, ou qualquer coisa sem relação \
-    com emissão ou consulta de notas.
-    Exemplos: "oi", "obrigado", "bom dia", "tudo bem?"
+    Classifique a mensagem abaixo. Responda com uma única palavra.
     """
 )
 
@@ -122,22 +120,21 @@ PROMPT_PARECE_PERGUNTA = AIPrompt(
     model="google/gemma-4-e4b",
     description="identifica se a mensagem do usuario parece uma pergunta, retorna bool",
     system="""
-    Você analisa uma mensagem de WhatsApp dentro de uma conversa onde o usuário \
-    está fornecendo dados para emitir uma nota fiscal (NFS-e).
-
-    Responda APENAS "true" ou "false", sem pontuação, sem explicação.
-
-    Responda "true" quando a mensagem contém uma pergunta sobre status, prazo, \
-    erro, histórico, ou como o processo funciona — mesmo que também contenha \
-    algum dado fiscal junto.
-    Responda "false" quando a mensagem é só dado fiscal, correção de dado, ou \
-    ruído sem pergunta.
+    Responda APENAS "true" ou "false".
 
     Exemplos:
-    "500 reais de consultoria" -> false
-    "cadê minha nota anterior?" -> true
-    "esqueci, o cnpj certo é 12.345.678/0001-99" -> false
-    "quanto tempo demora isso" -> true
-    "cadê a nota antiga? aliás esse novo serviço é consultoria" -> true
+    "500 reais de consultoria" → false
+    "esqueci, o cnpj certo é 12.345.678/0001-99" → false
+    "tá certo assim?" → false
+    "quanto tempo demora isso?" → true
+    "cadê minha nota anterior?" → true
+    "por que deu erro?" → true
+    "cadê a nota antiga? aliás esse novo serviço é consultoria" → true
+
+    Regra: o usuário está perguntando sobre status, prazo, erro ou histórico?
+    true  — sim, mesmo que a mensagem também contenha dados fiscais
+    false — não; é só dado fiscal, correção ou confirmação
+
+    Responda com uma única palavra: true ou false.
     """
 )

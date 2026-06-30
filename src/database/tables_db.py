@@ -85,7 +85,7 @@ def init_db():
 
     db.executar_modif("""
         CREATE TABLE IF NOT EXISTS nfs (
-            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            id                 INTEGER PRIMARY KEY AUTOINCREMENT,
                    
             -- NOT NULL
                    
@@ -93,7 +93,7 @@ def init_db():
             tomador_id         INTEGER NOT NULL REFERENCES tomador(id),
             conversation_id    INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
             idempotency_key    TEXT UNIQUE NOT NULL,                                        -- sha256(payload + prestador_id)
-            status             TEXT NOT NULL DEFAULT 'QUEUED',                          -- COLLECTING | CONFIRMING | EMITTING | DONE | ERROR | CANCELLED
+            status             TEXT NOT NULL DEFAULT 'QUEUED',    -- QUEUED | DONE | ERROR | CANCELLED
             tentativas         INTEGER NOT NULL DEFAULT 0,
             payload_enviado    TEXT NOT NULL,                                               -- JSON completo
             requested_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -153,7 +153,7 @@ def init_db():
                    
             -- campos preenchidos por webhook/polling (cancelled)
             
-            processado_em TIMESTAMP,
+            processado_em      TIMESTAMP,
             cancelled_at       TEXT,
             cancel_xml_url     TEXT
         )
@@ -164,7 +164,7 @@ def init_db():
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id        INTEGER NOT NULL REFERENCES prestador(id),
             phone               TEXT NOT NULL REFERENCES users(phone),
-            status              TEXT NOT NULL DEFAULT 'COLLECTING', -- COLLECTING | CONFIRMING | EMITTING | DONE | ERROR | CANCELLED
+            status              TEXT NOT NULL DEFAULT 'COLLECTING', -- COLLECTING | CONFIRMING | QUEUED | DONE | ERROR | CANCELLED
             draft_json          TEXT NOT NULL DEFAULT '{}',
             created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -173,11 +173,12 @@ def init_db():
 
     db.executar_modif("""
         CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-            role TEXT NOT NULL, -- 'user' | 'assistant'
-            content TEXT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone           TEXT NOT NULL REFERENCES users(phone),
+            conversation_id INTEGER REFERENCES conversations(id) ON DELETE CASCADE,
+            role            TEXT NOT NULL, -- 'user' | 'assistant'
+            content         TEXT NOT NULL,
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
 

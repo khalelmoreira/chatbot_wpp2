@@ -1,12 +1,12 @@
 from src.database.db import DB
-from src.types import ContextTomador, Role, MessageType
+from src.types import ContextTomador, Role, MsgConvType
 
 class MsgManager:
     def __init__(self, ctx: ContextTomador):
         self.db  = DB()
         self.ctx = ctx
 
-    def get_msg_history(self, limite: int = 10) -> list[MessageType]:
+    def get_msg_history(self, limite: int = 10) -> list[MsgConvType]:
 
             rows = self.db.fetchall("""
                 SELECT
@@ -17,18 +17,17 @@ class MsgManager:
                 ORDER BY id DESC
                 LIMIT ?
             """, (self.ctx.conversation_id, limite))
-            mensagens = [MessageType(**row) for row in rows]
+            mensagens = [MsgConvType(**row) for row in rows]
             return list(reversed(mensagens))
 
-    def save_msg(self, role: Role, content: str) -> int:
+    def save_msg(self, role: Role, content: str) -> None:
 
-        row = self.db.fetchone_modif("""
+        self.db.fetchone_modif("""
             INSERT INTO messages (
                 conversation_id,
                 role,
-                content
+                content,
+                phone
             )
-            VALUE (?, ?, ?)
-            RETURNING id
-        """, (self.ctx.conversation_id, role, content))
-        return row["id"]
+            VALUES (?, ?, ?, ?)
+        """, (self.ctx.conversation_id, role, content, self.ctx.user.phone))

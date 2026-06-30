@@ -1,7 +1,7 @@
 import logging
 from config import MAX_TENTATIVAS
 from src.managers.nfs.nf_worker_manager import NfsWorkerManager
-from chatbot_wpp2.src.services.notaas.emission_service import emitir_nf
+from src.services.notaas.emission_service import emitir_nf
 from src.services.worker.fila_service import calcular_backoff
 
 logger = logging.getLogger(__name__)

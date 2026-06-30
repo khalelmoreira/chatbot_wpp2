@@ -1,10 +1,10 @@
 from src.types import EstadoUser, User, ContextTomador, DadosPrestador, DadosTomador, ContextPrestador, IncomingMessage
 from src.managers.users.user_manager import UserManager
-from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
-from chatbot_wpp2.src.flows.cadastro_flows.prestador_flow import prestador_flow
-from chatbot_wpp2.src.flows.cadastro_flows.endereco_flow import endereco_flow
+from src.services.wpp.msg_service import WhatsAppService
+from src.flows.cadastro_flows.prestador_flow import prestador_flow
+from src.flows.cadastro_flows.endereco_flow import endereco_flow
 from src.flows.active_flows import active_flow
-from chatbot_wpp2.src.flows.cadastro_flows.endereco_manu_flow import endereco_manu_flow
+from src.flows.cadastro_flows.endereco_manu_flow import endereco_manu_flow
 
 class DispatchUser:
     def __init__(self, manager: UserManager, user: User, msg: IncomingMessage):

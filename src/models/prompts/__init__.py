@@ -1,5 +1,8 @@
 from src.models.prompts.nfse_prompts import PROMPT_EXTRACT_NFSE_GEMMA
-from src.models.prompts.onboard_prompts import PROMPT_CONSULTA
+from src.models.prompts.onboard_prompts import (
+    PROMPT_CONSULTA,
+    PROMPT_REF_PAST,
+)
 
 from src.models.prompts.conversation_prompts import (
     PROMPT_HAS_INTENT,
@@ -19,4 +22,5 @@ __all__ = [
     "PROMPT_NO_INTENT_RESPONSE",
     "PROMPT_HAS_INTENT",
     "PROMPT_PARECE_PERGUNTA",
+    "PROMPT_REF_PAST",
 ]

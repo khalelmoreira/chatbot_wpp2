@@ -22,5 +22,40 @@ class OnboardingManager:
             WHERE c.prestador id = ?
             ORDER BY n.created_at DESC
             LIMIT 1
-        """, (self.ctx.user.id))
+        """, (self.ctx.user.id,))
     
+    def get_nf_history(self, limit: int = 5) -> list[sqlite3.Row]:
+        
+        return self.db.fetchall("""
+            SELECT
+                id,
+                status,
+                conversation_id,
+                tentativas,
+                payload_enviado,
+                requested_at,
+                created_at,
+                invoice_id,
+                emitido_em,
+                issued_at,
+                erro_code,
+                erro_msg,
+                cancelled_at
+            FROM nfs
+            WHERE prestador_id = ?
+                AND status IN ('DONE', 'ERROR', 'CANCELLED')
+            ORDER BY created_at DESC
+            LIMIT ?
+        """, (self.ctx.user.id, limit))
+    
+    def get_msg_history(self, limit: int = 5) -> list[sqlite3.Row]:
+
+        return self.db.fetchall("""
+            SELECT
+                role,
+                content
+            FROM messages
+            WHERE prestador_id = ?
+            ORDER BY id DESC
+            LIMIT ?
+        """, (self.ctx.user.id, limit))

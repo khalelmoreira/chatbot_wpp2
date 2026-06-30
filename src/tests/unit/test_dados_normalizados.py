@@ -1,4 +1,4 @@
-from chatbot_wpp2.src.services.ai.ai_service import analisar_msg_nota_ai
+from src.services.ai.ai_service import analisar_msg_nota_ai
 from src.tests.generators.gen_msg_ai import gen_msg_fake
 from src.services.validators.validador_tomador import normalizar_dados_nf
 

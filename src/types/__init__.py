@@ -16,10 +16,30 @@ from src.types.context import (
 
 # Enums (tipos de estado)
 from src.types.user import User, EstadoUser
-from src.types.wpp_msg import IncomingMessage, AIResponse, AIClient, BotaoResponse, MsgConvType, Role, TypeMessage, BotaoId
+from src.types.wpp_msg import (
+    IncomingMessage,
+    AIResponse,
+    AIClient,
+    BotaoResponse,
+    MsgConvType,
+    Role,
+    TypeMessage,
+    BotaoId,
+)
 
-from src.types.conversation import ConversationStatus, StatusResumo, IntentTipo
-from src.types.nfse import NfNotFoundError, EventsNotaas, StatusInvoice, NfseStatus, PayloadNotaas
+from src.types.conversation import (
+    ConversationStatus,
+    StatusResumo,
+    IntentTipo,
+    HistoryResumo,
+)
+from src.types.nfse import (
+    NfNotFoundError,
+    EventsNotaas,
+    StatusInvoice,
+    NfseStatus,
+    PayloadNotaas,
+)
 
 __all__ = [
     # Contexts
@@ -57,4 +77,5 @@ __all__ = [
     "MsgConvType",
     "TypeMessage",
     "BotaoId",
+    "HistoryResumo",
 ]

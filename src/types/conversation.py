@@ -30,3 +30,19 @@ class StatusResumo:
     requested_at: str | None = None
     cancelled_at: str | None = None
     emitido_em: str | None = None
+
+@dataclass
+class HistoryResumo:
+    id: int | None = None
+    status: str | None = None
+    conversation_id: int | None = None
+    tentativas: int | None = None
+    payload_enviado: dict | None = None
+    requested_at: str | None = None
+    created_at: str | None = None
+    invoice_id: str | None = None
+    emitido_em: str | None = None
+    issued_at: str | None = None
+    erro_code: str | None = None
+    erro_msg: str | None = None
+    cancelled_at: str | None = None

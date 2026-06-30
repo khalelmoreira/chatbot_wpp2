@@ -1,6 +1,6 @@
 from src.types import IncomingMessage, User
 from src.managers.users.user_manager import UserManager
-from chatbot_wpp2.src.services.wpp.msg_service import WhatsAppService
+from src.services.wpp.msg_service import WhatsAppService
 from src.utils.debug import print_table
 
 def user_exists(msg: IncomingMessage, user_manager: UserManager) -> User:

@@ -1,11 +1,12 @@
 from src.types import ContextTomador, IncomingMessage
-from src.services.active.dispatch_service import DispatchService
-from src.flows.active_flows import collecting_flow
+from src.services.active.active_service import DispatchActiveService, ConvActiveService
 
 def active_flow(ctx: ContextTomador, msg: IncomingMessage):
 
     print(f"\n\n----------------ACTIVE FLOW----------------\n\n")
 
-    dispatch = DispatchService(ctx, msg)
-    conv = dispatch.criar_conv_se()
-    dispatch.dispatch(conv)
+    conv = ConvActiveService(ctx)
+    dispatch = DispatchActiveService(ctx, msg)
+
+    conversa = conv.tem_conv()
+    dispatch.dispatch(conversa)
