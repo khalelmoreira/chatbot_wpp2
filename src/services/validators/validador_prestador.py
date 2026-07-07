@@ -98,23 +98,12 @@ def validar_cep(cep: str | None) -> bool:
     
     return cep.isdigit()
 
-def validar_inscricao_municipal(im: str | None) -> bool:
-
-    if not im:
-        return False
-    
-    if len(im) < 3:
-        return False
-    
-    return im.isalnum()
-
 _VALIDACOES_PRESTADOR: dict[str, callable[[Any], bool]] = {
     "cnpj": validar_cnpj,
     "razao_social": validar_razao_social,
     "email": validar_email,
     "regime_tributario": validar_reg_trib,
     "cep": validar_cep,
-    "inscricao_municipal": validar_inscricao_municipal,
 }
 
 class ValidadorPrestador:

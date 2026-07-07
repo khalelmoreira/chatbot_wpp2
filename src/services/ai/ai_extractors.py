@@ -41,7 +41,6 @@ def parse_prestador_data(data: dict) -> DadosPrestador:
         email=data.get("email"),
         regime_tributario=data.get("regime_tributario"),
         cep=data.get("cep"),
-        inscricao_municipal=data.get("inscricao_municipal")
     )
 
 def parse_tomador_data(data: dict) -> DadosTomador:

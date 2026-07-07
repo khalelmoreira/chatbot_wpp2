@@ -1,4 +1,4 @@
-from src.managers.users.user_manager import UserManager
+from chatbot_wpp2.src.managers.user_manager import UserManager
 from src.types import IncomingMessage
 from src.services.initial.dispatch_user import DispatchUser
 from src.services.initial.user_exists import user_exists

@@ -2,16 +2,11 @@ import os
 import hashlib
 import hmac
 
-WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET_NOTAAS")
-
-def verificar_ass(payload, assinatura):
-    assinatura_esperada = hmac.new(
-        WEBHOOK_SECRET.encode(),
-        payload,
-        hashlib.sha256
+def verificar_ass(payload_raw: bytes, assinatura_arrived: str) -> bool:
+    
+    secret = os.environ["WEBHOOK_SECRET_NOTAAS"].encode()
+    expected = "sha256=" + hmac.new(
+        secret, payload_raw, hashlib.sha256
     ).hexdigest()
-
-    return hmac.compare_digest(
-        assinatura_esperada,
-        assinatura
-    )
+    
+    return hmac.compare_digest(assinatura_arrived, expected)

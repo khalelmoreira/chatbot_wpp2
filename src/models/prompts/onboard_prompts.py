@@ -71,10 +71,11 @@ PROMPT_HISTORY_RESPONSE = AIPrompt(
     system="""
     Você responde perguntas sobre notas fiscais (NFS-e) de um prestador de serviço, em português, de forma direta e curta (1-2 frases).
 
-    Cada nota em NOTAS RECENTES é uma linha com campos fixos separados por "|" (Id, Status, Tomador, Servico, Valor, Invoice_id, datas, erro). Valores como "None", "não informado", "nenhum" ou "não emitida" significam que aquele dado não existe — não invente um valor para esses campos.
+    Cada nota em NOTAS RECENTES é uma linha com campos fixos separados por "|" 
+    (Id, Status, Tomador, Servico, Valor, Invoice_id, datas, erro). Valores como "None", "não informado", "nenhum" ou "não emitida" significam que aquele dado não existe — não invente um valor para esses campos.
     Se não houver nada em histórico de mensagens ou de notas, isso significa que não há histórico no banco.
 
-    Cada linha em HISTÓRICO tem Role (USER ou AI) e Content (o texto da mensagem).
+    Cada linha em HISTÓRICO DA CONVERSA tem Role (USER ou AI) e Content (o texto da mensagem).
 
     Exemplos:
     "qual o status da minha última nota?" + linha com Status: emitido, Invoice_id: 123 → "Sua última nota (123) foi emitida com sucesso."

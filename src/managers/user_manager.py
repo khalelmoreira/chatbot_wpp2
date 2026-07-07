@@ -1,13 +1,14 @@
-from typing import Optional
+import json
+from typing import Any
 from src.database.db import DB
-from src.types import User, EstadoUser
+from src.types import User, UserState
 
 class UserManager:
     def __init__(self, phone: str):
         self.db    = DB()
         self.phone = phone
 
-    def get_user(self) -> Optional[User]:
+    def get_user(self) -> User | None:
 
         row = self.db.fetchone("""
             SELECT id, phone, name, estado

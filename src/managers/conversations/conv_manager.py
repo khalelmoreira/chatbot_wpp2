@@ -1,11 +1,11 @@
 import json
 import sqlite3
-from typing import Optional, Any
+from typing import Any
 from src.types import ContextTomador
 from src.database.db import DB
 from src.utils.debug import print_table
 
-class ConversationManager:
+class ConvManager:
     def __init__(self, ctx: ContextTomador):
         self.db = DB()
         self.ctx = ctx
@@ -21,7 +21,7 @@ class ConversationManager:
             LIMIT 1;
         """, (self.ctx.user.id,))
 
-    def get_status(self):
+    def get_status(self) -> str:
 
         row = self.db.fetchone("""
             SELECT status FROM conversations
@@ -31,7 +31,7 @@ class ConversationManager:
 
         return row["status"]
 
-    def get_ativa(self) -> Optional[sqlite3.Row]:
+    def get_ativa(self) -> sqlite3.Row | None:
 
         return self.db.fetchone("""
             SELECT * FROM conversations

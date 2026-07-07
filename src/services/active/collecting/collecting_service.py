@@ -1,10 +1,9 @@
 from src.services.validators.validador_tomador import ValidadorTomador
-from src.types import ContextTomador, ConversationStatus, Role, BotaoResponse
-from src.managers.conversations.conversation_manager import ConversationManager
-from src.managers.messages.msg_manager import MsgManager
+from src.types import ContextTomador, ConversationStatus, Role, BotaoResponse, DadosTomador
+from chatbot_wpp2.src.managers.conversations.conv_manager import ConvManager
+from chatbot_wpp2.src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIService
 from src.services.wpp.msg_service import WhatsAppService
-from src.utils.unpack_json import unpack_dados_db
 from src.utils.unflatten import unflatten
 from src.utils.debug import print_table
 
@@ -13,7 +12,7 @@ def notf_user(msg: str) -> None:
     print(f"{msg}\n")
     
 class ExtractionService:
-    def __init__(self, ctx: ContextTomador, conversation: ConversationManager):
+    def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
         self.ai = AIService(ctx)
         self.conversation = conversation
@@ -24,7 +23,7 @@ class ExtractionService:
         print(f"DADOS NOVOS: {self.ctx.dados_novos}\n")
 
         draft = self.conversation.get_draft()
-        self.ctx.dados_db = unpack_dados_db(draft)
+        self.ctx.dados_db = DadosTomador.from_dict(draft)
         print(f"DADOS DRAFT:{self.ctx.dados_db}\n")
 
         self.ctx.dados_completos = self.ctx.dados_db.merge(self.ctx.dados_novos)
@@ -32,7 +31,7 @@ class ExtractionService:
 
 
 class ValidationService:
-    def __init__(self, ctx: ContextTomador, conversation: ConversationManager):
+    def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
         self.conversation = conversation
         self.ai = AIService(ctx)

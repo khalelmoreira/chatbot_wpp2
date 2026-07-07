@@ -4,9 +4,8 @@ import uuid
 import hashlib
 from src.models.aliquota_iss_constant import ALIQUOTA_ISS
 from src.database.db import DB
-from src.types import ContextTomador, DadosTomador, Tomador, Servico, Valores
+from src.types import ContextTomador, DadosTomador
 from src.utils.debug import print_table
-from src.utils.unpack_json import unpack_dados_db
 
 class TomadorManager:
     def __init__(self, ctx: ContextTomador):
@@ -18,7 +17,7 @@ class TomadorManager:
         prestador_id = self.ctx.user.id
         conversation_id = self.ctx.conversation_id
 
-        data = unpack_dados_db(draft)
+        data = DadosTomador.from_dict(draft)
 
         nome         = data.tomador.nome
         cnpj         = data.tomador.cnpj
@@ -118,24 +117,4 @@ class TomadorManager:
         data = json.loads(nf)
 
         print(f"nfse_drafts.loads: {data}\n")
-
-        nome = data.get("tomador", {}).get("nome")
-        cnpj = data.get("tomador", {}).get("cnpj")
-
-        descricao = data.get("servico", {}).get("descricao")
-        total = data.get("valores", {}).get("total")
-        aliquotaIss = data.get("valores", {}).get("aliquotaIss")
-
-        self.ctx.dados_db = DadosTomador(
-            tomador=Tomador(
-                nome=nome,
-                cnpj=cnpj
-            ),
-            servico=Servico(
-                descricao=descricao
-            ),
-            valores=Valores(
-                total=total,
-                aliquotaIss=aliquotaIss
-            )
-        )
+        self.ctx.dados_db = DadosTomador.from_dict(data)

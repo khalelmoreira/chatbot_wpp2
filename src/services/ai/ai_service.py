@@ -1,11 +1,12 @@
 import json
 import logging
 from src.integrations.ai_client import GemmaClient
-from src.types import ContextTomador, DadosTomador, StatusResumo, IntentTipo, HistoryResumo, MsgResumo
+from src.types import ContextTomador, ContextPrestador, DadosTomador, DadosPrestador, StatusResumo, IntentTipo, HistoryResumo, MsgResumo
 from src.utils.build_prompt import build_list_prompt
 from src.services.ai.ai_extractors import (
     AIExtractor,
     parse_tomador_data,
+    parse_prestador_data,
 )
 from src.models.prompts import (
     PROMPT_EXTRACT_NFSE_GEMMA,
@@ -19,32 +20,43 @@ from src.models.prompts import (
     PROMPT_INCOMPLETE_RESPONSE,
     PROMPT_INVALIDOS_RESPONSE,
     PROMPT_NO_DATA_RESPONSE,
+    PROMPT_EXTRACT_PREST_DATA,
+    PROMPT_INCOMPLETE_PREST_DATA_RESPONSE,
+    PROMPT_INVALIDOS_PREST_RESPONSE,
+    PROMPT_NO_DATA_PREST_RESPONSE,
 )
 
 logger = logging.getLogger(__name__)
 
 class AIService:
-    def __init__(self, ctx: ContextTomador):
-
+    def __init__(self):
         self.client = GemmaClient(model="google/gemma-4-e4b")
         self.extractor = AIExtractor
-        self.ctx = ctx
 
-    def extract_nfse_data(self) -> None:
+    def extract_nfse_data(self, ctx: ContextTomador) -> None:
         extractor = self.extractor(
             client=self.client,
-            prompt=PROMPT_EXTRACT_NFSE_GEMMA,
+            prompt=PROMPT_EXTRACT_NFSE_GEMMA.system,
             output_type=DadosTomador,
             parser=parse_tomador_data
         )
-        self.ctx.dados_novos = extractor.extract(self.ctx.text)
+        ctx.dados_novos = extractor.extract(ctx.text)
 
-    def has_intent(self) -> bool:
+    def extract_prest_data(self, ctx: ContextPrestador):
+        extractor = self.extractor(
+            client=self.client,
+            prompt=PROMPT_EXTRACT_PREST_DATA.system,
+            output_type=DadosPrestador,
+            parser=parse_prestador_data
+        )
+        ctx.dados_novos = extractor.extract(ctx.text)
+
+    def has_intent(self, ctx: ContextTomador) -> bool:
 
         try:
             response = self.client.extract_text(
-                system_prompt=str(PROMPT_HAS_INTENT),
-                user_msg=self.ctx.text
+                system_prompt=str(PROMPT_HAS_INTENT.system),
+                user_msg=ctx.text
             )
             return response.lower().startswith("true")
         
@@ -52,49 +64,85 @@ class AIService:
             print(f"Erro ao responder: {e}")
             return False
         
-    def no_intent_response(self) -> str:
+    def no_intent_response(self, ctx: ContextTomador) -> str:
 
         try:
             return self.client.extract_text(
                 system_prompt=str(PROMPT_NO_INTENT_RESPONSE.system),
-                user_msg=self.ctx.text
+                user_msg=ctx.text
             )
         except Exception as e:
             print(f"Erro ao responder: {e}")
             return "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."
         
-    def incomplete_response(self) -> str:
+    def incomplete_response(self, ctx: ContextTomador) -> str:
         try:
-            prompt = build_list_prompt(PROMPT_INCOMPLETE_RESPONSE, [self.ctx.validacao.validos, self.ctx.validacao.faltantes])
+            prompt = build_list_prompt(PROMPT_INCOMPLETE_RESPONSE.system, [ctx.validacao.validos, ctx.validacao.faltantes])
             return self.client.extract_text(
                 system_prompt=prompt,
-                user_msg=self.ctx.text
+                user_msg=ctx.text
             )
         except Exception as e:
             print(f"Erro ao responder: {e}")
             return "Não pude entender sua mensagem, tente novamente em alguns minutos."
         
-    def invalidos_response(self) -> str:
+    def incomplete_prest_response(self, ctx: ContextPrestador) -> str:
         try:
-            prompt = build_list_prompt(PROMPT_INVALIDOS_RESPONSE, (self.ctx.validacao.invalidos,))
+            prompt = build_list_prompt(PROMPT_INCOMPLETE_PREST_DATA_RESPONSE.system, [ctx.validacao.validos, ctx.validacao.faltantes])
             return self.client.extract_text(
                 system_prompt=prompt,
-                user_msg=self.ctx.text
+                user_msg=ctx.text
             )
         except Exception as e:
             print(f"Erro ao responder: {e}")
             return "Não pude entender sua mensagem, tente novamente em alguns minutos."
         
-    def no_data_response(self) -> str:
+    def invalidos_response(self, ctx: ContextTomador) -> str:
+        try:
+            prompt = build_list_prompt(PROMPT_INVALIDOS_RESPONSE.system, (ctx.validacao.invalidos,))
+            return self.client.extract_text(
+                system_prompt=prompt,
+                user_msg=ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+        
+    def invalidos_prest_response(self, ctx: ContextPrestador) -> str:
+        try:
+            prompt = build_list_prompt(PROMPT_INVALIDOS_PREST_RESPONSE.system, (ctx.validacao.invalidos,))
+            return self.client.extract_text(
+                system_prompt=prompt,
+                user_msg=ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+        
+    def no_data_response(self, ctx: ContextTomador) -> str:
         try:
             return self.client.extract_text(
-                system_prompt=PROMPT_NO_DATA_RESPONSE,
-                user_msg=self.ctx.text
+                system_prompt=PROMPT_NO_DATA_RESPONSE.system,
+                user_msg=ctx.text
             )
         except Exception as e:
             print(f"Erro ao responder: {e}")
             return "Não pude entender sua mensagem, tente novamente em alguns minutos."
         
+    def no_data_prest_response(self, ctx: ContextPrestador) -> str:
+        try:
+            return self.client.extract_text(
+                system_prompt=PROMPT_NO_DATA_PREST_RESPONSE.system,
+                user_msg=ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+
+
+
+
+
 class AIAssitant(AIService):
     def __init__(self, ctx: ContextTomador):
         super().__init__(ctx)
@@ -156,6 +204,7 @@ class AIAssitant(AIService):
         try:
             nf_history_str = self._nf_history_to_str(nf_resumo)
             msg_history_str = self._msg_history_to_str(msg_resumo)
+            
             prompt = build_list_prompt(PROMPT_HISTORY_RESPONSE.system, [nf_history_str, msg_history_str])
             print(f"NF_HISTORY_STR: \n{nf_history_str}\n")
             print(f"MSG_HISTORY_STR: \n{msg_history_str}\n")

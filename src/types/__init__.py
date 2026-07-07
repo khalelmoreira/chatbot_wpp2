@@ -15,7 +15,7 @@ from src.types.context import (
 )
 
 # Enums (tipos de estado)
-from src.types.user import User, EstadoUser
+from src.types.user import User, UserStatus
 from src.types.wpp_msg import (
     IncomingMessage,
     AIResponse,
@@ -35,11 +35,15 @@ from src.types.conversation import (
     MsgResumo,
 )
 from src.types.nfse import (
-    NfNotFoundError,
     EventsNotaas,
     StatusInvoice,
     NfseStatus,
     PayloadNotaas,
+)
+
+from src.types.exceptions import (
+    NfNotFoundError,
+    InvalidTransactionError,
 )
 
 __all__ = [
@@ -60,7 +64,7 @@ __all__ = [
     "StatusInvoice",
     # User
     "User",
-    "EstadoUser",
+    "UserStatus",
     # Conversation
     "IncomingMessage",
     "AIResponse",
@@ -80,4 +84,5 @@ __all__ = [
     "BotaoId",
     "HistoryResumo",
     "MsgResumo",
+    "InvalidTransactionError",
 ]

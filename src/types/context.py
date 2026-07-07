@@ -2,6 +2,8 @@ from dataclasses import dataclass, field, fields
 from typing import Generic, Protocol, TypeVar, Any, Self, ClassVar, Optional
 from src.types.user import User
 
+#------------------------------- CONTEXT BASE -------------------------------#
+
 class Mergeable(Protocol):
     def merge(self, novos: Self) -> Self: ...
 
@@ -26,15 +28,15 @@ class ContextBase(Generic[T]):
     dados_completos: T
     validacao: ResultadoValidacao = field(default_factory=ResultadoValidacao)
 
+#------------------------------- CONTEXT PRESTADOR -------------------------------#
+
 @dataclass
 class DadosPrestador:
-    razao_social:      Optional[str] = None  # razaoSocial no Notaas
-    cnpj:              Optional[str] = None
-    email:             Optional[str] = None
-    regime_tributario: Optional[str] = None  # "1"|"2"|"3"|"3e"
-    cep:               Optional[str] = None 
-
-    inscricao_municipal: Optional[str] = None
+    razao_social:      str | None = None  # razaoSocial no Notaas
+    cnpj:              str | None = None
+    email:             str | None = None
+    regime_tributario: str | None = None  # "1"|"2"|"3"|"3e"
+    cep:               str | None = None 
 
     OBRIGATORIOS: ClassVar[set[str]] = {
         "razao_social", "cnpj", "email", "regime_tributario", "cep"
@@ -48,13 +50,25 @@ class DadosPrestador:
 
         return DadosPrestador(**kwargs)
     
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> "DadosPrestador":
+        if data:
+            return cls(
+                **{field.name: data.get(field.name) for field in fields(cls)}
+            )
+        return cls()
+    
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
     
     def is_complete(self) -> bool:
         return not self.campos_faltantes()
-    
-ContextPrestador = ContextBase[DadosPrestador]
+
+@dataclass
+class ContextPrestador(ContextBase[DadosPrestador]):
+    conversation_id: int | None = None
+    idempotency_key: str = ""
+    conv_status: str | None = None
 
 @dataclass
 class Endereco:
@@ -90,6 +104,8 @@ class ProjectPrestador:
     updated_at: str
     codigoMunicipio: str = "3304557"
 
+#------------------------------- CONTEXT TOMADOR -------------------------------#
+
 @dataclass
 class MergeableMixin:
     def merge(self, novos: "Self") -> "Self":
@@ -106,6 +122,13 @@ class Tomador(MergeableMixin):
 
     OBRIGATORIOS: ClassVar[set[str]] = {"nome", "cnpj"}
     
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Tomador":
+        return cls(
+            nome=data.get("nome"),
+            cnpj=data.get("cnpj"),
+        )
+
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
     
@@ -115,9 +138,13 @@ class Servico(MergeableMixin):
 
     OBRIGATORIOS: ClassVar[set[str]] = {"descricao"}
     
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Servico":
+        return cls(descricao=data.get("descricao"))
+
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
-
+    
 @dataclass
 class Valores(MergeableMixin):
     total: Optional[float] = None
@@ -125,6 +152,13 @@ class Valores(MergeableMixin):
 
     OBRIGATORIOS: ClassVar[set[str]] = {"total"}
     
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Valores":
+        return cls(
+            total=data.get("total"),
+            aliquotaIss=data.get("aliquotaIss"),
+        )
+
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
     
@@ -139,6 +173,14 @@ class DadosTomador:
             tomador=self.tomador.merge(novos.tomador),
             servico=self.servico.merge(novos.servico),
             valores=self.valores.merge(novos.valores),
+        )
+    
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "DadosTomador":
+        return cls(
+            tomador=Tomador.from_dict(data.get("tomador") or {}),
+            servico=Servico.from_dict(data.get("servico") or {}),
+            valores=Valores.from_dict(data.get("valores") or {}),
         )
     
     def campos_faltantes(self) -> list[str]:

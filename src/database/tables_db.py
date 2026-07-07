@@ -9,7 +9,7 @@ def init_db():
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
             phone         TEXT UNIQUE NOT NULL,
             name          TEXT,
-            estado        TEXT NOT NULL DEFAULT 'novo',
+            status        TEXT NOT NULL DEFAULT 'NOVO',
             created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -20,13 +20,12 @@ def init_db():
         CREATE TABLE IF NOT EXISTS prestador (
             id                   INTEGER PRIMARY KEY REFERENCES users(id),
             phone                TEXT UNIQUE NOT NULL REFERENCES users(phone),
-            
+            email                TEXT,
+                      
             --dados fiscais
             cnpj                 TEXT UNIQUE,
             razao_social         TEXT,
-            inscricao_municipal  TEXT,
             regime_tributario    TEXT, -- "1", "2", "3", "3e"
-            email                TEXT,
             
             -- endereço
             cep                  TEXT,
@@ -38,12 +37,13 @@ def init_db():
             uf                   TEXT,
 
             -- notaas                   
-            notaas_project_id    TEXT,
-            notaas_api_key       TEXT,  --criptografaco
-            certificado_enviado  INTEGER NOT NULL DEFAULT 0,
+            ntaas_project_id    TEXT,
+            ntaas_api_key       TEXT,  --criptografaco
+            org_token           TEXT,
+            certificado_enviado INTEGER NOT NULL DEFAULT 0,
                    
             -- controle
-            onboarding_status    TEXT NOT NULL DEFAULT 'novo',
+            status               TEXT NOT NULL DEFAULT 'NOVO',
             created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
@@ -176,20 +176,30 @@ def init_db():
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id    INTEGER NOT NULL REFERENCES prestador(id),
             phone           TEXT NOT NULL REFERENCES users(phone),
-            role            TEXT NOT NULL, -- 'user' | 'assistant'
+            role            TEXT NOT NULL, -- 'USER' | 'AI'
             content         TEXT NOT NULL,
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
     db.executar_modif("""
-        CREATE TABLE IF NOT EXISTS webhook_ntaas_events (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            delivery_id TEXT UNIQUE NOT NULL,  -- X-Notaas-Delivery; chave de idempotência
-            evento      TEXT NOT NULL,         -- nfse.issued | nfse.error | nfse.cancelled | nfse.documents_ready | batch.completed
-            invoice_id  TEXT,                  -- data.invoiceId quando aplicável
-            payload     TEXT NOT NULL,         -- JSON bruto completo
+        CREATE TABLE IF NOT EXISTS ntaas_deliveries (
+            delivery_id TEXT PRIMARY KEY,  -- X-Notaas-Delivery; chave de idempotência
+            event       TEXT,              -- nfse.issued | nfse.error | nfse.cancelled | nfse.documents_ready | batch.completed | webhook.test
+            invoice_id  TEXT,              -- data.invoiceId quando aplicável
+            payload     TEXT,              -- JSON bruto completo
             recebido_em TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+
+    db.executar_modif("""
+        CREATE TABLE IF NOT EXISTS upload_tokens (
+            token         TEXT PRIMARY KEY,
+            prestador_id  INTEGER NOT NULL REFERENCES prestador(id),
+            project_id    TEXT NOT NULL,
+            created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+            expire_at     TEXT NOT NULL,
+            usado         INTEGER NOT NULL DEFAULT 0
         )
     """)
 

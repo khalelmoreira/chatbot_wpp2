@@ -2,7 +2,7 @@ from typing import Any
 from dotenv import load_dotenv
 from src.flows.initial_flow import initial_flow
 from src.services.wpp.webhook_parser_service import WhatsappWebhookParser
-from src.managers.messages.msg_manager import MsgManager
+from chatbot_wpp2.src.managers.msg_manager import MsgManager
 # from src.repositories.message_repo import salvar_msg_se_nova
 
 load_dotenv()

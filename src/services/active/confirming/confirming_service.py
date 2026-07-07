@@ -1,11 +1,11 @@
 from src.types import IncomingMessage, ContextTomador, ConversationStatus, TypeMessage, BotaoId, Role
-from src.managers.conversations.conversation_manager import ConversationManager
-from src.managers.tomador.tomador_manager import TomadorManager
+from chatbot_wpp2.src.managers.conversations.conv_manager import ConvManager
+from chatbot_wpp2.src.managers.tomador_manager import TomadorManager
 from src.services.wpp.msg_service import WhatsAppService
-from src.managers.messages.msg_manager import MsgManager
+from chatbot_wpp2.src.managers.msg_manager import MsgManager
 
 class ConfirmingService:
-    def __init__(self, ctx: ContextTomador, msg: IncomingMessage, conversation: ConversationManager):
+    def __init__(self, ctx: ContextTomador, msg: IncomingMessage, conversation: ConvManager):
         self.ctx = ctx
         self.msg = msg
         self.conversation = conversation
@@ -31,7 +31,7 @@ class ConfirmingService:
                 raise ValueError(f"Button ID não encontrado: {self.msg.id_botao}")
 
     def _use_botoes_msg(self):
-        self._notf_user(msg="Por favor, use os botões para confirmar ou corrigir o endereço.")
+        self._notf_user(msg="Por favor, use os botões para confirmar ou corrigir os dados.")
 
     def _tomador_confirmado(self):
         self.conversation.update_state(ConversationStatus.QUEUED)

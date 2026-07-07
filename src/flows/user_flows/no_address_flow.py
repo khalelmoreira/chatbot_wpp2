@@ -1,7 +1,7 @@
 from dataclasses import fields
-from src.managers.users.user_manager import UserManager
+from chatbot_wpp2.src.managers.user_manager import UserManager
 from src.types import IncomingMessage, EstadoUser, BotaoResponse
-from src.managers.prestador.prestador_manager import PrestadorManager
+from chatbot_wpp2.src.managers.prestador_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 
 def endereco_manu_flow(

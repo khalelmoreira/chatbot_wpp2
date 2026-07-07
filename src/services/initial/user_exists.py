@@ -1,5 +1,5 @@
 from src.types import IncomingMessage, User
-from src.managers.users.user_manager import UserManager
+from chatbot_wpp2.src.managers.user_manager import UserManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.utils.debug import print_table
 

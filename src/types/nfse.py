@@ -1,9 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
 
-class NfNotFoundError(Exception):
-    pass
-
 class NfseStatus(str, Enum):
     QUEUED      = "QUEUED"
     PROCESSING  = "PROCESSING"

@@ -1,4 +1,6 @@
-from src.types import ContextPrestador, DadosPrestador, Endereco, ProjectPrestador
+import sqlite3
+from typing import Any
+from src.types import ContextPrestador, DadosPrestador, Endereco, ProjectPrestador, UserStatus, InvalidTransactionError
 from src.database.db import DB
 
 class PrestadorManager:
@@ -6,71 +8,50 @@ class PrestadorManager:
         self.db  = DB()
         self.ctx = ctx
 
-    CAMPOS_EDITAVEIS = [
-        "razao_social",
-        "cnpj",
-        "email",
-        "regime_tributario",
-        "cep",
-        "inscricao_municipal",
-    ]
-
     def update_validos(self) -> None:
-
-        phone = self.ctx.user.phone
         validos = self.ctx.validacao.validos
-
-        if not validos:
-            return
         
-        campos_insert = ["phone"] + [c for c in validos if c in self.CAMPOS_EDITAVEIS]
-        valores_insert = [phone] + [validos[c] for c in campos_insert[1:]]
+        campos = list(validos.keys())
+        set_clause = ", ".join(f"{campo} = ?" for campo in campos)
+        valores = [validos[campo] for campo in campos]
 
-        placeholders = ", ".join("?" * len(campos_insert))
+        row = self.db.fetchone_modif(f"""
+            UPDATE prestador SET
+                {set_clause},
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND status = 'COLLECTING'
+            RETURNING id
+        """, (*valores, self.ctx.user.id))
 
-        campos_update = campos_insert[1:]
-        set_clause = ", ".join(f"{c} = excluded.{c}" for c in campos_update)
+        if row is None:
+            raise InvalidTransactionError(f"Nenhuma linha COLETANDO encontrada para id={self.ctx.user.id}")
+        
+    def update_state(self, novo_status: str) -> None:
 
-        query = f"""
-            INSERT INTO prestador ({', '.join(campos_insert)})
-            VALUES ({placeholders})
-            ON CONFLICT(phone) DO UPDATE SET {set_clause}
-        """
+        self.db.executar_modif("""
+            UPDATE prestador SET
+                status = ?
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (novo_status, self.ctx.user.id))
 
-        self.db.executar_modif(query, tuple(valores_insert))
+    def get_db_data(self) -> dict[str, Any] | None:
 
-    def get_db_data(self) -> None:
-
-        phone = self.ctx.user.phone
-
-        query = """
+        row = self.db.fetchone("""
             SELECT
                 razao_social,
                 cnpj,
                 email,
                 regime_tributario,
-                cep,
-                inscricao_municipal
+                cep
             FROM prestador
-            WHERE phone = ?
-        """
-        row = self.db.fetchone(query, (phone,))
-
-        if not row:
-            
-            self.ctx.dados_db = DadosPrestador()
-
-            return
-
-        self.ctx.dados_db = DadosPrestador(
-            razao_social=row["razao_social"],
-            cnpj=row["cnpj"],
-            email=row["email"],
-            regime_tributario=row["regime_tributario"],
-            cep=row["cep"],
-            inscricao_municipal=row["inscricao_municipal"],
-        )
-
+            WHERE id = ?
+        """, (self.ctx.user.id,))
+        if row:
+            return dict(row)
+        return None
+    
     def update_endereco(self, endereco: Endereco) -> None:
 
         query = """

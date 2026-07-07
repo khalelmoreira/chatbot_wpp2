@@ -45,6 +45,9 @@ class BotaoId(str, Enum):
     ENDERECO_CONFIRMADO = "endereco_confirmado"
     ENDERECO_CORRIGIR   = "endereco_corrigir"
 
+    PRESTADOR_CONFIRMADO = "prestador_confirmado"
+    PRESTADOR_CORRIGIR   = "prestador_corrigir"
+
 @dataclass
 class BotaoResponse:
     id: str

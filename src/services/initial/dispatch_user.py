@@ -1,7 +1,7 @@
-from src.types import EstadoUser, User, ContextTomador, DadosPrestador, DadosTomador, ContextPrestador, IncomingMessage
-from src.managers.users.user_manager import UserManager
+from src.types import UserStatus, User, ContextTomador, DadosPrestador, DadosTomador, ContextPrestador, IncomingMessage
+from chatbot_wpp2.src.managers.user_manager import UserManager
 from src.services.wpp.msg_service import WhatsAppService
-from src.flows.cadastro_flows.prestador_flow import prestador_flow
+from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.cadastro_flows.endereco_flow import endereco_flow
 from src.flows.active_flows import active_flow
 from src.flows.cadastro_flows.endereco_manu_flow import endereco_manu_flow
@@ -11,33 +11,37 @@ class DispatchUser:
         self.manager = manager
         self.user = user
         self.msg = msg
-        self.estado = EstadoUser(self.user.estado)
         self.wpp = WhatsAppService()
 
-    def dispatch(self):
+    def dispatch(self, status: UserStatus | None = None):
+
+        if not status:
+            estado = UserStatus(self.user.estado)
+        else:
+            estado = UserStatus(status)
 
         dispatchers = {
-            EstadoUser.NOVO:                     self._new_user,
-            EstadoUser.CADASTRO_PRESTADOR:       self._prestador_flow,
-            EstadoUser.CADASTRO_ENDERECO:        self._endereco_flow,
-            EstadoUser.CADASTRO_ENDERECO_MANUAL: self._endereco_manu_flow,
-            EstadoUser.CRIANDO_PROJETO_NOTAAS:   self._notaas_project,
-            EstadoUser.ATIVO:                    self._active_flow,
+            UserStatus.NEW:        self._new_user,
+            UserStatus.COLLECTING: self._collecting_flow,
+            UserStatus.NO_ADDRESS: self._endereco_flow,
+            UserStatus.CONFIRMING: self._endereco_manu_flow,
+            UserStatus.QUEUED:     self._notaas_project,
+            UserStatus.ATIVO:      self._active_flow,
         }
 
-        dispacher = dispatchers.get(self.estado)
+        dispacher = dispatchers.get(estado)
         if dispacher is None:
-            raise ValueError(f"Estado não mapeado no fluxo: {self.user.estado}")
+            raise ValueError(f"Estado não mapeado no fluxo: {estado}")
         return dispacher()
             
     def _new_user(self):
-        self.manager.update_state(self.user, EstadoUser.CADASTRO_PRESTADOR)
+        self.manager.update_state(self.user, UserStatus.COLLECTING)
         self._notf_user("Vamos iniciar seu cadastro...")
         return
     
-    def _prestador_flow(self):
+    def _collecting_flow(self):
         ctx = self._build_ctx(prestador=True)
-        return prestador_flow(ctx, self.manager)
+        return collecting_flow(ctx, self.manager)
     
     def _endereco_flow(self):
         return endereco_flow(self.msg, self.manager)

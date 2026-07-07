@@ -1,7 +1,7 @@
 from src.types import ContextTomador, Role
-from src.managers.conversations.conversation_manager import ConversationManager
+from chatbot_wpp2.src.managers.conversations.conv_manager import ConversationManager
 from src.services.wpp.msg_service import WhatsAppService
-from src.managers.messages.msg_manager import MsgManager
+from chatbot_wpp2.src.managers.msg_manager import MsgManager
 
 def queued_flow(ctx: ContextTomador, conversation: ConversationManager):
 

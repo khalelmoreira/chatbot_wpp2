@@ -1,6 +1,5 @@
 from enum import Enum
 from dataclasses import dataclass
-from src.types import Tomador, Servico, Valores
 
 class ConversationStatus(str, Enum):
     COLLECTING  = "COLLECTING"

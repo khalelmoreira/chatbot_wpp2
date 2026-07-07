@@ -1,13 +1,14 @@
-from src.managers.users.user_manager import UserManager
-from src.types import IncomingMessage, EstadoUser
+from chatbot_wpp2.src.managers.prestador_manager import PrestadorManager
+from src.types import IncomingMessage, UserStatus, ContextPrestador
 from src.flows.active_flows.onboarding_flow import criar_project
 from src.services.wpp.msg_service import WhatsAppService
+from src.services.sign_up.confirming.confirming_user_service import ConfirmUserService
 
-def endereco_flow(
-        msg: IncomingMessage,
-        user_manager: UserManager,
-) -> None:
+def confirming_flow(ctx: ContextPrestador, msg: IncomingMessage, prestador: PrestadorManager) -> None:
     
+    ConfirmUserService(ctx, msg, prestador).dispatch
+
+def antigo():
     wpp = WhatsAppService()
     
     if msg.tipo != "button":

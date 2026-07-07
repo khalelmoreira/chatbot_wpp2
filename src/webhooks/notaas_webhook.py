@@ -54,4 +54,5 @@ class NotaasWebhook:
                 return service.docs_ready()
             
             case EventsNotaas.WEBHOOK_TEST:
+                print(f"OK, 200\n")
                 return "OK", 200
