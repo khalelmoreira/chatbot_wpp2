@@ -14,7 +14,7 @@ def notf_user(msg: str) -> None:
 class ExtractionService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
-        self.ai = AIService(ctx)
+        self.ai = AIService()
         self.conversation = conversation
 
     def extract_e_merge(self):

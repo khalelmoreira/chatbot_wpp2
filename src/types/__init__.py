@@ -3,15 +3,15 @@ from src.types.context import (
     ContextBase,
     ContextPrestador,
     ContextTomador,
-    DadosPrestador,
-    DadosTomador,
+    PrestadorData,
+    TomadorData,
     ProjectPrestador,
     Tomador,
     Servico,
     ResultadoOnboarding,
     Valores,
-    ResultadoValidacao,
-    Endereco,
+    ValidationResult,
+    Address,
 )
 
 # Enums (tipos de estado)
@@ -44,20 +44,25 @@ from src.types.nfse import (
 from src.types.exceptions import (
     NfNotFoundError,
     InvalidTransactionError,
+    NtaasCertificadoError,
+    NtassOrgError,
+    CnpjJaCadastradoError,
+    LimitePlanoAtingidoError,
+    DadosInvalidosError,
 )
 
 __all__ = [
     # Contexts
     "ContextBase",
-    "DadosPrestador",
-    "DadosTomador",
+    "PrestadorData",
+    "TomadorData",
     "ContextTomador",
     "ContextPrestador",
     "Tomador",
     "Servico",
     "Valores",
-    "ResultadoValidacao",
-    "Endereco",
+    "ValidationResult",
+    "Address",
     "ProjectPrestador",
     "ResultadoOnboarding",
     "NfNotFoundError",
@@ -85,4 +90,9 @@ __all__ = [
     "HistoryResumo",
     "MsgResumo",
     "InvalidTransactionError",
+    "NtaasCertificadoError",
+    "NtassOrgError",
+    "CnpjJaCadastradoError",
+    "LimitePlanoAtingidoError",
+    "DadosInvalidosError",
 ]

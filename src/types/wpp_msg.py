@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Protocol, TypedDict, Literal
-from enum import Enum
+from enum import StrEnum
 
 # ─── Contrato da IA ──────────────────────────────────────────────────────────
 # StateMachine não sabe como a IA funciona — só o que ela precisa receber e retornar
@@ -29,7 +29,7 @@ class IncomingMessage:
     def is_duplicate(self, processed_ids: set[str]) -> bool:
         return self.msg_id in processed_ids
     
-class TypeMessage(str, Enum):
+class TypeMessage(StrEnum):
     TEXT     = "text"
     IMAGE    = "image"
     AUDIO    = "audio"
@@ -38,7 +38,7 @@ class TypeMessage(str, Enum):
     REACTION = "reaction"
     BUTTON   = "button"
 
-class BotaoId(str, Enum):
+class BotaoId(StrEnum):
     TOMADOR_CONFIRMADO  = "tomador_confirmado"
     TOMADOR_CORRIGIR    = "tomador_corrigir"
 
@@ -53,7 +53,7 @@ class BotaoResponse:
     id: str
     title: str
 
-class Role(str, Enum):
+class Role(StrEnum):
     USER = "USER"
     AI   = "AI"
 

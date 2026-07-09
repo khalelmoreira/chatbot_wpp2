@@ -2,9 +2,10 @@ from src.types import UserStatus, User, ContextTomador, DadosPrestador, DadosTom
 from chatbot_wpp2.src.managers.user_manager import UserManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.flows.user_flows.collecting_user_flow import collecting_flow
-from src.flows.cadastro_flows.endereco_flow import endereco_flow
+from src.flows.user_flows.confirming_user_flow import confirming_flow
+from src.flows.user_flows.address_flow import address_flow
+from src.flows.user_flows.ntaas_project import ProjectOnboarding
 from src.flows.active_flows import active_flow
-from src.flows.cadastro_flows.endereco_manu_flow import endereco_manu_flow
 
 class DispatchUser:
     def __init__(self, manager: UserManager, user: User, msg: IncomingMessage):
@@ -21,12 +22,13 @@ class DispatchUser:
             estado = UserStatus(status)
 
         dispatchers = {
-            UserStatus.NEW:        self._new_user,
-            UserStatus.COLLECTING: self._collecting_flow,
-            UserStatus.NO_ADDRESS: self._endereco_flow,
-            UserStatus.CONFIRMING: self._endereco_manu_flow,
-            UserStatus.QUEUED:     self._notaas_project,
-            UserStatus.ATIVO:      self._active_flow,
+            UserStatus.NEW:         self._new_user,
+            UserStatus.COLLECTING:  self._collecting_flow,
+            UserStatus.CONFIRMING:  self._confirming,
+            UserStatus.ADDRESS:     self._address,
+            UserStatus.PROJECT:     self._notaas_project,
+            UserStatus.CERTIFICATE: self._certificate,
+            UserStatus.ACTIVE:      self._active_flow,
         }
 
         dispacher = dispatchers.get(estado)
@@ -43,15 +45,16 @@ class DispatchUser:
         ctx = self._build_ctx(prestador=True)
         return collecting_flow(ctx, self.manager)
     
-    def _endereco_flow(self):
-        return endereco_flow(self.msg, self.manager)
+    def _confirming(self):
+        ctx = self._build_ctx(prestador=True)
+        return confirming_flow(ctx, self.msg, manager)
     
-    def _endereco_manu_flow(self):
-        return endereco_manu_flow(self.msg, self.manager)
+    def _address(self):
+        ctx = self._build_ctx(prestador=True)
+        return address_flow(ctx, self.msg, manager)
     
     def _notaas_project(self):
-        self._notf_user("Ainda estamos configurando sua conta, aguarde um momento.")
-        return
+        return ProjectOnboarding()
     
     def _active_flow(self):
         ctx = self._build_ctx(tomador=True)

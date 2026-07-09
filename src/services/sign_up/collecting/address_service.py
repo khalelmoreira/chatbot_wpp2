@@ -1,12 +1,9 @@
-from chatbot_wpp2.src.managers.prestador_manager import PrestadorManager
-from src.services.wpp.msg_service import WhatsAppService
-from src.services.validators.validador_prestador import ValidadorPrestador
-from src.types import ContextPrestador, UserStatus, BotaoResponse, Role, DadosPrestador, Endereco
+from src.types import ContextPrestador, DadosPrestador, Role
 from src.managers.prestador_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
 from chatbot_wpp2.src.managers.msg_manager import MsgManager
+from src.services.validators.validador_prestador import ValidadorPrestador
 from src.utils.debug import print_table
-from src.utils.get_endereco import get_endereco_by_cep
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -15,14 +12,14 @@ def notf_user(msg: str) -> None:
 class ExtractionService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
-        self.ai = AIService()
         self.prestador = prestador
+        self.ai = AIService()
 
-    def extract_e_merge(self) -> None:
-        self.ai.extract_prest_data(self.ctx)
+    def extract_e_merge(self):
+        self.ai.extract_address(self.ctx)
         print(f"DADOS NOVOS: {self.ctx.dados_novos}\n")
 
-        draft = self.prestador.get_db_data()
+        draft = self.prestador.get_all()
         self.ctx.dados_db = DadosPrestador.from_dict(draft)
         print(f"DADOS DARFT: {self.ctx.dados_db}\n")
 
@@ -58,46 +55,8 @@ class ValidationService:
             return False
         return True
     
-    def _no_data(self):
-        response = self.ai.no_data_prest_response(self.ctx)
-        self.msg.save_msg(Role.AI, response)
-        notf_user(response)
-
-    def _incompleto(self):
-        response = self.ai.incomplete_prest_response(self.ctx)
-        self.msg.save_msg(Role.AI, response)
-        notf_user(response)
-
-    def _invalidos(self):
-        response = self.ai.invalidos_prest_response()
-        self.msg.save_msg(Role.AI, response)
-        notf_user(response)
-
-    def _update_draft(self):
-        self.prestador.update_validos()
-
-class AddressService:
-    def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
-        self.ctx = ctx
-        self.prestador = prestador
-
-    def address(self):
-        cep = self.ctx.validacao.validos["cep"]
-        print(f"CEP: {cep}\n")
-
-        endereco = get_endereco_by_cep(cep)
-        print(f"ENDERECO: {endereco}\n")
-        
-        if not endereco:
-            notf_user(f"Não consegui encontrar o endereço para o CEP {self.ctx.validacao.validos["cep"]}.\nPode verificar e enviar novamente?\n")
-            self.prestador.update_state(UserStatus.NO_ADDRESS)
-            return
-
-        self.prestador.update_state(UserStatus.CONFIRMING)
-        self._msg_confirm(endereco)
-
-    def _msg_confirm(self, endereco: Endereco):
-
+    def msg_confirm(self):
+        self.ctx.dados_validados = DadosPrestador.from_dict(self.ctx.validacao.validos)
         # wpp.send_msg_botao(
         #     phone=ctx.user.phone,
         #     text=(
@@ -114,11 +73,32 @@ class AddressService:
         # )
 
         print(
-            f"📍 *Endereço encontrado:*\n\n"
-            f"{endereco.logradouro}\n"
-            f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n"
-            f"CEP: {endereco.cep}\n\n"
-            f"Esse é o endereço correto?\n"
+            f"Seus dados:*\n\n"
+            f"Razão Social: {self.ctx.dados_validados.razao_social}\n"
+            f"CNPJ: {self.ctx.dados_validados.cnpj}\n"
+            f"Email: {self.ctx.dados_validados.email}\n"
+            f"Regime Tributário: {self.ctx.dados_validados.regime_tributario}\n"
+            f"Endereco: {self.ctx.dados_validados.endereco.logradouro} — {self.ctx.dados_validados.endereco.bairro} — {self.ctx.dados_validados.endereco.cidade}/{self.ctx.dados_validados.endereco.uf}\n"
+            f"CEP: {self.ctx.dados_validados.cep}\n\n"
+            f"Esses dados estão corretos?\n"
         )
         print_table(table_name="users", where=self.ctx.user.phone)
         return
+    
+    def _no_data(self):
+        response = self.ai.no_data_prest_response(self.ctx)
+        self.msg.save_msg(Role.AI, response)
+        notf_user(response)
+    
+    def _incompleto(self):
+        response = self.ai.incomplete_prest_response(self.ctx)
+        self.msg.save_msg(Role.AI, response)
+        notf_user(response)
+    
+    def _invalidos(self):
+        response = self.ai.invalidos_prest_response()
+        self.msg.save_msg(Role.AI, response)
+        notf_user(response)
+    
+    def _update_draft(self):
+        self.prestador.update_validos()

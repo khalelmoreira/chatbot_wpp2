@@ -4,22 +4,14 @@ def init_db():
 
     db = DB()
 
-    db.executar_modif("""
-        CREATE TABLE IF NOT EXISTS users (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            phone         TEXT UNIQUE NOT NULL,
-            name          TEXT,
-            status        TEXT NOT NULL DEFAULT 'NOVO',
-            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
     # PRESTADOR
 
     db.executar_modif("""
         CREATE TABLE IF NOT EXISTS prestador (
-            id                   INTEGER PRIMARY KEY REFERENCES users(id),
-            phone                TEXT UNIQUE NOT NULL REFERENCES users(phone),
+            id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone                TEXT UNIQUE NOT NULL,
+            status               TEXT NOT NULL DEFAULT 'NEW',
+            name                 TEXT,
             email                TEXT,
                       
             --dados fiscais
@@ -43,7 +35,7 @@ def init_db():
             certificado_enviado INTEGER NOT NULL DEFAULT 0,
                    
             -- controle
-            status               TEXT NOT NULL DEFAULT 'NOVO',
+            error_msg            TEXT,
             created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
@@ -163,7 +155,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS conversations (
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id        INTEGER NOT NULL REFERENCES prestador(id),
-            phone               TEXT NOT NULL REFERENCES users(phone),
+            phone               TEXT NOT NULL REFERENCES prestador(phone),
             status              TEXT NOT NULL,                          -- COLLECTING | CONFIRMING | QUEUED | DONE | ERROR | CANCELLED
             draft_json          TEXT NOT NULL DEFAULT '{}',
             created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -175,7 +167,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS messages (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id    INTEGER NOT NULL REFERENCES prestador(id),
-            phone           TEXT NOT NULL REFERENCES users(phone),
+            phone           TEXT NOT NULL REFERENCES prestador(phone),
             role            TEXT NOT NULL, -- 'USER' | 'AI'
             content         TEXT NOT NULL,
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -199,7 +191,7 @@ def init_db():
             project_id    TEXT NOT NULL,
             created_at    TEXT NOT NULL DEFAULT (datetime('now')),
             expire_at     TEXT NOT NULL,
-            usado         INTEGER NOT NULL DEFAULT 0
+            used         INTEGER NOT NULL DEFAULT 0
         )
     """)
 

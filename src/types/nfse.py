@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 from dataclasses import dataclass
 
-class NfseStatus(str, Enum):
+class NfseStatus(StrEnum):
     QUEUED      = "QUEUED"
     PROCESSING  = "PROCESSING"
     ISSUED      = "ISSUED"
@@ -9,7 +9,7 @@ class NfseStatus(str, Enum):
     CANCELLED   = "CANCELLED"
 
 
-class EventsNotaas(str, Enum):
+class EventsNotaas(StrEnum):
     NFSE_ISSUED     = "nfse.issued"
     NFSE_ERROR      = "nfse.error"
     NFSE_CANCELLED  = "nfse.cancelled"

@@ -55,7 +55,7 @@ PROMPT_INCOMPLETE_PREST_DATA_RESPONSE = AIPrompt(
     Você ajuda prestadores de serviço a se cadastrar para emitir notas fiscais via WhatsApp.
 
     Sua tarefa: escrever UMA mensagem curta (2-3 frases) confirmando os dados já recebidos e pedindo os que ainda faltam.
-    Escreva em linguagem simples, sem termos como "prestador" ou "razão social" — use "empresa", "nome da empresa", "regime tributário", "CEP", "e-mail", "telefone", "CPF ou CNPJ".
+    Escreva em linguagem simples, sem termos como "prestador" ou "razão social" — use "empresa", "nome da empresa", "regime tributário", "CEP", "e-mail", "telefone", "CNPJ".
 
     Exemplos:
     dados_coletados=["empresa: Tech Solutions LTDA", "CNPJ: 12.345.678/0001-99"] | dados_faltantes=["CEP", "e-mail", "telefone", "regime tributário"] → "Já tenho o nome da empresa e o CNPJ. Para finalizar o cadastro, preciso do CEP, e-mail, telefone e regime tributário."
@@ -77,7 +77,7 @@ PROMPT_INVALIDOS_PREST_RESPONSE = AIPrompt(
     Você ajuda prestadores de serviço a se cadastrar para emitir notas fiscais via WhatsApp.
 
     Sua tarefa: escrever UMA mensagem curta (2-3 frases) informando quais dados do cadastro não foram aceitos e pedindo que o usuário os envie novamente.
-    Não explique o motivo — apenas informe quais são e peça a correção. Escreva em linguagem simples, sem termos como "prestador" ou "razão social" — use "nome da empresa", "CPF ou CNPJ", "regime tributário", "CEP", "e-mail", "telefone".
+    Não explique o motivo — apenas informe quais são e peça a correção. Escreva em linguagem simples, sem termos como "prestador" ou "razão social" — use "nome da empresa", "CNPJ", "regime tributário", "CEP", "e-mail", "telefone", "logradouro", "bairro", "cidade", "uf".
 
     Exemplos:
     dados_invalidos=["CNPJ"] → "Não consegui aceitar o CNPJ informado. Pode me enviá-lo novamente?"
@@ -105,5 +105,64 @@ PROMPT_NO_DATA_PREST_RESPONSE = AIPrompt(
     → "Parece que ainda não temos nenhuma informação por aqui! Para criar seu cadastro, preciso do nome da empresa, CNPJ, CEP, e-mail, telefone e regime tributário."
 
     Regra: não invente dados. Não mencione nada que o usuário não tenha enviado.
+    """
+)
+
+PROMTP_EXTRACT_ADDRESS = AIPrompt(
+    name="extract_address_gemma",
+    model="google/gemma-4-e4b",
+    description="extrai os dados em caso de ViaCep nao econtrar o endereco",
+    system="""
+    You extract Brazilian prestador registration and address data from messages and return ONLY valid JSON.
+    No text before or after the JSON. No markdown. No explanations.
+
+    SCHEMA:
+    {"razao_social": string or null, "cnpj": string or null, "email": string or null, "regime_tributario": "1"|"2"|"3"|"3e"|null, "cep": string or null, "logradouro": string or null, "numero": string or null, "complemento": string or null, "bairro": string or null, "cidade": string or null, "uf": string or null}
+
+    EXAMPLES (follow these exactly):
+
+    Input: "ACME Tecnologia LTDA, cnpj 12.345.678/0001-99, simples nacional, fiscal@acme.com.br, rua das Flores, 123, cep 01310-100, bairro Centro, São Paulo SP"
+    Output: {"razao_social": "ACME Tecnologia LTDA", "cnpj": "12345678000199", "email": "fiscal@acme.com.br", "regime_tributario": "3", "cep": "01310100", "logradouro": "rua das Flores", "numero": "123", "complemento": null, "bairro": "Centro", "cidade": "São Paulo", "uf": "SP"}
+
+    Input: "sou MEI, cnpj 98.765.432/0001-10, email joao@gmail.com, av Brasil 500 sala 12"
+    Output: {"razao_social": null, "cnpj": "98765432000110", "email": "joao@gmail.com", "regime_tributario": "2", "cep": null, "logradouro": "av Brasil", "numero": "500", "complemento": "sala 12", "bairro": null, "cidade": null, "uf": null}
+
+    Input: "lucro presumido, empresa Horizonte Serviços EIRELI, cep 22041-001, cnpj 44.555.666/0001-77, bairro Copacabana, Rio de Janeiro, RJ"
+    Output: {"razao_social": "Horizonte Serviços EIRELI", "cnpj": "44555666000177", "email": null, "regime_tributario": "1", "cep": "22041001", "logradouro": null, "numero": null, "complemento": null, "bairro": "Copacabana", "cidade": "Rio de Janeiro", "uf": "RJ"}
+
+    Input: "João Silva"
+    Output: {"razao_social": null, "cnpj": null, "email": null, "regime_tributario": null, "cep": null, "logradouro": null, "numero": null, "complemento": null, "bairro": null, "cidade": null, "uf": null}
+
+    RULES:
+
+    razao_social: Company names only (LTDA, ME, EIRELI, S/A, SS, EPP, etc). Preserve original capitalization. Person names → null.
+
+    cnpj: Digits only. Exactly 14 digits or null. "12.345.678/0001-99" → "12345678000199". CPF (11 digits) → null.
+
+    email: Lowercase. Must contain "@" and a domain extension or null. "FISCAL@EMPRESA.COM.BR" → "fiscal@empresa.com.br".
+
+    regime_tributario:
+    "MEI", "microempreendedor individual" → "2"
+    "simples nacional", "simples", "SN", "ME", "EPP", "microempresa", "pequeno porte" → "3"
+    "excesso de sublimite", "SN excesso" → "3e"
+    "lucro presumido", "lucro real", "não optante", "regime normal" → "1"
+    Absent or ambiguous → null.
+
+    cep: Digits only. Exactly 8 digits or null. "01310-100" → "01310100".
+
+    logradouro: Street name only, without numero. Preserve as written ("rua das Flores", "av Brasil"). Absent → null.
+
+    numero: Digits or alphanumeric as written (e.g. "123", "S/N"). Absent → null. Never confuse with cep or telefone.
+
+    complemento: Extra address info (sala, apto, bloco, andar). Absent → null.
+
+    bairro: Neighborhood name as written. Absent → null.
+
+    cidade: City name as written. Absent → null.
+
+    uf: Two-letter state code, uppercase (SP, RJ, MG, etc). Convert full state names to the code ("São Paulo" as a state → "SP", but "São Paulo" as a city stays in cidade). Absent → null.
+
+    NEVER invent missing data. Use null for absent fields.
+    Return ONLY the JSON object. Nothing else.
     """
 )

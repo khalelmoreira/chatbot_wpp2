@@ -2,7 +2,9 @@ import secrets
 import os
 import httpx
 from datetime import datetime, timedelta, timezone
-from src.managers.tokens_manager import UploadTokensManager as TokensManager
+from src.types import NtaasCertificadoError
+from src.managers.tokens_manager import TokensManager
+from src.models.urls import NOTAAS_BASE_URL
 
 def gen_upload_token(project_id: int, ttl_min: int = 15) -> str:
 
@@ -12,25 +14,16 @@ def gen_upload_token(project_id: int, ttl_min: int = 15) -> str:
     TokensManager().insert_token(token, project_id, expire_at)
     return token
 
-class NotaasCertificadoError(Exception):
-    pass
-
-def send_certificado_ntaas(
-        project_id: str,
-        certificado_bytes: bytes,
-        senha: str
-) -> dict:
+def send_certificado_ntaas(project_id: str, certificado_bytes: bytes, senha: str) -> dict:
     
-    org_token = PrestadorManager().get_org_token()
+    org_token = os.environ["NTAAS_ORG_TOKEN"]
     
-    files = {
-        "file": ("certificado.pfx", certificado_bytes, "application/x-pkcs12"),
-    }
+    files = {"file": ("certificado.pfx", certificado_bytes, "application/x-pkcs12")}
     data = {"password": senha}
     headers = {"x-api-key": org_token}
 
     resp = httpx.post(
-        f"https://platform.notaas.com.br/api/v1/org/projects/{project_id}/certificate",
+        f"{NOTAAS_BASE_URL}/org/projects/{project_id}/certificate",
         files=files,
         data=data,
         headers=headers,
@@ -38,10 +31,13 @@ def send_certificado_ntaas(
     )
 
     if resp.status_code in (401, 403):
-        raise NotaasCertificadoError(f"org token inválido/sem permissão: {resp.status_code}")
+        raise NtaasCertificadoError(f"org token inválido/sem permissão: {resp.status_code}")
+    
+    if resp.status_code == 400:
+        raise NtaasCertificadoError("Senha do certificado incorreta ou arquivo inválido.")
     
     if resp.status_code == 413:
-        raise NotaasCertificadoError("certificado excede 50KB")
+        raise NtaasCertificadoError("certificado excede 50KB")
     
     resp.raise_for_status()
     return resp.json()

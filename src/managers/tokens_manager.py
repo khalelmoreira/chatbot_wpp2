@@ -2,7 +2,7 @@ from datetime import datetime
 import sqlite3
 from src.database.db import DB
 
-class UploadTokensManager:
+class TokensManager:
     def __init__(self):
         self.db = DB()
 
@@ -12,7 +12,7 @@ class UploadTokensManager:
                 token,
                 project_id,
                 expire_at,
-                usado
+                used
             )
             VALUES (?, ?, ?, 0)
         """, (token, project_id, expire_at.isoformat()))
@@ -23,21 +23,20 @@ class UploadTokensManager:
             SELECT
                 prestador_id,
                 expire_at,
-                usado
+                used
             FROM upload_tokens
             WHERE token = ?
         """, (token,))
         return row
     
-    def update_usado(self, token: str) -> sqlite3.Row | None:
+    def update_used(self, token: str) -> sqlite3.Row | None:
 
         row = self.db.fetchone_modif("""
             UPDATE upload_tokens SET
-                usado = 1
+                used = 1
             WHERE token = ?
-            AND usado = 0
+            AND used = 0
             AND expire_at > datetime('now')
-            RETURNING prestador_id
         """, (token,))
 
         return row

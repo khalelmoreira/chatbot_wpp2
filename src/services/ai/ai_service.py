@@ -24,6 +24,7 @@ from src.models.prompts import (
     PROMPT_INCOMPLETE_PREST_DATA_RESPONSE,
     PROMPT_INVALIDOS_PREST_RESPONSE,
     PROMPT_NO_DATA_PREST_RESPONSE,
+    PROMTP_EXTRACT_ADDRESS,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,11 +52,20 @@ class AIService:
         )
         ctx.dados_novos = extractor.extract(ctx.text)
 
+    def extract_address(self, ctx: ContextPrestador) -> str:
+        extractor = self.extractor(
+            client=self.client,
+            prompt=PROMTP_EXTRACT_ADDRESS.system,
+            output_type=DadosPrestador,
+            parser=parse_prestador_data
+        )
+        ctx.dados_novos = extractor.extract(ctx.text)
+
     def has_intent(self, ctx: ContextTomador) -> bool:
 
         try:
             response = self.client.extract_text(
-                system_prompt=str(PROMPT_HAS_INTENT.system),
+                system_prompt=PROMPT_HAS_INTENT.system,
                 user_msg=ctx.text
             )
             return response.lower().startswith("true")
@@ -68,7 +78,7 @@ class AIService:
 
         try:
             return self.client.extract_text(
-                system_prompt=str(PROMPT_NO_INTENT_RESPONSE.system),
+                system_prompt=PROMPT_NO_INTENT_RESPONSE.system,
                 user_msg=ctx.text
             )
         except Exception as e:

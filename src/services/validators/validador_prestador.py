@@ -1,7 +1,6 @@
 import re
 from enum import StrEnum
-from dataclasses import fields as dataclass_fields
-from typing import Any
+from typing import Any, Callable
 from src.types import ContextPrestador, ResultadoValidacao
 
 class RegimeTributario(StrEnum):
@@ -10,13 +9,21 @@ class RegimeTributario(StrEnum):
     SIMPLES = "3"
     SIMPLES_EXCESSO = "3e"
 
+def val_generic_str(campo: str) -> bool:    
+    campo = campo.strip()
+
+    if len(campo) < 3:
+        return False
+    
+    return True
+
 def extrair_digitos(valor: str | None) -> str | None:
     if not valor:
         return None
     resultado = re.sub(r'\D', '', valor)
     return resultado if resultado else None
 
-def validar_razao_social(razao_social: str | None) -> bool:
+def val_r_social(razao_social: str | None) -> bool:
 
     if not razao_social:
         return False
@@ -28,7 +35,7 @@ def validar_razao_social(razao_social: str | None) -> bool:
     
     return True
 
-def validar_cnpj(cnpj: str | None) -> bool:
+def val_cnpj(cnpj: str | None) -> bool:
 
     cnpj = extrair_digitos(cnpj)
 
@@ -62,7 +69,7 @@ def validar_cnpj(cnpj: str | None) -> bool:
 
     return cnpj[-2:] == dv1 + dv2
 
-def validar_email(email: str | None) -> bool:
+def val_email(email: str | None) -> bool:
 
     if not email:
         return False
@@ -83,10 +90,10 @@ def validar_email(email: str | None) -> bool:
     
     return True
 
-def validar_reg_trib(regime: str | None) -> bool:
+def val_reg_trib(regime: str | None) -> bool:
     return regime in RegimeTributario._value2member_map_
 
-def validar_cep(cep: str | None) -> bool:
+def val_cep(cep: str | None) -> bool:
 
     cep = extrair_digitos(cep)
 
@@ -98,38 +105,89 @@ def validar_cep(cep: str | None) -> bool:
     
     return cep.isdigit()
 
-_VALIDACOES_PRESTADOR: dict[str, callable[[Any], bool]] = {
-    "cnpj": validar_cnpj,
-    "razao_social": validar_razao_social,
-    "email": validar_email,
-    "regime_tributario": validar_reg_trib,
-    "cep": validar_cep,
+def val_logr(logradouro: str | None) -> bool:
+    if not logradouro:
+        return False
+    
+    valido = val_generic_str(logradouro)
+    if not valido:
+        return False
+    return True
+
+def val_bairro(bairro: str | None) -> bool:
+    if not bairro:
+        return False
+    
+    valido = val_generic_str(bairro)
+    if not valido:
+        return False
+    return True
+
+def val_cidade(cidade: str | None) -> bool:
+    if not cidade:
+        return False
+    
+    valido = val_generic_str(cidade)
+    if not valido:
+        return False
+    return True
+
+def val_uf(uf: str | None) -> bool:
+    if not uf:
+        return False
+    
+    uf = uf.strip()
+
+    if len(uf) < 2:
+        return False
+    
+    return True
+
+_VALIDATIONS_PRESTADOR: dict[str, Callable[[Any], bool]] = {
+    "cnpj":              val_cnpj,
+    "razao_social":      val_r_social,
+    "email":             val_email,
+    "regime_tributario": val_reg_trib,
+    "cep":               val_cep,
+}
+
+_VALIDATIONS_ADDRESS: dict[str, Callable[[Any], bool]] = {
+    "logradouro":  val_logr,
+    "bairro":      val_bairro,
+    "cidade":      val_cidade,
+    "uf":          val_uf,
 }
 
 class ValidadorPrestador:
 
     def validar(self, ctx: ContextPrestador) -> None:
 
-        dados = ctx.dados_completos
-
         validos: dict[str, Any] = {}
         invalidos: list[str] = []
         faltantes: list[str] = []
+        
+        dados = ctx.dados_completos
 
-        for campo, fn_validar in _VALIDACOES_PRESTADOR.items():
+        for campo, fn_validar in _VALIDATIONS_PRESTADOR.items():
             valor = getattr(dados, campo, None)
+            self._checar(campo, valor, fn_validar, validos, invalidos, faltantes)
 
-            if valor is None:
-                faltantes.append(campo)
-            
-            elif not fn_validar(valor):
-                invalidos.append(campo)
-
-            else:
-                validos[campo] = valor
+        endereco = dados.endereco
+        for campo, fn_validar in _VALIDATIONS_ADDRESS.items():
+            valor = getattr(endereco, campo, None) if endereco is not None else None
+            self._checar(campo, valor, fn_validar, validos, invalidos, faltantes)
 
         ctx.validacao = ResultadoValidacao(
             validos=validos,
             invalidos=invalidos,
             faltantes=faltantes,
         )
+
+    @staticmethod
+    def _checar(campo, valor, fn_validar, validos, invalidos, faltantes):
+        if valor is None:
+            faltantes.append(campo)
+        elif not fn_validar(valor):
+            invalidos.append(campo)
+        else:
+            validos[campo] = valor

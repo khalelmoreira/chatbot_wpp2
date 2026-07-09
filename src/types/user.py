@@ -1,18 +1,20 @@
-from enum import Enum
+from enum import StrEnum
 from dataclasses import dataclass
 
-class UserStatus(str, Enum):
-    NEW                   = "NEW"
-    COLLECTING            = "COLLECTING"
-    NO_ADDRESS            = "NO_ADDRESS"
-    CONFIRMING            = "CONFIRMING"
-    QUEUED                = "QUEUED"
-    AGUARDANDO_CERTIFICADO = "aguardando_certificado"
-    ATIVO                  = "ativo"
+class UserStatus(StrEnum):
+    NEW         = "NEW"
+    COLLECTING  = "COLLECTING"
+    ADDRESS     = "ADDRESS"
+    CONFIRMING  = "CONFIRMING"
+    PROJECT     = "PROJECT"
+    CERTIFICATE = "CERTIFICATE"
+    ACTIVE      = "ACTIVE"
+    ERROR       = "ERROR"
+    CANCELLED   = "CANCELLED"
 
 @dataclass
 class User:
-    id: int
-    phone: str
-    name: str
+    id:     int
+    phone:  str
+    name:   str
     estado: UserStatus

@@ -9,7 +9,7 @@ class PrestadorManager:
         self.ctx = ctx
 
     def update_validos(self) -> None:
-        validos = self.ctx.validacao.validos
+        validos = self.ctx.validation.valid
         
         campos = list(validos.keys())
         set_clause = ", ".join(f"{campo} = ?" for campo in campos)
@@ -36,6 +36,16 @@ class PrestadorManager:
             WHERE id = ?
         """, (novo_status, self.ctx.user.id))
 
+    def update_error(self, novo_status: str, error_msg: str) -> None:
+
+        self.db.executar_modif("""
+            UPDATE prestador SET
+                status = ?,
+                error_msg = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (novo_status, error_msg, self.ctx.user.id))
+
     def get_db_data(self) -> dict[str, Any] | None:
 
         row = self.db.fetchone("""
@@ -50,44 +60,16 @@ class PrestadorManager:
         """, (self.ctx.user.id,))
         if row:
             return dict(row)
-        return None
+        return
     
-    def update_endereco(self, endereco: Endereco) -> None:
+    def get_all(self) -> dict[str, Any] | None:
 
-        query = """
-            INSERT INTO prestador (phone, logradouro, numero, complemento, bairro, cidade, uf, cep)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(phone) DO UPDATE SET
-                logradouro  = excluded.logradouro,
-                numero      = excluded.numero,
-                complemento = excluded.complemento,
-                bairro      = excluded.bairro,
-                cidade      = excluded.cidade,
-                uf          = excluded.uf,
-                cep         = excluded.cep,
-                updated_at  = CURRENT_TIMESTAMP
-        """
-
-        self.db.executar_modif(query, (
-        self.ctx.user.phone,
-        endereco.logradouro,
-        endereco.numero,
-        endereco.complemento,
-        endereco.bairro,
-        endereco.cidade,
-        endereco.uf,
-        endereco.cep,
-    ))
-        
-    def get_all(self) -> ProjectPrestador:
-
-        query = """
+        row = self.db.fetchone("""
             SELECT
-                cnpj,
                 razao_social,
-                inscricao_municipal,
-                regime_tributario,
+                cnpj,
                 email,
+                regime_tributario,
                 cep,
                 logradouro,
                 numero,
@@ -95,26 +77,41 @@ class PrestadorManager:
                 cidade,
                 uf
             FROM prestador
-            WHERE phone = ?
-        """
-        row = self.db.fetchone(query, (self.ctx.user.phone,))
-
+            WHERE id = ?
+        """, (self.ctx.user.id,))
+        if row:
+            return dict(row)
+        return
+    
+    def update_project_id(self, ntaas_project_id: str, novo_status: str) -> None:
+        row = self.db.fetchone_modif("""
+            UPDATE prestador SET
+                ntaas_project_id = ?,
+                status = ?
+            WHERE id = ?
+            AND status = 'CONFIRMING'
+            RETURNING id
+        """, (ntaas_project_id, novo_status, self.ctx.user.id))
         if not row:
             return
+        
+    def get_project_id(self) -> sqlite3.Row | None:
+        row = self.db.fetchone("""
+            SELECT
+                ntaas_project_id
+            FROM prestador
+            WHERE id = ?
+            AND status = 'CERTIFICATE'
+        """, (self.ctx.user.id))
+        return row
 
-        return ProjectPrestador(
-            name=row["razao_social"],
-            cnpj=row["cnpj"],
-            razaoSocial=row["razao_social"],
-            inscricaoMunicipal=row["inscricao_municipal"],
-            regimeTributario=row["regime_tributario"],
-            email=row["email"],
-            endereco=Endereco(
-                logradouro=row["logradouro"],
-                bairro=row["bairro"],
-                cidade=row["cidade"],
-                uf=row["uf"],
-                cep=row["cep"],
-                numero=row["numero"],
-            )
-        )
+    def update_api_key(self, api_key, novo_status: str) -> sqlite3.Row | None:
+        row = self.db.fetchone_modif("""
+            UPDATE prestador SET
+                ntaas_api_key = ?,
+                status = ?,
+            WHERE id = ?
+            AND status = 'CERTIFICATE'
+            RETURNING id
+        """, (api_key, novo_status, self.ctx.user.id))
+        return row

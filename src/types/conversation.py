@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 from dataclasses import dataclass
 
-class ConversationStatus(str, Enum):
+class ConversationStatus(StrEnum):
     COLLECTING  = "COLLECTING"
     CONFIRMING  = "CONFIRMING"
     QUEUED      = "QUEUED"
@@ -9,7 +9,7 @@ class ConversationStatus(str, Enum):
     ERROR       = "ERROR"
     CANCELLED   = "CANCELLED"
 
-class IntentTipo(str, Enum):
+class IntentTipo(StrEnum):
     EMITIR   = "EMITIR"
     CONSULTA = "CONSULTA"
     NENHUM   = "NENHUM"
