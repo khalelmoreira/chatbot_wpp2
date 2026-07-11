@@ -1,4 +1,4 @@
-from src.services.sign_up.collecting.address_service import ExtractionService, ValidationService
+from chatbot_wpp2.src.services.sign_up.address_service import ExtractionService, ValidationService
 from src.types import IncomingMessage, UserStatus, ContextPrestador
 from chatbot_wpp2.src.managers.prestador_manager import PrestadorManager
 

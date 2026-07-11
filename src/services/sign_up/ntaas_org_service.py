@@ -11,21 +11,44 @@ class NtaasProject:
 
     def _only_digits(self, value: str) -> str:
         return re.sub(r"\D", "", value or "")
+    
+    def create_project(self, org_token: str) -> str:
+        payload = self.build_payload()
+
+        resp = requests.post(
+            f"{NOTAAS_BASE_URL}/org/projects",
+            json=payload,
+            headers={"x-api-key": org_token},
+            timeout=15,
+        )
+
+        if resp.status_code == 201:
+            return resp.json()["id"]
+        
+        if resp.status_code == 409:
+            existing_id = resp.json().get("existingProjectId")
+            raise CnpjJaCadastradoError(existing_id)
+        
+        if resp.status_code == 403:
+            raise LimitePlanoAtingidoError("Limite de projetos do plano atingido.")
+        
+        if resp.status_code == 400:
+            raise DadosInvalidosError(resp.json().get("message", "Dados inválidos."))
+        
+        resp.raise_for_status()
 
     def build_payload(self) -> dict:
         payload = {
             "name": self.validated.razao_social,
             "cnpj": self.validated.cnpj,
             "razaoSocial": self.validated.razao_social,
+            "regimeTributario": self.validated.regime_tributario,
         }
 
         opcionais_diretos = {
-            "inscricaoMunicipal": "inscricao_municipal",
-            "inscricaoEstadual": "inscricao_estadual",
-            "regimeTributario": "regime_tributario",
-            "codigoMunicipio": "codigo_municipio_ibge",
+            "codigoMunicipio": "codigo_municipio",
             "email": "email",
-            "telefone": "telefone",
+            "telefone": "phone",
         }
 
         for campos_ntaas, campo_interno in opcionais_diretos.items():
@@ -48,28 +71,3 @@ class NtaasProject:
             payload["endereco"] = address_preenchido
 
         return payload
-    
-    def create_project(self, org_token: str) -> dict:
-        payload = self.build_payload()
-
-        resp = requests.post(
-            f"{NOTAAS_BASE_URL}/org/projects",
-            json=payload,
-            headers={"x-api-key": org_token},
-            timeout=15,
-        )
-
-        if resp.status_code == 201:
-            return resp.json()
-        
-        if resp.status_code == 409:
-            existing_id = resp.json().get("existingProjectId")
-            raise CnpjJaCadastradoError(existing_id)
-        
-        if resp.status_code == 403:
-            raise LimitePlanoAtingidoError("Limite de projetos do plano atingido.")
-        
-        if resp.status_code == 400:
-            raise DadosInvalidosError(resp.json().get("message", "Dados inválidos."))
-        
-        resp.raise_for_status()

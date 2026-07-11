@@ -15,7 +15,11 @@ from src.types.context import (
 )
 
 # Enums (tipos de estado)
-from src.types.user import User, UserStatus
+from src.types.user import (
+    User,
+    UserStatus,
+    IntentUserType,
+)
 from src.types.wpp_msg import (
     IncomingMessage,
     AIResponse,
@@ -30,7 +34,7 @@ from src.types.wpp_msg import (
 from src.types.conversation import (
     ConversationStatus,
     StatusResumo,
-    IntentTipo,
+    IntentType,
     HistoryResumo,
     MsgResumo,
 )
@@ -70,6 +74,7 @@ __all__ = [
     # User
     "User",
     "UserStatus",
+    "IntentUserType",
     # Conversation
     "IncomingMessage",
     "AIResponse",
@@ -82,7 +87,7 @@ __all__ = [
     "PayloadNotaas",
     "StatusInvoice"
     "NfNotFoundError",
-    "IntentTipo",
+    "IntentType",
     "Role",
     "MsgConvType",
     "TypeMessage",

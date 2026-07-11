@@ -4,7 +4,8 @@ from src.services.wpp.msg_service import WhatsAppService
 from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.confirming_user_flow import confirming_flow
 from src.flows.user_flows.address_flow import address_flow
-from src.flows.user_flows.ntaas_project import ProjectOnboarding
+from chatbot_wpp2.src.flows.user_flows.project_service import project_flow
+from src.flows.user_flows.idle_user_flow import idle_user_flow
 from src.flows.active_flows import active_flow
 
 class DispatchUser:
@@ -14,32 +15,21 @@ class DispatchUser:
         self.msg = msg
         self.wpp = WhatsAppService()
 
-    def dispatch(self, status: UserStatus | None = None):
-
-        if not status:
-            estado = UserStatus(self.user.estado)
-        else:
-            estado = UserStatus(status)
+    def dispatch(self):
 
         dispatchers = {
-            UserStatus.NEW:         self._new_user,
             UserStatus.COLLECTING:  self._collecting_flow,
             UserStatus.CONFIRMING:  self._confirming,
             UserStatus.ADDRESS:     self._address,
-            UserStatus.PROJECT:     self._notaas_project,
+            UserStatus.PROJECT:     self._project,
             UserStatus.CERTIFICATE: self._certificate,
-            UserStatus.ACTIVE:      self._active_flow,
+            UserStatus.ACTIVE:      self._active,
         }
 
-        dispacher = dispatchers.get(estado)
+        dispacher = dispatchers.get(self.user.status)
         if dispacher is None:
-            raise ValueError(f"Estado não mapeado no fluxo: {estado}")
+            return idle_user_flow(ctx=self._build_ctx(prestador=True))
         return dispacher()
-            
-    def _new_user(self):
-        self.manager.update_state(self.user, UserStatus.COLLECTING)
-        self._notf_user("Vamos iniciar seu cadastro...")
-        return
     
     def _collecting_flow(self):
         ctx = self._build_ctx(prestador=True)
@@ -53,10 +43,14 @@ class DispatchUser:
         ctx = self._build_ctx(prestador=True)
         return address_flow(ctx, self.msg, manager)
     
-    def _notaas_project(self):
-        return ProjectOnboarding()
+    def _project(self):
+        ctx = self._build_ctx(prestador=True)
+        return project_flow(ctx, self.msg, manager)
     
-    def _active_flow(self):
+    def _certificate(self):
+        return 
+    
+    def _active(self):
         ctx = self._build_ctx(tomador=True)
         return active_flow(ctx, self.msg)
 

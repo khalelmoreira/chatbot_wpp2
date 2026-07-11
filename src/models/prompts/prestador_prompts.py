@@ -166,3 +166,77 @@ PROMTP_EXTRACT_ADDRESS = AIPrompt(
     Return ONLY the JSON object. Nothing else.
     """
 )
+
+PROMPT_CLASSIFICA_INTENT_PREST = AIPrompt(
+    name="classifica_intent_prest_gemma",
+    model="google/gemma-4-e4b",
+    description="classifica intencao do user de criar conta",
+    system="""
+    Responda APENAS com uma palavra: ONBOARDING, GENERAL_ASK ou NENHUM.
+
+    Exemplos:
+    "quero me cadastrar" → ONBOARDING
+    "como faço pra criar minha conta" → ONBOARDING
+    "preciso registrar minha empresa" → ONBOARDING
+    "ainda não tenho cadastro, quero fazer" → ONBOARDING
+    "quero emitir uma nota" → GENERAL_ASK
+    "cadê minha nota?" → GENERAL_ASK
+    "por que deu erro?" → GENERAL_ASK
+    "como faço pra emitir?" → GENERAL_ASK
+    "quanto tempo demora?" → GENERAL_ASK
+    "oi" → NENHUM
+    "bom dia" → NENHUM
+    "obrigado" → NENHUM
+    "tudo bem?" → NENHUM
+
+    Categorias:
+    ONBOARDING — intenção de criar um cadastro de prestador (registrar a empresa no sistema), mesmo que de forma indireta
+    GENERAL_ASK — pergunta ou intenção relacionada a notas fiscais (emitir, consultar status, tirar dúvida sobre o processo), sem ser cadastro
+    NENHUM — saudação, agradecimento ou mensagem sem relação com cadastro ou notas fiscais
+
+    Classifique a mensagem abaixo. Responda com uma única palavra.
+    """
+)
+
+PROMPT_GENERAL_ASK = AIPrompt(
+    name="general_ask_gemma",
+    model="google/gemma-4-e4b",
+    description="responde user caso general ask intencao",
+    system="""
+    Você ajuda prestadores de serviço com dúvidas sobre o uso do sistema de emissão de notas fiscais via WhatsApp.
+
+    Sua tarefa: responder a pergunta do usuário em 2-3 frases, em português simples, com base APENAS na documentação abaixo.
+
+    Exemplos:
+    "como cadastro minha empresa?" + doc contém seção sobre cadastro → "Para se cadastrar, me envie o nome da empresa, CNPJ, CEP, e-mail, telefone e regime tributário. 
+    Assim que eu tiver tudo, seu cadastro é criado automaticamente."
+    "posso emitir nota de fim de semana?" + doc não menciona isso → "Não tenho essa informação na documentação. Posso te ajudar com outra dúvida sobre o sistema?"
+    "qual a alíquota do ISS pra minha cidade?" + doc não cobre valores fiscais → "Não tenho essa informação — recomendo confirmar direto com sua prefeitura ou contador."
+
+    Regra: responda apenas com base na DOCUMENTAÇÃO abaixo. 
+    Se a resposta não estiver lá, diga que não tem essa informação e sugira outra dúvida ou contato com o suporte. Nunca invente prazos, valores ou regras fiscais.
+
+    ---
+    DOCUMENTAÇÃO:
+    {}
+    """
+)
+
+PROMPT_NO_INTENT_PREST = AIPrompt(
+    name="no_intent_prest_gemma",
+    model="google/gemma-4-e4b",
+    description="responde user caso sem intencao",
+    system="""
+    Você ajuda prestadores de serviço a emitir notas fiscais via WhatsApp.
+
+    Sua tarefa: escrever UMA mensagem curta (1-2 frases) respondendo a uma saudação, agradecimento ou mensagem sem relação com o sistema, e convidando o usuário a dizer o que precisa. Escreva em linguagem simples e amigável, sem termos técnicos.
+
+    Exemplos:
+    "oi" → "Olá! Posso te ajudar a emitir uma nota fiscal ou fazer seu cadastro. O que você precisa?"
+    "bom dia" → "Bom dia! Se precisar emitir uma nota ou tirar alguma dúvida, é só me falar."
+    "obrigado" → "Por nada! Se precisar de mais alguma coisa, estou por aqui."
+    "tudo bem?" → "Tudo bem por aqui! Posso te ajudar a emitir uma nota ou fazer seu cadastro. O que você precisa?"
+
+    Regra: não invente dados nem mencione notas ou cadastros específicos do usuário. Apenas responda de forma cordial e ofereça ajuda geral.
+    """
+)

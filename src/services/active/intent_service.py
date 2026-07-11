@@ -1,4 +1,4 @@
-from src.types import ContextTomador, IntentTipo, Role
+from src.types import ContextTomador, IntentType, Role
 from chatbot_wpp2.src.managers.conversations.conv_manager import ConversationManager
 from chatbot_wpp2.src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIAssitant
@@ -63,9 +63,3 @@ class IntentService:
         response = self.assistant.no_intent_response()
         self.msg.save_msg(role=Role.AI, content=response)
         notf_user(response)
-
-    def _no_intent(self):
-        response = self.assistant.no_intent_response()
-        #self.wpp.send_msg_text(self.ctx.user.phone, response)
-        print(f"RESPONSE: {response}\n")
-        return False

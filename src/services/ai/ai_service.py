@@ -1,7 +1,17 @@
 import json
 import logging
 from src.integrations.ai_client import GemmaClient
-from src.types import ContextTomador, ContextPrestador, DadosTomador, DadosPrestador, StatusResumo, IntentTipo, HistoryResumo, MsgResumo
+from src.types import (
+    ContextTomador,
+    ContextPrestador,
+    DadosTomador,
+    DadosPrestador,
+    StatusResumo,
+    IntentTipo,
+    HistoryResumo,
+    MsgResumo,
+    IntentUserType,
+)
 from src.utils.build_prompt import build_list_prompt
 from src.services.ai.ai_extractors import (
     AIExtractor,
@@ -25,6 +35,9 @@ from src.models.prompts import (
     PROMPT_INVALIDOS_PREST_RESPONSE,
     PROMPT_NO_DATA_PREST_RESPONSE,
     PROMTP_EXTRACT_ADDRESS,
+    PROMPT_CLASSIFICA_INTENT_PREST,
+    PROMPT_GENERAL_ASK,
+    PROMPT_NO_INTENT_PREST,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,6 +97,26 @@ class AIService:
         except Exception as e:
             print(f"Erro ao responder: {e}")
             return "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."
+        
+    def no_intent_prest(self, ctx: ContextPrestador) -> str:
+        try:
+            return self.client.extract_text(
+                system_prompt=PROMPT_NO_INTENT_PREST.system,
+                user_msg=ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
+        
+    def general_ask(self, ctx: ContextPrestador) -> str:
+        try:
+            return self.client.extract_text(
+                system_prompt=PROMPT_GENERAL_ASK.system,
+                user_msg=ctx.text
+            )
+        except Exception as e:
+            print(f"Erro ao responder: {e}")
+            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
         
     def incomplete_response(self, ctx: ContextTomador) -> str:
         try:
@@ -149,14 +182,6 @@ class AIService:
             print(f"Erro ao responder: {e}")
             return "Não pude entender sua mensagem, tente novamente em alguns minutos."
 
-
-
-
-
-class AIAssitant(AIService):
-    def __init__(self, ctx: ContextTomador):
-        super().__init__(ctx)
-        
     def status_response(self, resumo: StatusResumo):
         try:
             response = self.client.extract_text(
@@ -183,6 +208,18 @@ class AIAssitant(AIService):
         except (ValueError, Exception) as e:
             print(f"Erro ao classificar intencao: {e}")
             return IntentTipo.NENHUM
+        
+    def classificar_intent_user(self, ctx: ContextPrestador) -> IntentUserType:
+        try:
+            response = self.client.extract_text(
+                system_prompt=PROMPT_CLASSIFICA_INTENT_PREST.system,
+                user_msg=ctx.text
+            )
+            return IntentUserType(response.strip().upper())
+        
+        except (ValueError, Exception) as e:
+            print(f"Erro ao classificar intencao: {e}")
+            return IntentUserType.NENHUM
         
     def parece_pergunta(self) -> bool:
         try:

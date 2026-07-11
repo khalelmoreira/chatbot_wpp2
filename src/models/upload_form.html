@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envio de Certificado Digital</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 480px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #1a1a1a;
+        }
+        h1 { font-size: 1.3rem; }
+        label { display: block; margin-top: 16px; font-weight: 600; font-size: 0.9rem; }
+        input[type="file"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 24px;
+            width: 100%;
+            padding: 12px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:disabled { background: #999; cursor: not-allowed; }
+        #erro {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            background: #fdecea;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            color: #a71d2a;
+            font-size: 0.9rem;
+        }
+        #aviso {
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Envio de Certificado Digital (.pfx)</h1>
+    <p>Envie o certificado A1 do seu CNPJ para concluir o cadastro.</p>
+
+    <form id="form-upload">
+        <label for="certificado">Arquivo do certificado (.pfx)</label>
+        <input type="file" id="certificado" name="certificado" accept=".pfx" required>
+
+        <label for="senha">Senha do certificado</label>
+        <input type="password" id="senha" name="senha" required autocomplete="off">
+
+        <button type="submit" id="btn-enviar">Enviar certificado</button>
+        <div id="erro"></div>
+        <p id="aviso">Seus dados são enviados de forma criptografada e o certificado não é armazenado em disco.</p>
+    </form>
+
+    <script>
+        const form = document.getElementById("form-upload");
+        const btn = document.getElementById("btn-enviar");
+        const erroDiv = document.getElementById("erro");
+        const token = {{ token | tojson }};
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            erroDiv.style.display = "none";
+            btn.disabled = true;
+            btn.textContent = "Enviando...";
+
+            const formData = new FormData();
+            formData.append("certificado", document.getElementById("certificado").files[0]);
+            formData.append("senha", document.getElementById("senha").value);
+
+            try {
+                const resp = await fetch(`/upload-certificate/${token}`, {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await resp.json();
+
+                if (resp.ok && data.success) {
+                    document.body.innerHTML = `
+                        <div style="text-align:center; margin-top:80px;">
+                            <h1>Certificado enviado com sucesso!</h1>
+                            <p>Você já pode voltar ao WhatsApp para continuar.</p>
+                        </div>`;
+                    return;
+                }
+
+                if (resp.status === 410) {
+                    document.body.innerHTML = `
+                        <div style="text-align:center; margin-top:80px;">
+                            <h1>Link expirado</h1>
+                            <p>Solicite um novo link pelo WhatsApp.</p>
+                        </div>`;
+                    return;
+                }
+
+                // 400/409 — erro recuperável, mantém o form pro usuário tentar de novo
+                erroDiv.textContent = data.error || "Erro ao enviar o certificado. Tente novamente.";
+                erroDiv.style.display = "block";
+                document.getElementById("senha").value = "";
+            } catch (err) {
+                erroDiv.textContent = "Falha de conexão. Verifique sua internet e tente novamente.";
+                erroDiv.style.display = "block";
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Enviar certificado";
+            }
+        });
+    </script>
+</body>
+</html>

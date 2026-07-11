@@ -2,9 +2,12 @@ from flask import Flask, request, jsonify, render_template
 import os
 import logging
 import atexit
+from src.types import NtaasCertificadoError
 from src.workers import EmissaoWorker, PollingWorker
 from src.webhooks import WppWebhook, NotaasWebhook
-from src.managers.tokens_manager import UploadTokensManager as TokensManager
+from src.managers.tokens_manager import TokensManager
+from src.managers.prestador_manager import PrestadorManager
+from src.services.sign_up.certificate_service import CertificateService
 from src.services.validators.security_service import verificar_ass
 from src.database.tables_db import init_db
 from src.services.notaas.ja_process import ja_process
@@ -75,24 +78,28 @@ def webhook_notaas():
     
     return "ok", 200
 
-@app.route("/upload-certificado/<token>", methods=["GET"])
+@app.route("/upload-certificate/<token>", methods=["GET"])
 def form_upload(token: str):
     result = TokensManager().get_token(token)
 
-    if not result or result["usado"] or expirado(result["expire_at"]):
+    if not result or result["used"] or expirado(result["expire_at"]):
         return render_template("token_invalido.html"), 410
     
     return render_template("upload_form.html", token=token)
 
-@app.route("/upload-certificado/<token>", methods=["POST"])
+@app.route("/upload-certificate/<token>", methods=["POST"])
 def process_upload(token: str):
 
-    result = TokensManager().update_usado(token)
-    if not result:
+    row = TokensManager().get_token(token)
+    if not row or row["used"] or expirado(row["expire_at"]):
         return jsonify({"error:": "token inválido, expirado ou já usado"}), 410
     
-    prestador_id = result["prestador_id"]
-
+    prestador_id = row["prestador_id"]
+    
+    prestador = PrestadorManager().get_project_id()
+    if not prestador:
+        return jsonify({"error": "prestador não está na etapa de certificado"}), 409
+    
     arquivo = request.files.get("certificado")
     senha = request.form.get("senha")
 
@@ -102,12 +109,16 @@ def process_upload(token: str):
     certificado_bytes = arquivo.read()
 
     try:
-        response = send_certificado_ntaas(prestador_id=prestador_id, certificado_bytes=certificado_bytes, senha=senha)
+        CertificateService().send_e_persist_certificate()
 
+    except NtaasCertificadoError as e:
+        return jsonify({"error": str(e)}), 400
+    
     finally:
         del certificado_bytes
         del senha
 
+    TokensManager().update_used(token)
     return jsonify({"success": True})
 
 def _shutdown():
