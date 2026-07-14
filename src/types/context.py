@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Generic, Protocol, TypeVar, Any, Self, ClassVar
 from src.types.user import User
+from src.types.wpp_msg import MsgType
 
 #------------------------------- CONTEXT BASE -------------------------------#
 
@@ -11,7 +12,7 @@ T = TypeVar("T", bound=Mergeable)
 
 @dataclass
 class ValidationResult:
-    valid:   dict[str, Any] = field(default_factory=dict)
+    valid:   dict[str, object] = field(default_factory=dict)
     invalid: list[str] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
 
@@ -21,12 +22,14 @@ class ValidationResult:
 
 @dataclass
 class ContextBase(Generic[T]):
-    user: User
-    text: str
-    new_data: T
-    db_data: T
-    complete: T
-    validated: T
+    user:       User
+    text:       str
+    new_data:   T
+    db_data:    T
+    merged:     T
+    validated:  T
+    msg_type:   MsgType
+    button_id:  str | None = None
     validation: ValidationResult = field(default_factory=ValidationResult)
 
 #------------------------------- CONTEXT PRESTADOR -------------------------------#

@@ -6,26 +6,31 @@ class OnboardingManager:
     def __init__(self, ctx: ContextTomador):
         self.db = DB()
         self.ctx = ctx
+        self.id = ctx.user.id
 
     def resumo_nfs(self) -> sqlite3.Row:
+
+        """
+        SQL explícito (não usa select() genérico): requer JOIN com conversations
+        e ORDER BY + LIMIT para pegar o registro mais recente.
+        """
 
         return self.db.fetchone("""
             SELECT 
                 n.status,
                 n.erro_msg,
                 n.created_at,
-                n.updated,
+                n.updated_at,
                 n.invoice_id
             FROM nfs n
             JOIN conversations c ON
                 c.id = n.conversation_id
-            WHERE c.prestador id = ?
+            WHERE c.prestador_id = ?
             ORDER BY n.created_at DESC
             LIMIT 1
         """, (self.ctx.user.id,))
     
     def get_nf_history(self, limit: int = 5) -> list[sqlite3.Row]:
-        
         return self.db.fetchall("""
             SELECT
                 id,
@@ -52,13 +57,10 @@ class OnboardingManager:
         """, (self.ctx.user.id, limit))
     
     def get_msg_history(self, limit: int = 5) -> list[sqlite3.Row]:
-
-        return self.db.fetchall("""
-            SELECT
-                role,
-                content
-            FROM messages
-            WHERE prestador_id = ?
-            ORDER BY id ASC
-            LIMIT ?
-        """, (self.ctx.user.id, limit))
+        return self.db.select(
+            "messages",
+            columns="role, content",
+            where={"prestador_id": self.id},
+            order_by="id ASC",
+            limit=limit
+        )

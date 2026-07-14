@@ -1,7 +1,7 @@
 from src.types import ContextTomador, IncomingMessage
 from src.services.active.active_service import DispatchActiveService, ConvActiveService
 
-def active_flow(ctx: ContextTomador, msg: IncomingMessage):
+def active_flow(ctx: ContextTomador):
 
     print(f"\n\n----------------ACTIVE FLOW----------------\n\n")
 

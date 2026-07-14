@@ -1,4 +1,4 @@
-from src.types import ContextPrestador, DadosPrestador, Role
+from src.types import ContextPrestador, PrestadorData, Role
 from src.managers.prestador_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
 from chatbot_wpp2.src.managers.msg_manager import MsgManager
@@ -17,14 +17,14 @@ class ExtractionService:
 
     def extract_e_merge(self):
         self.ai.extract_address(self.ctx)
-        print(f"DADOS NOVOS: {self.ctx.dados_novos}\n")
+        print(f"DADOS NOVOS: {self.ctx.new_data}\n")
 
         draft = self.prestador.get_all()
-        self.ctx.dados_db = DadosPrestador.from_dict(draft)
-        print(f"DADOS DARFT: {self.ctx.dados_db}\n")
+        self.ctx.db_data = PrestadorData.from_dict(draft)
+        print(f"DADOS DARFT: {self.ctx.db_data}\n")
 
-        self.ctx.dados_completos = self.ctx.dados_db.merge(self.ctx.dados_novos)
-        print(f"MERGE: {self.ctx.dados_completos}\n")
+        self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
+        print(f"MERGE: {self.ctx.merged}\n")
 
 class ValidationService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
@@ -38,11 +38,11 @@ class ValidationService:
 
         self.validador.validar(self.ctx)
 
-        if self.ctx.validacao.validos:
+        if self.ctx.validation.valid:
             self._update_draft()
             return True
         
-        if self.ctx.validacao.invalidos:
+        if self.ctx.validation.invalid:
             self._invalidos()
             return False
         
@@ -50,20 +50,20 @@ class ValidationService:
         return False
     
     def completo(self) -> bool:
-        if not self.ctx.validacao.is_complete:
+        if not self.ctx.validation.is_complete:
             self._incompleto()
             return False
         return True
     
     def msg_confirm(self):
-        self.ctx.dados_validados = DadosPrestador.from_dict(self.ctx.validacao.validos)
+        self.ctx.validated = PrestadorData.from_dict(self.ctx.validation.valid)
         # wpp.send_msg_botao(
         #     phone=ctx.user.phone,
         #     text=(
         #         f"📍 *Endereço encontrado:*\n\n"
-        #         f"{endereco.logradouro}\n"
-        #         f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n"
-        #         f"CEP: {endereco.cep}\n\n"
+        #         f"{address.logradouro}\n"
+        #         f"{address.bairro} — {address.cidade}/{address.uf}\n"
+        #         f"CEP: {address.cep}\n\n"
         #         f"Esse é o endereço correto?"
         #     ),
         #     botoes=[
@@ -74,12 +74,12 @@ class ValidationService:
 
         print(
             f"Seus dados:*\n\n"
-            f"Razão Social: {self.ctx.dados_validados.razao_social}\n"
-            f"CNPJ: {self.ctx.dados_validados.cnpj}\n"
-            f"Email: {self.ctx.dados_validados.email}\n"
-            f"Regime Tributário: {self.ctx.dados_validados.regime_tributario}\n"
-            f"Endereco: {self.ctx.dados_validados.endereco.logradouro} — {self.ctx.dados_validados.endereco.bairro} — {self.ctx.dados_validados.endereco.cidade}/{self.ctx.dados_validados.endereco.uf}\n"
-            f"CEP: {self.ctx.dados_validados.cep}\n\n"
+            f"Razão Social: {self.ctx.validated.razao_social}\n"
+            f"CNPJ: {self.ctx.validated.cnpj}\n"
+            f"Email: {self.ctx.validated.email}\n"
+            f"Regime Tributário: {self.ctx.validated.regime_tributario}\n"
+            f"Endereco: {self.ctx.validated.address.logradouro} — {self.ctx.validated.address.bairro} — {self.ctx.validated.address.cidade}/{self.ctx.validated.address.uf}\n"
+            f"CEP: {self.ctx.validated.cep}\n\n"
             f"Esses dados estão corretos?\n"
         )
         print_table(table_name="users", where=self.ctx.user.phone)

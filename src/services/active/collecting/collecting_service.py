@@ -1,5 +1,5 @@
 from src.services.validators.validador_tomador import ValidadorTomador
-from src.types import ContextTomador, ConversationStatus, Role, BotaoResponse, DadosTomador
+from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, DadosTomador
 from chatbot_wpp2.src.managers.conversations.conv_manager import ConvManager
 from chatbot_wpp2.src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIService
@@ -68,7 +68,7 @@ class ValidationService:
         print(f"VALIDACAO: {self.ctx.validacao}\n")
     
     def _update_state(self):
-        self.conversation.update_state(ConversationStatus.CONFIRMING)
+        self.conversation.update_state(ConvStatus.CONFIRMING)
 
     def _msg_confirm(self):
 

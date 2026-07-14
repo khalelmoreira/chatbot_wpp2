@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Self
 from src.types import StatusInvoice
 from src.database.db import DB
 from src.types import NfseStatus
@@ -10,13 +11,12 @@ class NfsPollingManager:
         self.job_id = job["id"]
 
     @classmethod
-    def get_jobs(cls) -> "list[NfsPollingManager]":
+    def get_jobs(cls) -> "list[Self]":
         jobs = cls._get_processing_invoice()
         return [cls(job) for job in jobs]
 
     @staticmethod
     def _get_processing_invoice() -> list[sqlite3.Row]:
-        
         db = DB()
         result =  db.fetchall("""
             SELECT

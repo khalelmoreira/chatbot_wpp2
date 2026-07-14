@@ -1,9 +1,9 @@
 import sqlite3
-from src.types import ContextTomador, ConversationStatus, StatusResumo, HistoryResumo, MsgResumo
+from src.types import ContextTomador, ConvStatus, StatusResumo, HistoryResumo, MsgResumo
 from src.managers.conversations import ConversationManager, OnboardingManager
 
 class ResumoBuilder:
-    def __init__(self, ctx: ContextTomador, status: ConversationStatus):
+    def __init__(self, ctx: ContextTomador, status: ConvStatus):
         self.ctx = ctx
         self.status = status
         self.conv_manager = ConversationManager(ctx)
@@ -11,12 +11,12 @@ class ResumoBuilder:
 
     def resumo_status(self) -> StatusResumo:
         builders = {
-            ConversationStatus.COLLECTING: self._get_draft,
-            ConversationStatus.CONFIRMING: self._get_draft,
-            ConversationStatus.QUEUED:     self._get_nfs,
-            ConversationStatus.DONE:       self._get_nfs,
-            ConversationStatus.ERROR:      self._get_nfs,
-            ConversationStatus.CANCELLED:  self._get_nfs,
+            ConvStatus.COLLECTING: self._get_draft,
+            ConvStatus.CONFIRMING: self._get_draft,
+            ConvStatus.QUEUED:     self._get_nfs,
+            ConvStatus.DONE:       self._get_nfs,
+            ConvStatus.ERROR:      self._get_nfs,
+            ConvStatus.CANCELLED:  self._get_nfs,
         }
         get_data = builders.get(self.status)
         print(f"GET_DATA RESUMO_STATUS: {get_data}\n")

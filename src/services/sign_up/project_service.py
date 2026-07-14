@@ -4,7 +4,7 @@ import requests
 from src.models.urls import NOTAAS_BASE_URL
 from src.types import ContextPrestador, CnpjJaCadastradoError, LimitePlanoAtingidoError, DadosInvalidosError
 
-class NtaasProject:
+class ProjectService:
     def __init__(self, ctx: ContextPrestador):
         self.validated = ctx.validated
         self.address = ctx.validated.address
@@ -12,7 +12,7 @@ class NtaasProject:
     def _only_digits(self, value: str) -> str:
         return re.sub(r"\D", "", value or "")
     
-    def create_project(self, org_token: str) -> str:
+    def create_project(self, org_token: str) -> str | None:
         payload = self.build_payload()
 
         resp = requests.post(

@@ -1,7 +1,7 @@
 from enum import StrEnum
 from dataclasses import dataclass
 
-class ConversationStatus(StrEnum):
+class ConvStatus(StrEnum):
     COLLECTING  = "COLLECTING"
     CONFIRMING  = "CONFIRMING"
     QUEUED      = "QUEUED"

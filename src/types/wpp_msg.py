@@ -7,7 +7,7 @@ from enum import StrEnum
 
 @dataclass
 class AIResponse:
-    message: str                   # texto para o usuário
+    message:  str                   # texto para o usuário
     extraido: dict                 # dados novos identificados nesta mensagem
     intencao: bool = False         # intenção de emissao, ia detecta
 
@@ -18,18 +18,18 @@ class AIClient(Protocol):
 class IncomingMessage:
     #MENSAGEM RECEBIDA E NORMALIZADA
 
-    msg_id: str
-    phone: str
-    name: str
-    tipo: str
+    msg_id:    str
+    phone:     str
+    name:      str
+    tipo:      MsgType
     timestamp: int
-    text: str | None
-    id_botao: str | None
+    text:      str
+    button_id: str | None = None
 
     def is_duplicate(self, processed_ids: set[str]) -> bool:
         return self.msg_id in processed_ids
     
-class TypeMessage(StrEnum):
+class MsgType(StrEnum):
     TEXT     = "text"
     IMAGE    = "image"
     AUDIO    = "audio"
@@ -39,11 +39,11 @@ class TypeMessage(StrEnum):
     BUTTON   = "button"
 
 class BotaoId(StrEnum):
-    TOMADOR_CONFIRMADO  = "tomador_confirmado"
-    TOMADOR_CORRIGIR    = "tomador_corrigir"
+    TOMADOR_CONFIRMADO   = "tomador_confirmado"
+    TOMADOR_CORRIGIR     = "tomador_corrigir"
 
-    ENDERECO_CONFIRMADO = "endereco_confirmado"
-    ENDERECO_CORRIGIR   = "endereco_corrigir"
+    ENDERECO_CONFIRMADO  = "endereco_confirmado"
+    ENDERECO_CORRIGIR    = "endereco_corrigir"
 
     PRESTADOR_CONFIRMADO = "prestador_confirmado"
     PRESTADOR_CORRIGIR   = "prestador_corrigir"
@@ -70,7 +70,7 @@ class TextMessageDict(TypedDict):
 class MessageDict(TypedDict, total=False):
     id: str
     timestamp: str
-    type: TypeMessage
+    type: MsgType
     text: TextMessageDict
     audio_id: str
 

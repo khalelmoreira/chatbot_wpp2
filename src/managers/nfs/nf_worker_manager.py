@@ -1,5 +1,4 @@
 import sqlite3
-from typing import Optional
 from src.types import NfseStatus
 from config import MAX_TENTATIVAS
 from src.database.db import DB
@@ -8,10 +7,10 @@ from src.utils.debug import print_table
 
 class NfsWorkerManager:
     def __init__(self, job: int):
-        self.db              = DB()
-        self.job             = job
-        self.job_id          = job["id"]
-        self.conversation_id = job["conversation_id"]
+        self.db  = DB()
+        self.job = job
+        self.jid = job["id"]
+        self.cid = job["conversation_id"]
 
     @classmethod
     def reserva_job(cls) -> "NfsWorkerManager | None":
@@ -22,7 +21,7 @@ class NfsWorkerManager:
         return cls(job)
     
     @staticmethod
-    def _get_next_job() -> Optional[sqlite3.Row]:
+    def _get_next_job() -> sqlite3.Row | None:
 
         db = DB()
         return db.fetchone_modif("""
@@ -73,25 +72,20 @@ class NfsWorkerManager:
 
     def marcar_erro(self, tentativas: int, erro: str) -> None:
         novo_status = 'ERROR' if tentativas >= MAX_TENTATIVAS else 'QUEUED'
-        self.db.executar_modif(f"""
-            UPDATE nfs SET
-                status     = ?,
-                erro_msg   = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        """, (novo_status, erro, self.job_id))
+        self.db.update(
+            "nfs",
+            data={"status": novo_status, "erro_msg": erro, "updated_at": "CURRENT_TIMESTAMP"},
+            where={"id": self.jid}
+        )
 
     def save_invoice_id(self, invoice_id: str) -> None:
-        print(f"UPDATE nfs SET invoice_id\n")
-        self.db.executar_modif("""
-            UPDATE nfs SET
-                invoice_id = ?,
-                status     = 'EMITTING',
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        """, (invoice_id, self.job_id,))
+        self.db.update(
+            "nfs",
+            data={"invoice_id": invoice_id, "status": "EMITTING", "updated_at": "CURRENT_TIMESTAMP"},
+            where={"id": self.jid}
+        )
 
-    def resetar_jobs_travados(self):
+    def resetar_jobs_travados(self) -> None:
         self.db.executar_modif("""
             UPDATE nfs SET
                 status     = 'QUEUED',

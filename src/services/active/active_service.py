@@ -1,5 +1,5 @@
-from src.types import ContextTomador, IncomingMessage, ConversationStatus, Role
-from src.managers.conversations import ConversationManager
+from src.types import ContextTomador, ConvStatus, Role
+from src.managers.conversations import ConvManager
 from chatbot_wpp2.src.managers.msg_manager import MsgManager
 from src.flows.active_flows.collecting_flow import collecting_flow
 from src.flows.active_flows.confirming_flow import confirming_flow
@@ -10,7 +10,7 @@ from src.utils.debug import print_table
 class ConvActiveService:
     def __init__(self, ctx: ContextTomador):
         self.ctx = ctx
-        self.conversation = ConversationManager(ctx)
+        self.conversation = ConvManager(ctx)
     
     def tem_conv(self):
         conversa = self._get_conv()
@@ -37,10 +37,9 @@ class ConvActiveService:
         return conversa
 
 class DispatchActiveService:
-    def __init__(self, ctx: ContextTomador, msg: IncomingMessage):
+    def __init__(self, ctx: ContextTomador):
         self.ctx = ctx
-        self.msg = msg
-        self.conversation = ConversationManager(ctx)
+        self.conversation = ConvManager(ctx)
         
     def dispatch(self, conversa):
         print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
@@ -51,9 +50,9 @@ class DispatchActiveService:
         self.ctx.conv_status = self._status(conversa)
 
         dispatchers = {
-            ConversationStatus.COLLECTING: self._collecting_flow,
-            ConversationStatus.CONFIRMING: self._confirming_flow,
-            ConversationStatus.QUEUED:     self._queued_flow,
+            ConvStatus.COLLECTING: self._collecting_flow,
+            ConvStatus.CONFIRMING: self._confirming_flow,
+            ConvStatus.QUEUED:     self._queued_flow,
         }
 
         dispatcher = dispatchers.get(self.ctx.conv_status)

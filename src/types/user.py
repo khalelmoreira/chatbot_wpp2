@@ -22,5 +22,5 @@ class IntentUserType(StrEnum):
 class User:
     id:     int
     phone:  str
-    name:   str
-    status: UserStatus
+    name:   str | None = None
+    status: UserStatus | None = None

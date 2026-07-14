@@ -4,7 +4,7 @@ import uuid
 import hashlib
 from src.models.aliquota_iss_constant import ALIQUOTA_ISS
 from src.database.db import DB
-from src.types import ContextTomador, DadosTomador
+from src.types import ContextTomador, TomadorData
 from src.utils.debug import print_table
 
 class TomadorManager:
@@ -17,7 +17,7 @@ class TomadorManager:
         prestador_id = self.ctx.user.id
         conversation_id = self.ctx.conversation_id
 
-        data = DadosTomador.from_dict(draft)
+        data = TomadorData.from_dict(draft)
 
         nome         = data.tomador.nome
         cnpj         = data.tomador.cnpj
@@ -88,33 +88,23 @@ class TomadorManager:
         return row["id"]
 
     def get_db_data(self) -> None:
+        result = self.db.select(
+            "nfs",
+            columns="nome, cnpj, descricao_servico, aliquota_iss, valor_total",
+            where={"prestador_id": self.ctx.user.id}
+        )
 
-        prestador_id = self.ctx.user.id
-
-        query = """
-            SELECT
-                nome,
-                cnpj,
-                descricao_servico,
-                aliquota_iss,
-                valor_total
-            FROM nfs
-            WHERE prestador_id = ?
-        """
-
-        result = self.db.fetchone(query, (prestador_id,))
-
-        if not result:
-            self.ctx.dados_db = DadosTomador()
+        if not result[0]:
+            self.ctx.db_data = TomadorData()
             return
         
-        nf = result["nf"]
+        nf = result[0]["nf"]
 
         if not nf:
-            self.ctx.dados_db = DadosTomador()
+            self.ctx.db_data = TomadorData()
             return
         
         data = json.loads(nf)
 
         print(f"nfse_drafts.loads: {data}\n")
-        self.ctx.dados_db = DadosTomador.from_dict(data)
+        self.ctx.db_data = TomadorData.from_dict(data)

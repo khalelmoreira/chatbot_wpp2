@@ -9,27 +9,27 @@ class ConvManager:
     def __init__(self, ctx: ContextTomador):
         self.db = DB()
         self.ctx = ctx
+        self.id = ctx.user.id
+        self.phone = ctx.user.phone
+        self.cid = ctx.conversation_id
+
 
     def get_all(self) -> sqlite3.Row:
-
-        return self.db.fetchone("""
-            SELECT
-                *
-            FROM conversations
-            WHERE prestador_id = ?
-            ORDER BY created_at DESC
-            LIMIT 1;
-        """, (self.ctx.user.id,))
-
+        row = self.db.select(
+            "conversations",
+            where={"prestador_id": self.id},
+            order_by="created_at DESC",
+            limit=1
+        )
+        return row[0]
+    
     def get_status(self) -> str:
-
-        row = self.db.fetchone("""
-            SELECT status FROM conversations
-            WHERE phone = ?
-            LIMIT 1
-        """, (self.ctx.user.phone,))
-
-        return row["status"]
+        row = self.db.select(
+            "conversations",
+            columns="status",
+            where={"phone": self.phone}
+        )
+        return row[0]["status"]
 
     def get_ativa(self) -> sqlite3.Row | None:
 
@@ -42,48 +42,38 @@ class ConvManager:
         """, (self.ctx.user.id,))
         
     def create_conversation(self) -> int:
-
-        row = self.db.fetchone("""
-            INSERT INTO conversations (
-                phone,
-                prestador_id,
-                status,
-                draft_json,
-                created_at
-            )
-            VALUES (?, ?, 'COLLECTING', '{}', datetime('now'))
-            RETURNING id
-        """, (self.ctx.user.phone, self.ctx.user.id))
-
+        row = self.db.insert(
+            "conversations",
+            data={
+                "phone": self.phone,
+                "prestador_id": self.id,
+                "status": "COLLECTING",
+                "draft_json": "{}",
+                "created_at": "datetime('now')"
+            },
+            returning="id"
+        )
         return row["id"]
     
     def update_state(self, novo_status: str) -> None:
-
-        self.db.executar_modif("""
-            UPDATE conversations SET
-                status = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        """, (novo_status, self.ctx.conversation_id))
+        self.db.update(
+            "conversations",
+            data={"status": novo_status, "updated_at": "CURRENT_TIMESTAMP"},
+            where={"id": self.cid}
+        )
 
     def get_draft(self) -> dict[str, Any]:
-
-        row = self.db.fetchone("""
-            SELECT
-                draft_json
-            FROM conversations
-            WHERE id = ?
-        """, (self.ctx.conversation_id,))
-
-        return json.loads(row["draft_json"])
+        row = self.db.select(
+            "conversations",
+            columns="draft_json",
+            where={"id": self.cid}
+        )
+        return json.loads(row[0]["draft_json"])
 
     def update_draft(self, draft: dict) -> None:
-
-        self.db.executar_modif("""
-            UPDATE conversations SET
-                draft_json = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        """, (json.dumps(draft), self.ctx.conversation_id))
-
+        self.db.update(
+            "conversations",
+            data={"draft_json": json.dumps(draft), "updated_at": "CURRENT_TIMESTAMP"},
+            where={"id": self.cid}
+        )
         print_table(table_name="conversations", columns=["draft_json"], where="id = ?", params=(self.ctx.conversation_id,))

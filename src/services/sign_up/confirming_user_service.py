@@ -1,4 +1,4 @@
-from src.types import ContextPrestador, IncomingMessage, TypeMessage, Role, BotaoId, UserStatus
+from src.types import ContextPrestador, IncomingMessage, MsgType, Role, BotaoId, UserStatus
 from src.managers.prestador_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 from chatbot_wpp2.src.managers.msg_manager import MsgManager
@@ -8,19 +8,18 @@ def _notf_user(msg: str) -> None:
     print(f"{msg}\n")
 
 class ConfirmUserService:
-    def __init__(self, ctx:ContextPrestador, msg: IncomingMessage, prestador: PrestadorManager):
+    def __init__(self, ctx:ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
-        self.msg = msg
         self.prestador = prestador
         self.wpp = WhatsAppService()
 
     def dispatch(self):
 
-        if self.msg.tipo != TypeMessage.BUTTON:
+        if self.ctx.msg_type != MsgType.BUTTON:
             self._use_botoes_msg()
             return
         
-        match self.msg.id_botao:
+        match self.ctx.button_id:
             case BotaoId.PRESTADOR_CONFIRMADO:
                 self._prestador_confirmado()
                 return
@@ -30,7 +29,7 @@ class ConfirmUserService:
                 return
             
             case _:
-                raise ValueError(f"Button ID não encontrado: {self.msg.id_botao}")
+                raise ValueError(f"Button ID não encontrado: {self.ctx.button_id}")
 
     def _prestador_corrigir(self):
         self.prestador.update_state(UserStatus.COLLECTING)
@@ -39,7 +38,7 @@ class ConfirmUserService:
         MsgManager(self.ctx).save_msg(Role.AI, msg)
 
     def _prestador_confirmado(self):
-        self.prestador.update_state(UserStatus.QUEUED)
+        self.prestador.update_state(UserStatus.PROJECT)
         
     def _use_botoes_msg(self):
         _notf_user(msg="Por favor, use os botões para confirmar ou corrigir os dados.")

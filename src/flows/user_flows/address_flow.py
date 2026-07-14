@@ -2,10 +2,11 @@ from chatbot_wpp2.src.services.sign_up.address_service import ExtractionService,
 from src.types import IncomingMessage, UserStatus, ContextPrestador
 from chatbot_wpp2.src.managers.prestador_manager import PrestadorManager
 
-def address_flow(ctx: ContextPrestador, msg: IncomingMessage, prestador: PrestadorManager):
+def address_flow(ctx: ContextPrestador):
     
     print(f"\n\n----------------TESTE FLUXO ADDRESS----------------\n\n")
 
+    prestador = PrestadorManager(ctx)
     ExtractionService(ctx, prestador).extract_e_merge()
     validation = ValidationService(ctx, prestador)
 

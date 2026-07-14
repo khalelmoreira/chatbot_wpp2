@@ -1,14 +1,11 @@
 from chatbot_wpp2.src.managers.user_manager import UserManager
 from src.types import IncomingMessage
-from src.services.initial.dispatch_user import DispatchUser
-from src.services.initial.user_exists import user_exists
+from chatbot_wpp2.src.services.initial.initital_service import InitialService, DispatchUser
 from src.utils.debug import print_table
 
 def initial_flow(msg: IncomingMessage):
 
     print(f"\n\n----------------INITIAL FLOW----------------\n\n")
 
-    user_manager = UserManager(msg.phone)
-    user = user_exists(msg, user_manager)
-    dispatch = DispatchUser(user_manager, user, msg)
-    dispatch.dispatch()
+    user = InitialService(msg).user_exists()
+    DispatchUser(user, msg).dispatch()

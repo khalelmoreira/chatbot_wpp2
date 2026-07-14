@@ -27,12 +27,12 @@ from src.types.wpp_msg import (
     BotaoResponse,
     MsgConvType,
     Role,
-    TypeMessage,
+    MsgType,
     BotaoId,
 )
 
 from src.types.conversation import (
-    ConversationStatus,
+    ConvStatus,
     StatusResumo,
     IntentType,
     HistoryResumo,
@@ -81,7 +81,7 @@ __all__ = [
     "AIClient",
     "StatusResumo",
     "BotaoResponse",
-    "ConversationStatus",
+    "ConvStatus",
     "NfseStatus",
     "EventsNotaas",
     "PayloadNotaas",
@@ -90,7 +90,7 @@ __all__ = [
     "IntentType",
     "Role",
     "MsgConvType",
-    "TypeMessage",
+    "MsgType",
     "BotaoId",
     "HistoryResumo",
     "MsgResumo",

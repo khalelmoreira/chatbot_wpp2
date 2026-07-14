@@ -10,7 +10,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS prestador (
             id                   INTEGER PRIMARY KEY AUTOINCREMENT,
             phone                TEXT UNIQUE NOT NULL,
-            status               TEXT NOT NULL DEFAULT 'NEW',
+            status               TEXT,
             name                 TEXT,
             email                TEXT,
                       
@@ -29,10 +29,10 @@ def init_db():
             uf                   TEXT,
 
             -- notaas                   
-            ntaas_project_id    TEXT,
-            ntaas_api_key       TEXT,  --criptografaco
-            org_token           TEXT,
-            certificado_enviado INTEGER NOT NULL DEFAULT 0,
+            ntaas_project_id     TEXT,
+            ntaas_api_key        TEXT,  --criptografaco
+            org_token            TEXT,
+            certificado_enviado  INTEGER DEFAULT 0,
                    
             -- controle
             error_msg            TEXT,
