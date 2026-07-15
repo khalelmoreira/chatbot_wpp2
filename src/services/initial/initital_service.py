@@ -14,6 +14,39 @@ def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.self.msg.phone, self.msg)
     print(f"{msg}\n")
 
+class UserResolv:
+    def __init__(self, msg: IncomingMessage) -> None:
+        self.msg = msg
+
+    def resolv(self) -> tuple[User, bool]:
+
+        manager = UserManager()
+        row = manager.get_user(self.msg.phone)
+
+        if not row:
+
+            user_id = manager.criar_user(self.msg)
+            user = User(
+                id=user_id,
+                phone=self.msg.phone,
+                name=self.msg.name
+            )
+            return user, True
+        
+        user = User(
+                id=row[0]["id"],
+                phone=self.msg.phone,
+                name=self.msg.name,
+                status=parse_status(row[0])
+            )
+        return user, False
+    
+def parse_status(row: dict) -> UserStatus | None:
+    status = row.get("status")
+    if not status:
+        return None
+    return UserStatus(status)
+
 class InitialService:
     def __init__(self, msg: IncomingMessage):
         self.msg = msg
@@ -88,26 +121,26 @@ class DispatchUser:
     def _active(self):
         return active_flow(ctx=self._build_tom_ctx())
 
-    def _build_prest_ctx(self) -> ContextPrestador:
-        return ContextPrestador(
-            user=self.user,
-            text=self.msg.text,
-            new_data=PrestadorData(),
-            db_data=PrestadorData(),
-            merged=PrestadorData(),
-            validated=PrestadorData(),
-            msg_type=self.msg.tipo,
-            button_id=self.msg.button_id
-        )
-    
-    def _build_tom_ctx(self) -> ContextTomador:
-        return ContextTomador(
-            user=self.user,
-            text=self.msg.text,
-            new_data=TomadorData(),
-            db_data=TomadorData(),
-            merged=TomadorData(),
-            validated=TomadorData(),
-            msg_type=self.msg.tipo,
-            button_id=self.msg.button_id
-        )
+def _build_prest_ctx(self) -> ContextPrestador:
+    return ContextPrestador(
+        user=self.user,
+        text=self.msg.text,
+        new_data=PrestadorData(),
+        db_data=PrestadorData(),
+        merged=PrestadorData(),
+        validated=PrestadorData(),
+        msg_type=self.msg.tipo,
+        button_id=self.msg.button_id
+    )
+
+def _build_tom_ctx(self) -> ContextTomador:
+    return ContextTomador(
+        user=self.user,
+        text=self.msg.text,
+        new_data=TomadorData(),
+        db_data=TomadorData(),
+        merged=TomadorData(),
+        validated=TomadorData(),
+        msg_type=self.msg.tipo,
+        button_id=self.msg.button_id
+    )

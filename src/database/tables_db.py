@@ -21,12 +21,12 @@ def init_db():
             
             -- endereço
             cep                  TEXT,
-            logradouro           TEXT,
-            numero               TEXT,
-            complemento          TEXT,
-            bairro               TEXT,
-            cidade               TEXT,
-            uf                   TEXT,
+            address_logradouro   TEXT,
+            address_numero       TEXT,
+            address_complemento  TEXT,
+            address_bairro       TEXT,
+            address_cidade       TEXT,
+            address_uf           TEXT,
 
             -- notaas                   
             ntaas_project_id     TEXT,
@@ -45,52 +45,52 @@ def init_db():
 
     db.executar_modif("""
         CREATE TABLE IF NOT EXISTS tomador (
-            id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            prestador_id INTEGER NOT NULL REFERENCES prestador(id),
-            created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            nome         TEXT NOT NULL,
+            id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+            prestador_id         INTEGER NOT NULL REFERENCES prestador(id),
                    
-            -- identificacao
-                   
-            cnpj         TEXT,
-            cpf          TEXT,
-            email        TEXT,
-            phone        TEXT,
+            cnpj                 TEXT,
+            cpf                  TEXT,
+            CHECK (
+                (cpf IS NOT NULL AND cnpj IS NULL) OR
+                (cpf IS NULL AND CNPJ IS NOT NULL)      
+            )
+                      
+            name                 TEXT,
+            email                TEXT,
+            phone                TEXT,
                    
             --endereco
                    
-            logradouro   TEXT,
-            numero       TEXT,
-            complemento  TEXT,
-            bairro       TEXT,
-            cidade       TEXT,
-            uf           TEXT,
-            cep          TEXT,
-
-            
-            UNIQUE (prestador_id, cnpj),
-            UNIQUE (prestador_id, cpf),
-            CHECK(cnpj IS NOT NULL OR cpf IS NOT NULL)
+            cep                  TEXT,
+            address_logradouro   TEXT,
+            address_numero       TEXT,
+            address_complemento  TEXT,
+            address_bairro       TEXT,
+            address_cidade       TEXT,
+            address_uf           TEXT,
+                      
+            error_msg            TEXT,
+            created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         )
     """)
 
     db.executar_modif("""
         CREATE TABLE IF NOT EXISTS nfs (
-            id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+            id                         INTEGER PRIMARY KEY AUTOINCREMENT,
                    
             -- NOT NULL
                    
-            prestador_id       INTEGER NOT NULL REFERENCES prestador(id),
-            tomador_id         INTEGER NOT NULL REFERENCES tomador(id),
-            conversation_id    INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
-            idempotency_key    TEXT UNIQUE NOT NULL,                                        -- sha256(payload + prestador_id)
-            status             TEXT NOT NULL DEFAULT 'QUEUED',    -- QUEUED | DONE | ERROR | CANCELLED
-            tentativas         INTEGER NOT NULL DEFAULT 0,
-            payload_enviado    TEXT NOT NULL,                                               -- JSON completo
-            requested_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            prestador_id               INTEGER NOT NULL REFERENCES prestador(id),
+            tomador_id                 INTEGER NOT NULL REFERENCES tomador(id),
+            conversation_id            INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
+            idempotency_key            TEXT UNIQUE NOT NULL,                                        -- sha256(payload + prestador_id)
+            status                     TEXT NOT NULL DEFAULT 'QUEUED',    -- QUEUED | DONE | ERROR | CANCELLED
+            tentativas                 INTEGER NOT NULL DEFAULT 0,
+            payload_enviado            TEXT NOT NULL,                                               -- JSON completo
+            requested_at               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            created_at                 TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at                 TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                    
             -- OBRIGATORIOS NFSe
                 -- tomador
@@ -105,49 +105,49 @@ def init_db():
                     valor_total        REAL NOT NULL,
 
 
-            phone              TEXT,
-            invoice_id         TEXT UNIQUE,          -- preenchido no 202
-            cpf                TEXT,
-            email              TEXT,
+            phone                      TEXT,
+            invoice_id                 TEXT UNIQUE,          -- preenchido no 202
+            cpf                        TEXT,
+            email                      TEXT,
                    
             --endereco
                    
-            logradouro   TEXT,
-            numero       TEXT,
-            complemento  TEXT,
-            bairro       TEXT,
-            cidade       TEXT,
-            uf           TEXT,
-            cep          TEXT,
+            logradouro                 TEXT,
+            numero                     TEXT,
+            complemento                TEXT,
+            bairro                     TEXT,
+            cidade                     TEXT,
+            uf                         TEXT,
+            cep                        TEXT,
                    
-            codigo_servico     TEXT,                 -- cTribNac
-            iss_retido         INTEGER DEFAULT 0,    -- boolean
-            competencia        TEXT,                 -- YYYY-MM
-            referencia         TEXT,                 -- seu ID externo
+            codigo_servico             TEXT,                 -- cTribNac
+            iss_retido                 INTEGER DEFAULT 0,    -- boolean
+            competencia                TEXT,                 -- YYYY-MM
+            referencia                 TEXT,                 -- seu ID externo
                    
             -- campos preenchidos por webhook/polling (issued)
                    
-            ch_nfse            TEXT,                 -- chNFSe / código de verificação
-            n_nfse             TEXT,                 -- nNFSe
-            issued_at          TEXT,
-            ambiente           TEXT,                 -- "producao" | "homologacao"
-            pdf_url            TEXT,
-            xml_url            TEXT,
-            documents_cached   INTEGER,              -- boolean
-            document_status    TEXT,                 -- "partial" | "complete"
-            emitido_em         TEXT,                 -- emittedAt ISO 8601
+            ch_nfse                    TEXT,                 -- chNFSe / código de verificação
+            n_nfse                     TEXT,                 -- nNFSe
+            issued_at                  TEXT,
+            ambiente                   TEXT,                 -- "producao" | "homologacao"
+            pdf_url                    TEXT,
+            xml_url                    TEXT,
+            documents_cached           INTEGER,              -- boolean
+            document_status            TEXT,                 -- "partial" | "complete"
+            emitido_em                 TEXT,                 -- emittedAt ISO 8601
                    
             -- campos preenchidos por webhook/polling (error)
                    
-            erro_code        TEXT,
-            erro_msg         TEXT,
-            erro_json        TEXT,                 -- array [{Codigo, Descricao, Complemento}]
+            erro_code                  TEXT,
+            erro_msg                   TEXT,
+            erro_json                  TEXT,                 -- array [{Codigo, Descricao, Complemento}]
                    
             -- campos preenchidos por webhook/polling (cancelled)
             
-            processado_em      TIMESTAMP,
-            cancelled_at       TEXT,
-            cancel_xml_url     TEXT
+            processado_em              TIMESTAMP,
+            cancelled_at               TEXT,
+            cancel_xml_url             TEXT
         )
     """)
 

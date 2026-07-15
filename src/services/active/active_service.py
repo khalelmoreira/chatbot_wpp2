@@ -66,7 +66,7 @@ class DispatchActiveService:
         return collecting_flow(self.ctx, self.conversation)
     
     def _confirming_flow(self):
-        return confirming_flow(self.ctx, self.conversation, self.msg)
+        return confirming_flow(self.ctx, self.conversation)
     
     def _queued_flow(self):
         return queued_flow(self.ctx, self.conversation)

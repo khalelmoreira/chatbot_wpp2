@@ -1,18 +1,6 @@
 from dataclasses import dataclass
-from typing import Protocol, TypedDict, Literal
+from typing import Any, Protocol, TypedDict, Literal
 from enum import StrEnum
-
-# ─── Contrato da IA ──────────────────────────────────────────────────────────
-# StateMachine não sabe como a IA funciona — só o que ela precisa receber e retornar
-
-@dataclass
-class AIResponse:
-    message:  str                   # texto para o usuário
-    extraido: dict                 # dados novos identificados nesta mensagem
-    intencao: bool = False         # intenção de emissao, ia detecta
-
-class AIClient(Protocol):
-    def process(self, history: list[dict], draft: dict, state: str) -> AIResponse:...
 
 @dataclass
 class IncomingMessage:
@@ -64,26 +52,25 @@ class MsgConvType:
     content: str
     created_at: str
 
-class TextMessageDict(TypedDict):
-    body: str
+@dataclass
+class Message:
+    id:             int
+    prestador_id:   int
+    phone:          str
+    role:           Role
+    content:        str
+    created_at:     str | None = None
 
-class MessageDict(TypedDict, total=False):
-    id: str
-    timestamp: str
-    type: MsgType
-    text: TextMessageDict
-    audio_id: str
-
-class ProfileDict(TypedDict):
-    name: str
-
-class ContactDict(TypedDict):
-    wa_id: str
-    profile: ProfileDict
-
-class ValueDict(TypedDict, total=False):
-    contacts: list[ContactDict]
-    messages: list[MessageDict]
-
-class WebhookPayload(TypedDict):
-    entry: list[dict]
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Message":
+        if not data or "id" not in data or "prestador_id" not in data or "phone" not in data or "role" not in data or "content" not in data:
+            raise ValueError("Message.from_dict requer 'id', 'prestador_id', 'phone', 'role', 'content' presente nos dados.")
+        
+        return cls(
+            id=data["id"],
+            prestador_id=data["prestador_id"],
+            phone=data["phone"],
+            role=Role(data["role"]),
+            content=data["content"],
+            created_at=data.get("created_at")
+        )

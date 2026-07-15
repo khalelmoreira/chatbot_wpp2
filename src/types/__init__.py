@@ -1,5 +1,5 @@
 # DATACLASSES
-from src.types.context import (
+from chatbot_wpp2.src.types.base import (
     ContextBase,
     ContextPrestador,
     ContextTomador,
@@ -22,7 +22,7 @@ from src.types.user import (
 )
 from src.types.wpp_msg import (
     IncomingMessage,
-    AIResponse,
+    ConvStatus,
     AIClient,
     BotaoResponse,
     MsgConvType,
@@ -38,7 +38,7 @@ from src.types.conversation import (
     HistoryResumo,
     MsgResumo,
 )
-from src.types.nfse import (
+from chatbot_wpp2.src.types.nfs import (
     EventsNotaas,
     StatusInvoice,
     NfseStatus,
@@ -77,7 +77,7 @@ __all__ = [
     "IntentUserType",
     # Conversation
     "IncomingMessage",
-    "AIResponse",
+    "ConvStatus",
     "AIClient",
     "StatusResumo",
     "BotaoResponse",
