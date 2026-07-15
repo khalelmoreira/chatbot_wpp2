@@ -1,5 +1,5 @@
-from chatbot_wpp2.src.services.active.collecting.collecting_service import ExtractionService, ValidationService
-from chatbot_wpp2.src.managers.conversations.conv_manager import ConversationManager
+from src.services.active.collecting.collecting_service import ExtractionService, ValidationService
+from src.managers.conversations.conv_manager import ConversationManager
 from src.types import ContextTomador
 
 def collecting_flow(ctx: ContextTomador, conversation: ConversationManager) -> None:

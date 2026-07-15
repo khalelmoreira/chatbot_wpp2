@@ -20,6 +20,17 @@ class User:
     name:   str | None = None
     status: UserStatus | None = None
 
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "User | None":
+        if not data or "id" not in data or "phone" not in data:
+            return None
+        return cls(
+            id=data["id"],
+            phone=data["phone"],
+            name=data.get("name"),
+            status=UserStatus(data["status"]) if data.get("status") else None
+        )
+
 @dataclass
 class Address:
     logradouro:  str | None = None

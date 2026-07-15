@@ -1,7 +1,7 @@
 from src.types import ContextPrestador, PrestadorData, Role
 from src.managers.prestador_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
-from chatbot_wpp2.src.managers.msg_manager import MsgManager
+from src.managers.msg_manager import MsgManager
 from src.services.validators.validador_prestador import ValidadorPrestador
 from src.utils.debug import print_table
 

@@ -1,9 +1,12 @@
 from src.types import IncomingMessage
-from chatbot_wpp2.src.services.initial.initital_service import InitialService, DispatchUser
+from src.services.initial.initital_service import DispatchUser, UserResolv
 
 def initial_flow(msg: IncomingMessage):
 
     print(f"\n\n----------------INITIAL FLOW----------------\n\n")
 
-    user = InitialService(msg).user_exists()
+    user, is_new = UserResolv(msg).resolv()
+    if is_new:
+        UserResolv(msg).welcome_msg()
+
     DispatchUser(user, msg).dispatch()

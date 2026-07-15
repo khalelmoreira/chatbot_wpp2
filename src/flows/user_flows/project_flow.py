@@ -1,7 +1,7 @@
 import os
 import logging
 from src.types import ContextPrestador, CnpjJaCadastradoError, LimitePlanoAtingidoError, DadosInvalidosError, UserStatus
-from chatbot_wpp2.src.services.sign_up.project_service import ProjectService
+from src.services.sign_up.project_service import ProjectService
 from src.managers.user_manager import PrestadorManager
 
 logger = logging.getLogger(__name__)

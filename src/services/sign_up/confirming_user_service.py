@@ -1,7 +1,7 @@
 from src.types import ContextPrestador, IncomingMessage, MsgType, Role, BotaoId, UserStatus
 from src.managers.prestador_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
-from chatbot_wpp2.src.managers.msg_manager import MsgManager
+from src.managers.msg_manager import MsgManager
 
 def _notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)

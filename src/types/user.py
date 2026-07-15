@@ -2,7 +2,7 @@ from operator import add
 from typing import Any, ClassVar
 from enum import StrEnum
 from dataclasses import dataclass, fields, is_dataclass
-from chatbot_wpp2.src.types.base import ContextBase, User, UserStatus, Address
+from src.types.base import ContextBase, User, UserStatus, Address
 
 class IntentUserType(StrEnum):
     ONBOARDING  = "ONBOARDING"

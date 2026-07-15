@@ -1,48 +1,55 @@
 # DATACLASSES
-from chatbot_wpp2.src.types.base import (
+from src.types.base import (
     ContextBase,
-    ContextPrestador,
-    ContextTomador,
-    PrestadorData,
-    TomadorData,
-    ProjectPrestador,
-    Tomador,
-    Servico,
-    ResultadoOnboarding,
-    Valores,
+    UserStatus,
+    User,
     ValidationResult,
     Address,
 )
 
 # Enums (tipos de estado)
 from src.types.user import (
-    User,
-    UserStatus,
     IntentUserType,
+    Prestador,
+    PrestadorData,
+    ContextPrestador,
 )
+
+from src.types.tomador import (
+    DocTomadorType,
+    Doc,
+    TomadorT,
+    Tomador,
+    Servico,
+    Valores,
+    TomadorData,
+    ContextTomador,
+)
+
 from src.types.wpp_msg import (
     IncomingMessage,
-    ConvStatus,
-    AIClient,
     BotaoResponse,
     MsgConvType,
     Role,
     MsgType,
     BotaoId,
+    Message,
 )
 
 from src.types.conversation import (
     ConvStatus,
-    StatusResumo,
     IntentType,
+    StatusResumo,
     HistoryResumo,
     MsgResumo,
+    Conversation,
 )
-from chatbot_wpp2.src.types.nfs import (
+from src.types.nfs import (
+    NfseStatus,
     EventsNotaas,
     StatusInvoice,
-    NfseStatus,
     PayloadNotaas,
+    Nfs,
 )
 
 from src.types.exceptions import (
@@ -56,44 +63,49 @@ from src.types.exceptions import (
 )
 
 __all__ = [
-    # Contexts
+    # Base
     "ContextBase",
+    "UserStatus",
+    "User",
+    "ValidationResult",
+    "Address",
+    # User
+    "IntentUserType",
+    "Prestador",
     "PrestadorData",
-    "TomadorData",
-    "ContextTomador",
     "ContextPrestador",
+    # tomador
+    "DocTomadorType",
+    "Doc",
+    "TomadorT",
     "Tomador",
     "Servico",
     "Valores",
-    "ValidationResult",
-    "Address",
-    "ProjectPrestador",
-    "ResultadoOnboarding",
-    "NfNotFoundError",
-    "StatusInvoice",
-    # User
-    "User",
-    "UserStatus",
-    "IntentUserType",
-    # Conversation
+    "TomadorData",
+    "ContextTomador",
+    # wpp_msg
+    "Message",
     "IncomingMessage",
-    "ConvStatus",
-    "AIClient",
-    "StatusResumo",
     "BotaoResponse",
-    "ConvStatus",
-    "NfseStatus",
-    "EventsNotaas",
-    "PayloadNotaas",
-    "StatusInvoice"
-    "NfNotFoundError",
-    "IntentType",
-    "Role",
     "MsgConvType",
+    "Role",
     "MsgType",
     "BotaoId",
+    # Conversation
+    "ConvStatus",
+    "IntentType",
+    "StatusResumo",
     "HistoryResumo",
     "MsgResumo",
+    "Conversation",
+    # nfs
+    "NfseStatus",
+    "EventsNotaas",
+    "StatusInvoice",
+    "PayloadNotaas",
+    "Nfs",
+    # exceptions
+    "NfNotFoundError",
     "InvalidTransactionError",
     "NtaasCertificadoError",
     "NtassOrgError",

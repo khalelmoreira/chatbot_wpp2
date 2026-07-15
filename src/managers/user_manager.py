@@ -2,17 +2,20 @@ import sqlite3
 from src.database.db import DB
 from src.types import IncomingMessage
 from typing import Any
-from src.types import ContextPrestador, InvalidTransactionError
+from src.types import ContextPrestador, InvalidTransactionError, Prestador, User
 
 
 class UserManager:
     def __init__(self):
         self.db    = DB()
 
-    def get_user(self, phone: str) -> list[sqlite3.Row]:
-        return self.db.select("prestador", columns="id, phone, status", where={"phone": phone}, limit=1)
+    def get_user(self, phone: str) -> User | None:
+        row = self.db.select_one("prestador", columns="id, phone, status", where={"phone": phone})
+        if not row:
+            return None
+        return User.from_dict(dict(row))
 
-    def criar_user(self, msg: IncomingMessage):
+    def criar_user(self, msg: IncomingMessage) -> int:
         return self.db.insert(
             "prestador",
             data={
@@ -34,7 +37,7 @@ class PrestadorManager:
 
         row = self.db.update_guarded(
             "prestador",
-            data=self.ctx.validation.valid,
+            data={""self.ctx.validation.valid},
             where={"id": self.id, "status": "COLLECTING"}
         )
 
@@ -66,8 +69,8 @@ class PrestadorManager:
             return dict(row[0])
         return
     
-    def get_all(self) -> dict[str, Any] | None:
-        row = self.db.select(
+    def get_all(self) -> list[Prestador]:
+        rows = self.db.select(
             "prestador",
             columns=(
                 "razao_social,"
@@ -83,9 +86,7 @@ class PrestadorManager:
             ),
             where={"id": self.id}
         )
-        if row:
-            return dict(row[0])
-        return
+        return [Prestador.from_dict(dict(row)) for row in rows]
     
     def update_project_id(self, ntaas_project_id: str, novo_status: str) -> None:
         row = self.db.update_guarded(

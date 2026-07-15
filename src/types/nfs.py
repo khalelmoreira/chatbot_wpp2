@@ -1,7 +1,7 @@
 from enum import StrEnum
 from dataclasses import dataclass
 
-from chatbot_wpp2.src.types.base import Address
+from src.types.base import Address
 
 class NfseStatus(StrEnum):
     QUEUED      = "QUEUED"

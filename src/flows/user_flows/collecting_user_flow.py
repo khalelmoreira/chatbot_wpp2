@@ -1,6 +1,6 @@
 from src.types import ContextPrestador
 from src.managers.prestador_manager import PrestadorManager
-from chatbot_wpp2.src.services.sign_up.collecting_user_service import ExtractionService, ValidationService, AddressService
+from src.services.sign_up.collecting_user_service import ExtractionService, ValidationService, AddressService
 
 def collecting_flow(ctx: ContextPrestador) -> None:
 

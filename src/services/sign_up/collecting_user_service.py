@@ -1,10 +1,10 @@
-from chatbot_wpp2.src.managers.prestador_manager import PrestadorManager
+from src.managers.prestador_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.services.validators.validador_prestador import ValidadorPrestador
 from src.types import ContextPrestador, UserStatus, BotaoResponse, Role, PrestadorData, Address
 from src.managers.prestador_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
-from chatbot_wpp2.src.managers.msg_manager import MsgManager
+from src.managers.msg_manager import MsgManager
 from src.utils.debug import print_table
 from src.utils.get_endereco import get_endereco_by_cep
 

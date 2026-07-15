@@ -1,7 +1,7 @@
 from src.services.validators.validador_tomador import ValidadorTomador
 from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, DadosTomador
-from chatbot_wpp2.src.managers.conversations.conv_manager import ConvManager
-from chatbot_wpp2.src.managers.msg_manager import MsgManager
+from src.managers.conversations.conv_manager import ConvManager
+from src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIService
 from src.services.wpp.msg_service import WhatsAppService
 from src.utils.unflatten import unflatten

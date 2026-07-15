@@ -1,6 +1,6 @@
 from src.types import ContextTomador, IntentType, Role
-from chatbot_wpp2.src.managers.conversations.conv_manager import ConversationManager
-from chatbot_wpp2.src.managers.msg_manager import MsgManager
+from src.managers.conversations.conv_manager import ConversationManager
+from src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIAssitant
 from src.services.onboarding.resumo import ResumoBuilder
 from src.flows.active_flows.collecting_flow import collecting_flow

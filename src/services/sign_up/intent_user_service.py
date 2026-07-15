@@ -1,5 +1,5 @@
 from src.types import ContextTomador, IntentUserType, Role, UserStatus
-from chatbot_wpp2.src.managers.msg_manager import MsgManager
+from src.managers.msg_manager import MsgManager
 from src.managers.prestador_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
 from src.services.onboarding.resumo import ResumoBuilder

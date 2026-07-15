@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, fields
 from typing import Any, Self, ClassVar, cast
 from enum import StrEnum
-from chatbot_wpp2.src.types.base import ContextBase, Address
+from src.types.base import ContextBase, Address
 
 @dataclass
 class MergeableMixin:
