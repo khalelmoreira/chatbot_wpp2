@@ -40,22 +40,22 @@ class Nfs:
     prestador_id:              int
     tomador_id:                int
     conversation_id:           int
-    idempotency_key:           str | None = None
-    status:                    NfseStatus | None = None
-    tentativas:                int | None = 0
-    payload_enviado:           str | None = None                                               -- JSON completo
-    requested_at:              str | None = None
-    created_at:                str | None = None
-    updated_at:                str | None = None
-            
+
     nome:                      str
     cnpj:                      str
             
     descricao_servico:         str
         
-    aliquota_iss:              float = 5.0
     valor_total:               float
+    aliquota_iss:              float = 5.0
 
+    idempotency_key:           str | None = None
+    status:                    NfseStatus | None = None
+    tentativas:                int | None = 0
+    payload_enviado:           str | None = None
+    requested_at:              str | None = None
+    created_at:                str | None = None
+    updated_at:                str | None = None
 
     phone:                     str | None = None
     invoice_id:                str | None = None

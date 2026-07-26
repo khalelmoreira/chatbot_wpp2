@@ -6,7 +6,7 @@ def init_db():
 
     # PRESTADOR
 
-    db.executar_modif("""
+    db.exe("""
         CREATE TABLE IF NOT EXISTS prestador (
             id                   INTEGER PRIMARY KEY AUTOINCREMENT,
             phone                TEXT UNIQUE NOT NULL,
@@ -43,17 +43,13 @@ def init_db():
 
     # TOMADOR
 
-    db.executar_modif("""
+    db.exe("""
         CREATE TABLE IF NOT EXISTS tomador (
             id                   INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id         INTEGER NOT NULL REFERENCES prestador(id),
                    
             cnpj                 TEXT,
             cpf                  TEXT,
-            CHECK (
-                (cpf IS NOT NULL AND cnpj IS NULL) OR
-                (cpf IS NULL AND CNPJ IS NOT NULL)      
-            )
                       
             name                 TEXT,
             email                TEXT,
@@ -72,10 +68,15 @@ def init_db():
             error_msg            TEXT,
             created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+           
+            CHECK (
+                (cpf IS NOT NULL AND cnpj IS NULL) OR
+                (cpf IS NULL AND cnpj IS NOT NULL)      
+            )
         )
     """)
 
-    db.executar_modif("""
+    db.exe("""
         CREATE TABLE IF NOT EXISTS nfs (
             id                         INTEGER PRIMARY KEY AUTOINCREMENT,
                    
@@ -151,7 +152,7 @@ def init_db():
         )
     """)
 
-    db.executar_modif("""
+    db.exe("""
         CREATE TABLE IF NOT EXISTS conversations (
             id                  INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id        INTEGER NOT NULL REFERENCES prestador(id),
@@ -163,7 +164,7 @@ def init_db():
         )
     """)
 
-    db.executar_modif("""
+    db.exe("""
         CREATE TABLE IF NOT EXISTS messages (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
             prestador_id    INTEGER NOT NULL REFERENCES prestador(id),
@@ -174,7 +175,7 @@ def init_db():
         )
     """)
 
-    db.executar_modif("""
+    db.exe("""
         CREATE TABLE IF NOT EXISTS ntaas_deliveries (
             delivery_id TEXT PRIMARY KEY,  -- X-Notaas-Delivery; chave de idempotência
             event       TEXT,              -- nfse.issued | nfse.error | nfse.cancelled | nfse.documents_ready | batch.completed | webhook.test
@@ -184,7 +185,7 @@ def init_db():
         )
     """)
 
-    db.executar_modif("""
+    db.exe("""
         CREATE TABLE IF NOT EXISTS upload_tokens (
             token         TEXT PRIMARY KEY,
             prestador_id  INTEGER NOT NULL REFERENCES prestador(id),
@@ -195,12 +196,12 @@ def init_db():
         )
     """)
 
-    db.executar_modif("""
+    db.exe("""
         CREATE INDEX IF NOT EXISTS idx_conversations_wpp_status
             ON conversations(phone, status)
     """)
 
-    db.executar_modif("""
+    db.exe("""
         CREATE INDEX IF NOT EXISTS idx_prestador_phone
             ON prestador(phone)
     """)

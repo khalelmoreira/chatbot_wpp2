@@ -1,12 +1,12 @@
 import sqlite3
 from src.types import ContextTomador, ConvStatus, StatusResumo, HistoryResumo, MsgResumo
-from src.managers.conversations import ConversationManager, OnboardingManager
+from src.managers.conversations import ConvManager, OnboardingManager
 
 class ResumoBuilder:
     def __init__(self, ctx: ContextTomador, status: ConvStatus):
         self.ctx = ctx
         self.status = status
-        self.conv_manager = ConversationManager(ctx)
+        self.conv_manager = ConvManager(ctx)
         self.on_manager = OnboardingManager(ctx)
 
     def resumo_status(self) -> StatusResumo:

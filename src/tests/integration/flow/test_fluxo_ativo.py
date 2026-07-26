@@ -1,8 +1,8 @@
-from src.database.db import init_db, executar_modif, buscar_nf_parcial
+from src.database.db import init_db, exe, buscar_nf_parcial
 from src.tests.generators.gen_msg_ai import gen_msg_fake, gen_conversa_fake
 #from app.services.ai_service import analisar_msg_nota_ai
 from src.flows.fluxo_ativo import fluxo_ativo
-#from app.functions.validacao import normalizar_dados_nf, validar_dados_nf
+#from app.functions.validation import normalizar_dados_nf, validar_dados_nf
 from src.tests.unit.test_processar_job import processar_job, print_fila
 
 
@@ -134,7 +134,7 @@ def test_fluxo_ativo():
 
         fluxo_ativo(phone, user_text, user)
 
-        jobs = executar_modif(
+        jobs = exe(
             """
         SELECT *
         FROM fila_emissao
@@ -148,7 +148,7 @@ def test_fluxo_ativo():
 
             processar_job(job)
 
-        job_processado = executar_modif(
+        job_processado = exe(
             """
         SELECT *
         FROM fila_emissao
@@ -193,7 +193,7 @@ def test_conversa_ativa():
 
             print(f"NF parcial atual: {nf_parcial}\n")
 
-        jobs_pendentes = executar_modif(
+        jobs_pendentes = exe(
             """
             SELECT *
             FROM fila_emissao
@@ -211,7 +211,7 @@ def test_conversa_ativa():
 
             processar_job(job)
 
-            job_emitido = executar_modif(
+            job_emitido = exe(
                 """
                 SELECT *
                 FROM fila_emissao

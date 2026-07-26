@@ -3,24 +3,24 @@ from typing import Any
 from src.database.get_connection import get_connection
 
 class DB:
-    def _exe_modif(self, query: str, params: tuple = ()):
+    def exe(self, query: str, params: tuple = ()):
 
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
             return cursor.rowcount
         
-    def _fetchone(self, query: str, params: tuple = ()):
+    def fetchone(self, query: str, params: tuple = ()):
 
         with get_connection() as conn:
             return conn.execute(query, params).fetchone()
 
-    def _fetchall(self, query: str, params: tuple = ()):
+    def fetchall(self, query: str, params: tuple = ()):
 
         with get_connection() as conn:
             return conn.execute(query, params).fetchall()
         
-    def _fetchone_modif(self, query: str, params: tuple = ()):
+    def fetchone_exe(self, query: str, params: tuple = ()):
 
         with get_connection() as conn:
             cursor = conn.cursor()
@@ -51,7 +51,7 @@ class DB:
         if limit:
             query += f" LIMIT {limit}"
 
-        return self._fetchall(query, params)
+        return self.fetchall(query, params)
     
     def select_one(self, table: str, where: dict[str, object], columns: str = "*"):
 
@@ -81,10 +81,10 @@ class DB:
 
         if returning:
             query += f" RETURNING {returning}"
-            row = self._fetchone_modif(query, tuple(data.values()))
+            row = self.fetchone_exe(query, tuple(data.values()))
             return row[returning]
         
-        return self._exe_modif(query, tuple(data.values()))
+        return self.exe(query, tuple(data.values()))
     
     def update(self, table: str, data: dict[str, object], where: dict[str, object]) -> int:
 
@@ -102,7 +102,7 @@ class DB:
                 {set_clause}
             WHERE {where_clause}
             """
-        return self._exe_modif(query, tuple(data.values()) + tuple(where.values()))
+        return self.exe(query, tuple(data.values()) + tuple(where.values()))
     
     def update_guarded(self, table: str, data: dict[str, object],
                        where: dict[str, object], returning: str = "id") -> sqlite3.Row | None:
@@ -125,4 +125,4 @@ class DB:
         """
 
         params = tuple(data.values()) + tuple(where.values())
-        return self._fetchone_modif(query, params)
+        return self.fetchone_exe(query, params)

@@ -1,7 +1,8 @@
 import sqlite3
+from typing import Any
+from dataclasses import fields
 from src.database.db import DB
 from src.types import IncomingMessage
-from typing import Any
 from src.types import ContextPrestador, InvalidTransactionError, Prestador, User
 
 
@@ -33,16 +34,49 @@ class PrestadorManager:
         self.ctx = ctx
         self.id = ctx.user.id
 
-    def update_validos(self) -> None:
-
-        row = self.db.update_guarded(
+    def get_db_data(self) -> Prestador | None:
+        row = self.db.select_one(
             "prestador",
-            data={""self.ctx.validation.valid},
-            where={"id": self.id, "status": "COLLECTING"}
+            columns="razao_social, cnpj, email, regime_tributario, cep",
+            where={"id": self.id},
         )
+        if not row:
+            return None
+        return Prestador.from_dict(dict(row))
+
+    def update_valid(self) -> None:
+
+        valid = self.ctx.valid
+
+        data: dict[str, Any] = {
+            f.name: getattr(valid, f.name)
+            for f in fields(valid)
+            if f.name != "address" and getattr(valid, f.name) is not None
+        }
+
+        if valid.address is not None:
+            data |= {
+                f.name: getattr(valid.address, f.name)
+                for f in fields(valid.address)
+                if getattr(valid.address, f.name) is not None
+            }
+
+        if not data:
+            return
+        
+        # SQL explícito: guarded update com RETURNING não suportado pelos helpers genéricos
+        set_clause = ", ".join(f"{campo} = ?" for campo in data)
+        row = self.db.fetchone_exe(f"""
+            UPDATE prestador SET
+                {set_clause},
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND status = 'COLLECTING'
+            RETURNING id
+        """, (*data.values(), self.ctx.user.id))
 
         if row is None:
-            raise InvalidTransactionError(f"Nenhuma linha 'COLLECTING' encontrada para id={self.id}")
+            raise InvalidTransactionError(f"Nenhuma linha COLETANDO encontrada para id={self.ctx.user.id}")
         
     def update_state(self, novo_status: str) -> None:
         self.db.update(
@@ -58,17 +92,6 @@ class PrestadorManager:
             where={"id": self.id}
         )
 
-    def get_db_data(self) -> dict[str, Any] | None:
-        row = self.db.select(
-            "prestador",
-            columns="razao_social, cnpj, email, regime_tributario, cep",
-            where={"id": self.id},
-            limit=1
-        )
-        if row:
-            return dict(row[0])
-        return
-    
     def get_all(self) -> list[Prestador]:
         rows = self.db.select(
             "prestador",

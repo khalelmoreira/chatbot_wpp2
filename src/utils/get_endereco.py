@@ -1,7 +1,7 @@
 import requests
-from src.types import Endereco
+from src.types import Address
 
-def get_endereco_by_cep(cep: str) -> Endereco | None:
+def get_endereco_by_cep(cep: str) -> Address | None:
 
     url = f"https://viacep.com.br/ws/{cep}/json/"
 
@@ -21,7 +21,7 @@ def get_endereco_by_cep(cep: str) -> Endereco | None:
     if data.get("erro"):
         return None
     
-    return Endereco(
+    return Address(
         logradouro=data["logradouro"],
         bairro=data["bairro"],
         cidade=data["localidade"],

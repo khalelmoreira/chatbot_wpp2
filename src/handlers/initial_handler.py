@@ -1,7 +1,7 @@
 from src.types import IncomingMessage
 from src.services.initial.initital_service import DispatchUser, UserResolv
 
-def initial_flow(msg: IncomingMessage):
+def initial_handler(msg: IncomingMessage):
 
     print(f"\n\n----------------INITIAL FLOW----------------\n\n")
 

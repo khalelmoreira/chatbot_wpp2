@@ -1,8 +1,7 @@
-from src.types import ContextTomador, IntentUserType, Role, UserStatus
+from src.types import ContextPrestador, IntentUserType, Role, UserStatus
 from src.managers.msg_manager import MsgManager
-from src.managers.prestador_manager import PrestadorManager
+from src.managers.user_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
-from src.services.onboarding.resumo import ResumoBuilder
 from src.flows.user_flows.collecting_user_flow import collecting_flow
 
 def notf_user(msg: str) -> None:
@@ -10,10 +9,10 @@ def notf_user(msg: str) -> None:
     print(f"{msg}\n")
 
 class IntentUserService:
-    def __init__(self, ctx: ContextTomador):
+    def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
+        self.prestador = prestador
         self.ai = AIService()
-        self.prestador = PrestadorManager(ctx)
         self.msg = MsgManager(ctx)
 
     def dispatch_intent(self, intencao: IntentUserType):
@@ -21,7 +20,7 @@ class IntentUserService:
         match intencao:
             case IntentUserType.ONBOARDING:
                 self.prestador.update_state(UserStatus.COLLECTING)
-                return collecting_flow(self.ctx, manager)
+                return collecting_flow(self.ctx)
             
             case IntentUserType.GENERAL_ASK:
                 self._general_ask()

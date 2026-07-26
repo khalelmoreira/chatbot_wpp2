@@ -2,7 +2,7 @@ from typing import Optional
 from src.types import IncomingMessage
 from src.services.ai.audio_service import transcrever_audio_wpp
 
-class WhatsappWebhookParser:
+class WppParser:
     def __init__(self, payload):
         self.payload = payload
 

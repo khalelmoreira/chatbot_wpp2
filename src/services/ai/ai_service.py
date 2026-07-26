@@ -4,10 +4,10 @@ from src.integrations.ai_client import GemmaClient
 from src.types import (
     ContextTomador,
     ContextPrestador,
-    DadosTomador,
-    DadosPrestador,
+    TomadorData,
+    PrestadorData,
     StatusResumo,
-    IntentTipo,
+    IntentType,
     HistoryResumo,
     MsgResumo,
     IntentUserType,
@@ -50,35 +50,35 @@ class AIService:
     def extract_nfse_data(self, ctx: ContextTomador) -> None:
         extractor = self.extractor(
             client=self.client,
-            prompt=PROMPT_EXTRACT_NFSE_GEMMA.system,
-            output_type=DadosTomador,
+            prompt=PROMPT_EXTRACT_NFSE_GEMMA,
+            output_type=TomadorData,
             parser=parse_tomador_data
         )
-        ctx.dados_novos = extractor.extract(ctx.text)
+        ctx.new_data = extractor.extract(ctx.text)
 
     def extract_prest_data(self, ctx: ContextPrestador):
         extractor = self.extractor(
             client=self.client,
-            prompt=PROMPT_EXTRACT_PREST_DATA.system,
-            output_type=DadosPrestador,
+            prompt=PROMPT_EXTRACT_PREST_DATA,
+            output_type=PrestadorData,
             parser=parse_prestador_data
         )
-        ctx.dados_novos = extractor.extract(ctx.text)
+        ctx.new_data = extractor.extract(ctx.text)
 
     def extract_address(self, ctx: ContextPrestador) -> str:
         extractor = self.extractor(
             client=self.client,
-            prompt=PROMTP_EXTRACT_ADDRESS.system,
-            output_type=DadosPrestador,
+            prompt=PROMTP_EXTRACT_ADDRESS,
+            output_type=PrestadorData,
             parser=parse_prestador_data
         )
-        ctx.dados_novos = extractor.extract(ctx.text)
+        ctx.new_data = extractor.extract(ctx.text)
 
     def has_intent(self, ctx: ContextTomador) -> bool:
 
         try:
             response = self.client.extract_text(
-                system_prompt=PROMPT_HAS_INTENT.system,
+                system_prompt=PROMPT_HAS_INTENT,
                 user_msg=ctx.text
             )
             return response.lower().startswith("true")
@@ -91,7 +91,7 @@ class AIService:
 
         try:
             return self.client.extract_text(
-                system_prompt=PROMPT_NO_INTENT_RESPONSE.system,
+                system_prompt=PROMPT_NO_INTENT_RESPONSE,
                 user_msg=ctx.text
             )
         except Exception as e:
@@ -101,7 +101,7 @@ class AIService:
     def no_intent_prest(self, ctx: ContextPrestador) -> str:
         try:
             return self.client.extract_text(
-                system_prompt=PROMPT_NO_INTENT_PREST.system,
+                system_prompt=PROMPT_NO_INTENT_PREST,
                 user_msg=ctx.text
             )
         except Exception as e:
@@ -111,7 +111,7 @@ class AIService:
     def general_ask(self, ctx: ContextPrestador) -> str:
         try:
             return self.client.extract_text(
-                system_prompt=PROMPT_GENERAL_ASK.system,
+                system_prompt=PROMPT_GENERAL_ASK,
                 user_msg=ctx.text
             )
         except Exception as e:
@@ -120,7 +120,7 @@ class AIService:
         
     def incomplete_response(self, ctx: ContextTomador) -> str:
         try:
-            prompt = build_list_prompt(PROMPT_INCOMPLETE_RESPONSE.system, [ctx.validacao.validos, ctx.validacao.faltantes])
+            prompt = build_list_prompt(PROMPT_INCOMPLETE_RESPONSE, [ctx.valid, ctx.validation.missing])
             return self.client.extract_text(
                 system_prompt=prompt,
                 user_msg=ctx.text
@@ -131,7 +131,7 @@ class AIService:
         
     def incomplete_prest_response(self, ctx: ContextPrestador) -> str:
         try:
-            prompt = build_list_prompt(PROMPT_INCOMPLETE_PREST_DATA_RESPONSE.system, [ctx.validacao.validos, ctx.validacao.faltantes])
+            prompt = build_list_prompt(PROMPT_INCOMPLETE_PREST_DATA_RESPONSE, [ctx.valid, ctx.validation.missing])
             return self.client.extract_text(
                 system_prompt=prompt,
                 user_msg=ctx.text
@@ -142,7 +142,7 @@ class AIService:
         
     def invalidos_response(self, ctx: ContextTomador) -> str:
         try:
-            prompt = build_list_prompt(PROMPT_INVALIDOS_RESPONSE.system, (ctx.validacao.invalidos,))
+            prompt = build_list_prompt(PROMPT_INVALIDOS_RESPONSE, (ctx.validation.invalid,))
             return self.client.extract_text(
                 system_prompt=prompt,
                 user_msg=ctx.text
@@ -153,7 +153,7 @@ class AIService:
         
     def invalidos_prest_response(self, ctx: ContextPrestador) -> str:
         try:
-            prompt = build_list_prompt(PROMPT_INVALIDOS_PREST_RESPONSE.system, (ctx.validacao.invalidos,))
+            prompt = build_list_prompt(PROMPT_INVALIDOS_PREST_RESPONSE, (ctx.validation.invalid,))
             return self.client.extract_text(
                 system_prompt=prompt,
                 user_msg=ctx.text
@@ -165,7 +165,7 @@ class AIService:
     def no_data_response(self, ctx: ContextTomador) -> str:
         try:
             return self.client.extract_text(
-                system_prompt=PROMPT_NO_DATA_RESPONSE.system,
+                system_prompt=PROMPT_NO_DATA_RESPONSE,
                 user_msg=ctx.text
             )
         except Exception as e:
@@ -175,7 +175,7 @@ class AIService:
     def no_data_prest_response(self, ctx: ContextPrestador) -> str:
         try:
             return self.client.extract_text(
-                system_prompt=PROMPT_NO_DATA_PREST_RESPONSE.system,
+                system_prompt=PROMPT_NO_DATA_PREST_RESPONSE,
                 user_msg=ctx.text
             )
         except Exception as e:
@@ -186,7 +186,7 @@ class AIService:
         try:
             response = self.client.extract_text(
                 system_prompt=build_list_prompt(
-                    template=PROMPT_CONSULTA.system,
+                    template=PROMPT_CONSULTA,
                     params=self._resumo_to_params(resumo)
                 ),
                 user_msg=self.ctx.text
@@ -197,22 +197,22 @@ class AIService:
             print(f"Erro ao responder: {e}")
             return "Não pude entender sua mensagem, tente novamente em alguns minutos."
         
-    def classificar_intent(self) -> IntentTipo:
+    def classificar_intent(self) -> IntentType:
         try:
             response = self.client.extract_text(
-                system_prompt=PROMPT_CLASSIFICA_INTENT.system,
+                system_prompt=PROMPT_CLASSIFICA_INTENT,
                 user_msg=self.ctx.text
             )
-            return IntentTipo(response.strip().upper())
+            return IntentType(response.strip().upper())
         
         except (ValueError, Exception) as e:
             print(f"Erro ao classificar intencao: {e}")
-            return IntentTipo.NENHUM
+            return IntentType.NENHUM
         
     def classificar_intent_user(self, ctx: ContextPrestador) -> IntentUserType:
         try:
             response = self.client.extract_text(
-                system_prompt=PROMPT_CLASSIFICA_INTENT_PREST.system,
+                system_prompt=PROMPT_CLASSIFICA_INTENT_PREST,
                 user_msg=ctx.text
             )
             return IntentUserType(response.strip().upper())
@@ -224,7 +224,7 @@ class AIService:
     def parece_pergunta(self) -> bool:
         try:
             response = self.client.extract_text(
-                system_prompt=PROMPT_PARECE_PERGUNTA.system,
+                system_prompt=PROMPT_PARECE_PERGUNTA,
                 user_msg=self.ctx.text
             )
             return response.strip().lower().startswith("true")
@@ -236,7 +236,7 @@ class AIService:
     def ref_past(self) -> bool:
         try:
             response = self.client.extract_text(
-                system_prompt=PROMPT_REF_PAST.system,
+                system_prompt=PROMPT_REF_PAST,
                 user_msg=self.ctx.text
             )
             return response.strip().lower().startswith("true")
@@ -252,7 +252,7 @@ class AIService:
             nf_history_str = self._nf_history_to_str(nf_resumo)
             msg_history_str = self._msg_history_to_str(msg_resumo)
             
-            prompt = build_list_prompt(PROMPT_HISTORY_RESPONSE.system, [nf_history_str, msg_history_str])
+            prompt = build_list_prompt(PROMPT_HISTORY_RESPONSE, [nf_history_str, msg_history_str])
             print(f"NF_HISTORY_STR: \n{nf_history_str}\n")
             print(f"MSG_HISTORY_STR: \n{msg_history_str}\n")
 

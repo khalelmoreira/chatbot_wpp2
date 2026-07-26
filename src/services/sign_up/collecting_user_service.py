@@ -1,8 +1,7 @@
-from src.managers.prestador_manager import PrestadorManager
+from src.managers.user_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.services.validators.validador_prestador import ValidadorPrestador
 from src.types import ContextPrestador, UserStatus, BotaoResponse, Role, PrestadorData, Address
-from src.managers.prestador_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
 from src.managers.msg_manager import MsgManager
 from src.utils.debug import print_table
@@ -13,17 +12,18 @@ def notf_user(msg: str) -> None:
     print(f"{msg}\n")
 
 class ExtractionService:
-    def __init__(self, ctx: ContextPrestador):
+    def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
+        self.prestador = prestador
         self.ai = AIService()
-        self.prestador = PrestadorManager(ctx)
 
     def extract_e_merge(self) -> None:
         self.ai.extract_prest_data(self.ctx)
         print(f"DADOS NOVOS: {self.ctx.new_data}\n")
 
         draft = self.prestador.get_db_data()
-        self.ctx.db_data = PrestadorData.from_dict(draft)
+        if draft is not None: 
+            self.ctx.db_data = PrestadorData.from_prestador(draft)
         print(f"DADOS DARFT: {self.ctx.db_data}\n")
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
@@ -41,11 +41,11 @@ class ValidationService:
 
         self.validador.validar(self.ctx)
 
-        if self.ctx.validation.valid:
+        if self.ctx.valid != PrestadorData():
             self._update_draft()
             return True
         
-        if self.ctx.validation.invalid:
+        if not self.ctx.validation.is_valid:
             self._invalidos()
             return False
         
@@ -74,7 +74,7 @@ class ValidationService:
         notf_user(response)
 
     def _update_draft(self):
-        self.prestador.update_validos()
+        self.prestador.update_valid()
 
 class AddressService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
@@ -82,14 +82,14 @@ class AddressService:
         self.prestador = prestador
 
     def address(self):
-        cep = self.ctx.validation.valid["cep"]
+        cep = self.ctx.valid.cep
         print(f"CEP: {cep}\n")
 
         endereco = get_endereco_by_cep(cep)
         print(f"ENDERECO: {endereco}\n")
         
         if not endereco:
-            notf_user(f"Não consegui encontrar o endereço para o CEP {self.ctx.validation.valid["cep"]}.\nPode verificar e enviar novamente?\n")
+            notf_user(f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?\n")
             self.prestador.update_state(UserStatus.ADDRESS)
             return
 
@@ -117,7 +117,7 @@ class AddressService:
             f"📍 *Endereço encontrado:*\n\n"
             f"{endereco.logradouro}\n"
             f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n"
-            f"CEP: {self.ctx.validation.valid["cep"]}\n\n"
+            f"CEP: {self.ctx.valid.cep}\n\n"
             f"Esse é o endereço correto?\n"
         )
         print_table(table_name="users", where=self.ctx.user.phone)

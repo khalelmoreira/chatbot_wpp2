@@ -42,7 +42,7 @@ class TomadorManager:
     
     def _upsert_tomador(self, prestador_id: int, nome: str, cnpj: str) -> int:
 
-        row = self.db.fetchone_modif("""
+        row = self.db.fetchone_exe("""
             INSERT INTO tomador (prestador_id, nome, cnpj)
             VALUES (?, ?, ?)
             ON CONFLICT (prestador_id, cnpj) DO UPDATE SET
@@ -60,7 +60,7 @@ class TomadorManager:
             nome, cnpj, descricao, valor_total, aliquota_iss
     ) -> int:
         
-        row = self.db.fetchone_modif("""
+        row = self.db.fetchone_exe("""
             INSERT INTO nfs (
                 prestador_id, tomador_id, conversation_id,
                 idempotency_key, payload_enviado, nome,

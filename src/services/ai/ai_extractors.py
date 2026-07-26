@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Generic, TypeVar, Callable, Type
 from src.integrations.ai_client import AIClient
 from src.models.prompts.base import AIPrompt
-from src.types import DadosPrestador, DadosTomador, Tomador, Servico, Valores, Endereco
+from src.types import PrestadorData, TomadorData, Tomador, Servico, Valores, Address
 
 T = TypeVar('T')
 
@@ -33,24 +33,24 @@ class AIExtractor(Generic[T]):
 
 # Parsers específicos
 
-def parse_prestador_data(data: dict) -> DadosPrestador:
+def parse_prestador_data(data: dict) -> PrestadorData:
 
-    return DadosPrestador(
+    return PrestadorData(
         razao_social=data.get("razao_social"),
         cnpj=data.get("cnpj"),
         email=data.get("email"),
         regime_tributario=data.get("regime_tributario"),
         cep=data.get("cep"),
-        endereco=data.get("endereco")
+        address=data.get("endereco")
     )
 
-def parse_tomador_data(data: dict) -> DadosTomador:
+def parse_tomador_data(data: dict) -> TomadorData:
 
     tomador_data = data.get("tomador", {})
     servico_data = data.get("servico", {})
     valores_data = data.get("valores", {})
     
-    return DadosTomador(
+    return TomadorData(
         tomador=Tomador(
             nome=tomador_data.get("nome"),
             cnpj=tomador_data.get("cnpj")

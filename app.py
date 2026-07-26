@@ -1,134 +1,31 @@
-from flask import Flask, request, jsonify, render_template
-import os
+from flask import Flask
 import logging
 import atexit
-from src.types import NtaasCertificadoError
 from src.workers import EmissaoWorker, PollingWorker
-from src.webhooks import WppWebhook, NotaasWebhook
-from src.managers.tokens_manager import TokensManager
-from src.managers.prestador_manager import PrestadorManager
-from src.services.sign_up.certificate_service import CertificateService
-from src.services.validators.security_service import verificar_ass
 from src.database.tables_db import init_db
-from src.services.notaas.ja_process import ja_process
 from dotenv import load_dotenv
+from src.routes import wpp_bp, ntaas_bp
 
 load_dotenv()
 logger = logging.getLogger(__name__)
 emissao_worker = EmissaoWorker(intervalo_poll=2.0)
 polling_worker = PollingWorker(intervalo_poll=20.0)
-app = Flask(__name__)
 
-@app.route("/webhook", methods=["GET", "POST"])
-def webhook():
-
-    if request.method == "GET":
-        token = request.args.get("hub.verify_token")
-        challenge = request.args.get("hub.challenge")
-
-        if token == os.getenv("VERIFY_TOKEN"):
-            return challenge
-        return "Token invalido", 403
-    
-
-    if request.method == "POST":
-
-        data = request.get_json()
-        if not data:
-            return "ok", 200
-        
-        wpp = WppWebhook(data)
-        wpp.wpp_webhook()
-        return "ok", 200
-
-@app.route("/webhook/notaas", methods=["POST", "GET"], strict_slashes=False)
-def webhook_notaas():
-
-    payload_raw = request.get_data()
-    assinatura = request.headers.get("X-Notaas-Signature")
-    delivery_id = request.headers.get("X-Notaas-Delivery")
-    
-    print(f"PAYLOAD RAW: {payload_raw}\n")
-    print(f"ASSINATURA: {assinatura}\n")
-
-    if not assinatura:
-        logger.warning("webhook notaas sem assinatura — secret configurado no dashboard?")
-        return jsonify({"success": False, "error": "assinatura ausente"}), 401
-    
-    if not verificar_ass(payload_raw, assinatura):
-        logger.warning("webhook notaas com assinatura inválida")
-        return jsonify({"success": False, "error": "assinatura ausente"}), 401
-    
-    if not delivery_id:
-        logger.warning("webhook notaas sem X-Notaas-Delivery — Notaas mudou o contrato?")
-        return "OK", 200
-
-    if ja_process(delivery_id):
-        return "OK", 200
-    
-    payload = request.get_json()
-    print(f"PAYLOAD RECEBIDO: {payload}\n")
-
-    try:
-        notaas = NotaasWebhook(payload)
-        notaas.processar_webhook_notaas()
-    except Exception as e:
-        logger.exception(f"erro ao processar webhook notaas: {e}")
-        return "ok", 200
-    
-    return "ok", 200
-
-@app.route("/upload-certificate/<token>", methods=["GET"])
-def form_upload(token: str):
-    result = TokensManager().get_token(token)
-
-    if not result or result["used"] or expirado(result["expire_at"]):
-        return render_template("token_invalido.html"), 410
-    
-    return render_template("upload_form.html", token=token)
-
-@app.route("/upload-certificate/<token>", methods=["POST"])
-def process_upload(token: str):
-
-    row = TokensManager().get_token(token)
-    if not row or row["used"] or expirado(row["expire_at"]):
-        return jsonify({"error:": "token inválido, expirado ou já usado"}), 410
-    
-    prestador_id = row["prestador_id"]
-    
-    prestador = PrestadorManager().get_project_id()
-    if not prestador:
-        return jsonify({"error": "prestador não está na etapa de certificado"}), 409
-    
-    arquivo = request.files.get("certificado")
-    senha = request.form.get("senha")
-
-    if not arquivo or not senha:
-        return jsonify({"error": "certificado e senha obrigatorios"}), 400
-    
-    certificado_bytes = arquivo.read()
-
-    try:
-        CertificateService().send_e_persist_certificate()
-
-    except NtaasCertificadoError as e:
-        return jsonify({"error": str(e)}), 400
-    
-    finally:
-        del certificado_bytes
-        del senha
-
-    TokensManager().update_used(token)
-    return jsonify({"success": True})
+def create_app() -> Flask:
+    app = Flask(__name__)
+    app.register_blueprint(wpp_bp)
+    app.register_blueprint(ntaas_bp)
+    return app
 
 def _shutdown():
     logger.info("sinal de shutdown recebido")
     emissao_worker.stop()
     polling_worker.stop()
-atexit.register(_shutdown)
 
 if __name__ == "__main__":
     init_db()
+    app = create_app()
     emissao_worker.start()
     polling_worker.start()
+    atexit.register(_shutdown)
     app.run(debug=True, use_reloader=False, port=5000)

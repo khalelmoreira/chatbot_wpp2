@@ -35,7 +35,7 @@ class NfsPollingManager:
     def marcar_issued(self, result: StatusInvoice) -> bool:
         """Retorna True se a transição foi aplicada, False se já não estava em processing."""
 
-        row = self.db.fetchone_modif("""
+        row = self.db.fetchone_exe("""
             UPDATE nfs SET
                 status = ?,
                 ch_nfse = ?,
@@ -50,7 +50,7 @@ class NfsPollingManager:
     
     def marcar_erro(self, error_msg: str) -> bool:
 
-        row = self.db.fetchone_modif("""
+        row = self.db.fetchone_exe("""
             UPDATE nfs SET
                 status = ?,
                 erro_msg = ?
@@ -63,7 +63,7 @@ class NfsPollingManager:
     
     def marcar_cancelled(self) -> bool:
 
-        row = self.db.fetchone_modif("""
+        row = self.db.fetchone_exe("""
             UPDATE nfs SET
                 status = ?,
             WHERE id = ?

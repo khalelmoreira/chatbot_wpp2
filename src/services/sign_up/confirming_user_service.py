@@ -1,5 +1,5 @@
-from src.types import ContextPrestador, IncomingMessage, MsgType, Role, BotaoId, UserStatus
-from src.managers.prestador_manager import PrestadorManager
+from src.types import ContextPrestador, MsgType, Role, BotaoId, UserStatus
+from src.managers.user_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.managers.msg_manager import MsgManager
 

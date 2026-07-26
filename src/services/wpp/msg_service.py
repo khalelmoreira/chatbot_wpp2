@@ -2,7 +2,7 @@ import requests
 import os
 from collections.abc import Sequence
 from dotenv import load_dotenv
-from src.types import Endereco, BotaoResponse
+from src.types import Address, BotaoResponse
 
 load_dotenv()
 
@@ -93,14 +93,13 @@ class WhatsAppService:
 
         return self._post_wpp(payload)
 
-    def msg_build_endereco(phone: str, endereco: Endereco) -> dict:
+    def msg_build_endereco(self, phone: str, endereco: Address) -> dict:
 
         rows = [
             f"📍 *Endereço encontrado:*",
             f"",
             f"{endereco.logradouro}",
             f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}",
-            f"CEP: {endereco.cep}",
             f"",
             f"Esse é o seu endereço?",
         ]
@@ -140,5 +139,5 @@ class WhatsAppService:
         conteudo = f"{text}\n\nOpções: {opcoes}"
         return conteudo
 
-    def formatar_lista(lista: Sequence[str]) -> str:
+    def formatar_lista(self, lista: Sequence[str]) -> str:
         return "\n".join(f"- {item}" for item in lista)

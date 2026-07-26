@@ -24,7 +24,7 @@ class NfsWorkerManager:
     def _get_next_job() -> sqlite3.Row | None:
 
         db = DB()
-        return db.fetchone_modif("""
+        return db.fetchone_exe("""
             UPDATE nfs
             SET status = 'PROCESSING',
                 processado_em = CURRENT_TIMESTAMP,
@@ -86,7 +86,7 @@ class NfsWorkerManager:
         )
 
     def resetar_jobs_travados(self) -> None:
-        self.db.executar_modif("""
+        self.db.exe("""
             UPDATE nfs SET
                 status     = 'QUEUED',
                 updated_at = CURRENT_TIMESTAMP

@@ -1,7 +1,5 @@
-from src.managers.prestador_manager import PrestadorManager
-from src.types import IncomingMessage, UserStatus, ContextPrestador
-from src.flows.active_flows.onboarding_flow import criar_project
-from src.services.wpp.msg_service import WhatsAppService
+from src.managers.user_manager import PrestadorManager
+from src.types import ContextPrestador
 from src.services.sign_up.confirming_user_service import ConfirmUserService
 
 def confirming_flow(ctx: ContextPrestador) -> None:

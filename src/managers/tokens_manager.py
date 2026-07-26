@@ -27,7 +27,7 @@ class TokensManager:
         return row[0]
     
     def update_used(self, token: str) -> sqlite3.Row | None:
-        row = self.db.fetchone_modif("""
+        row = self.db.fetchone_exe("""
             UPDATE upload_tokens SET
                 used = 1
             WHERE token = ?

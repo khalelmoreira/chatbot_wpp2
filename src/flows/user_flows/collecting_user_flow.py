@@ -1,22 +1,20 @@
 from src.types import ContextPrestador
-from src.managers.prestador_manager import PrestadorManager
+from src.managers.user_manager import PrestadorManager
 from src.services.sign_up.collecting_user_service import ExtractionService, ValidationService, AddressService
 
 def collecting_flow(ctx: ContextPrestador) -> None:
 
     print(f"\n\n----------------TESTE FLUXO PREST COLLECTING----------------\n\n")
 
-    ExtractionService(ctx).extract_e_merge()
-    
     prestador = PrestadorManager(ctx)
     validation = ValidationService(ctx, prestador)
+    
+    ExtractionService(ctx, prestador).extract_e_merge()
 
-    valido = validation.valido()
-    if not valido:
+    if not validation.valido():
         return
     
-    completo = validation.completo()
-    if not completo:
+    if not validation.completo():
         return
     
     AddressService(ctx, prestador).address()

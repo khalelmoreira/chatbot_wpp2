@@ -1,7 +1,9 @@
+from operator import truediv
 import re
 from enum import StrEnum
 from typing import Any, Callable
-from src.types import ContextPrestador, ResultadoValidacao
+from src.types.user import PrestadorData
+from src.types import ContextPrestador, ValidationResult, Address
 
 class RegimeTributario(StrEnum):
     NORMAL = "1"
@@ -162,32 +164,50 @@ class ValidadorPrestador:
 
     def validar(self, ctx: ContextPrestador) -> None:
 
-        validos: dict[str, Any] = {}
-        invalidos: list[str] = []
-        faltantes: list[str] = []
+        valid = PrestadorData()
+        invalid: list[str] = []
+        missing: list[str] = []
         
-        dados = ctx.dados_completos
-
+        dados = ctx.merged
         for campo, fn_validar in _VALIDATIONS_PRESTADOR.items():
             valor = getattr(dados, campo, None)
-            self._checar(campo, valor, fn_validar, validos, invalidos, faltantes)
+            self._checar(campo, valor, fn_validar, valid, invalid, missing)
 
-        endereco = dados.endereco
+        address = dados.address
+        valid_address = Address()
+        address_c_is_valid = False
+
         for campo, fn_validar in _VALIDATIONS_ADDRESS.items():
-            valor = getattr(endereco, campo, None) if endereco is not None else None
-            self._checar(campo, valor, fn_validar, validos, invalidos, faltantes)
+            valor = getattr(address, campo, None) if address is not None else None
 
-        ctx.validacao = ResultadoValidacao(
-            validos=validos,
-            invalidos=invalidos,
-            faltantes=faltantes,
+            full = self._checar(
+                campo, valor, fn_validar, valid_address,
+                invalid, missing, prefix="address."
+            )
+
+            address_c_is_valid = address_c_is_valid or full
+
+        if address_c_is_valid:
+            valid.address = valid_address
+
+        ctx.valid = valid
+        ctx.validation = ValidationResult(
+            invalid=invalid,
+            missing=missing,
         )
 
     @staticmethod
-    def _checar(campo, valor, fn_validar, validos, invalidos, faltantes):
+    def _checar(campo, valor, fn_validar, target, invalid, missing, prefix="") -> bool:
+        key = f"{prefix}{campo}"
+
         if valor is None:
-            faltantes.append(campo)
+            missing.append(key)
+            return False
+        
         elif not fn_validar(valor):
-            invalidos.append(campo)
+            invalid.append(key)
+            return False
+        
         else:
-            validos[campo] = valor
+            setattr(target, campo, valor)
+            return True

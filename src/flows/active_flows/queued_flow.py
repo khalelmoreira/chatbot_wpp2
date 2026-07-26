@@ -1,9 +1,9 @@
 from src.types import ContextTomador, Role
-from src.managers.conversations.conv_manager import ConversationManager
+from src.managers.conversations.conv_manager import ConvManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.managers.msg_manager import MsgManager
 
-def queued_flow(ctx: ContextTomador, conversation: ConversationManager):
+def queued_flow(ctx: ContextTomador, conversation: ConvManager):
 
     wpp = WhatsAppService()
     MsgManager(ctx).save_msg(Role.AI, "⏳ Sua nota já está na fila de emissão. Aguarde, te aviso assim que sair!")

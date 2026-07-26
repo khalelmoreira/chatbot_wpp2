@@ -1,8 +1,8 @@
 from src.services.active.collecting.collecting_service import ExtractionService, ValidationService
-from src.managers.conversations.conv_manager import ConversationManager
+from src.managers.conversations.conv_manager import ConvManager
 from src.types import ContextTomador
 
-def collecting_flow(ctx: ContextTomador, conversation: ConversationManager) -> None:
+def collecting_flow(ctx: ContextTomador, conversation: ConvManager) -> None:
     
     print(f"\n\n----------------TESTE FLUXO COLLECTING----------------\n\n")
     

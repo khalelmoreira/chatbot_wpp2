@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, fields
-from typing import Generic, Protocol, TypeVar, Self, Any
+from typing import Generic, Protocol, TypeVar, Self, Any, runtime_checkable
 from enum import StrEnum
 from src.types.wpp_msg import MsgType
 
@@ -57,6 +57,7 @@ class Address:
         kwargs = {f: data.get(f) for f in cols if f in data}
         return cls(**kwargs)
 
+@runtime_checkable
 class Mergeable(Protocol):
     def merge(self, novos: Self) -> Self: ...
 
@@ -64,13 +65,16 @@ T = TypeVar("T", bound=Mergeable)
 
 @dataclass
 class ValidationResult:
-    valid:   dict[str, object] = field(default_factory=dict)
     invalid: list[str] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
 
     @property
     def is_complete(self) -> bool:
         return not self.missing
+    
+    @property
+    def is_valid(self) -> bool:
+        return not self.invalid
 
 @dataclass
 class ContextBase(Generic[T]):
@@ -79,7 +83,7 @@ class ContextBase(Generic[T]):
     new_data:   T
     db_data:    T
     merged:     T
-    validated:  T
+    valid:      T
     msg_type:   MsgType
     button_id:  str | None = None
     validation: ValidationResult = field(default_factory=ValidationResult)

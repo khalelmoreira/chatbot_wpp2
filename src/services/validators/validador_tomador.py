@@ -1,8 +1,8 @@
 import re
 from operator import attrgetter
-from typing import Any
-from src.types import ContextTomador, DadosTomador, ResultadoValidacao
-from src.services.validators.validador_prestador import validar_cnpj
+from typing import Any, Callable
+from src.types import ContextTomador, TomadorData, ValidationResult
+from src.services.validators.validador_prestador import val_cnpj
 
 def validar_nome(nome: str | None) -> bool:
 
@@ -27,9 +27,9 @@ def validar_valor_total(total: Any) -> bool:
     except (ValueError, TypeError):
         return False
     
-_VALIDACOES_TOMADOR: dict[str, callable[[Any], bool]] = {
+_VALIDACOES_TOMADOR: dict[str, Callable[[Any], bool]] = {
     "tomador.nome":        validar_nome,
-    "tomador.cnpj":        validar_cnpj,
+    "tomador.cnpj":        val_cnpj,
     "servico.descricao":   validar_descricao,
     "valores.total":       validar_valor_total,
 }
@@ -38,7 +38,7 @@ class ValidadorTomador:
 
     def validar(self, ctx: ContextTomador) -> None:
 
-        dados = ctx.dados_completos
+        dados = ctx.merged
 
         validos: dict[str, Any] = {}
         invalidos: list[str] = []
@@ -57,8 +57,7 @@ class ValidadorTomador:
             else:
                 validos[campo] = valor
 
-        ctx.validacao = ResultadoValidacao(
-            validos=validos,
-            invalidos=invalidos,
-            faltantes=faltantes,
+        ctx.validation = ValidationResult(
+            invalid=invalidos,
+            missing=faltantes,
         )

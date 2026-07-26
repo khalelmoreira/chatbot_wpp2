@@ -1,16 +1,11 @@
 from src.services.notaas.nfse_service import NfseService
 from src.types import NfNotFoundError, EventsNotaas, PayloadNotaas
 
-class NotaasWebhook:
+class NtaasParser:
     def __init__(self, payload_raw):
         self.payload_raw = payload_raw
-
-    def processar_webhook_notaas(self):
-
-        payload = self._parse()
-        return self._dispatch(payload=payload)
         
-    def _parse(self) -> PayloadNotaas | dict:
+    def parse(self) -> PayloadNotaas | dict:
 
         try:
             event = self.payload_raw.get("event")
@@ -35,7 +30,7 @@ class NotaasWebhook:
                 "error": str(e)
             }
         
-    def _dispatch(self, payload: PayloadNotaas):
+    def dispatch(self, payload: PayloadNotaas):
 
         events = EventsNotaas(payload.event)
         service = NfseService(payload.data)

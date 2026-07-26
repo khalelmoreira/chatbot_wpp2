@@ -2,7 +2,7 @@ from operator import add
 from typing import Any, ClassVar
 from enum import StrEnum
 from dataclasses import dataclass, fields, is_dataclass
-from src.types.base import ContextBase, User, UserStatus, Address
+from src.types.base import ContextBase, Mergeable, User, UserStatus, Address
 
 class IntentUserType(StrEnum):
     ONBOARDING  = "ONBOARDING"
@@ -87,7 +87,7 @@ class PrestadorData:
             valor_novo = getattr(novos, c)
             valor_atual = getattr(self, c)
 
-            if is_dataclass(valor_novo) and is_dataclass(valor_atual):
+            if isinstance(valor_atual, Mergeable) and isinstance(valor_novo, Mergeable):
                 kwargs[c] = valor_atual.merge(valor_novo)
             else:
                 kwargs[c] = valor_novo if valor_novo is not None else valor_atual
@@ -108,6 +108,17 @@ class PrestadorData:
         kwargs["endereco"] = endereco
 
         return cls(**kwargs)
+    
+    @classmethod
+    def from_prestador(cls, p: Prestador) -> "PrestadorData":
+        return cls(
+            razao_social=p.razao_social,
+            cnpj=p.cnpj,
+            email=p.email,
+            regime_tributario=p.regime_tributario,
+            cep=p.cep,
+            address=p.address,
+        )
     
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]

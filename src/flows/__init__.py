@@ -1,5 +1,5 @@
-from src.flows.initial_flow import initial_flow
+from chatbot_wpp2.src.handlers.initial_handler import initial_handler
 
 __all__ = [
-    "initial_flow",
+    "initial_handler",
 ]

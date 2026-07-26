@@ -1,5 +1,5 @@
 from src.services.validators.validador_tomador import ValidadorTomador
-from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, DadosTomador
+from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, TomadorData
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIService
@@ -23,11 +23,11 @@ class ExtractionService:
         print(f"DADOS NOVOS: {self.ctx.dados_novos}\n")
 
         draft = self.conversation.get_draft()
-        self.ctx.dados_db = DadosTomador.from_dict(draft)
+        self.ctx.dados_db = TomadorData.from_dict(draft)
         print(f"DADOS DRAFT:{self.ctx.dados_db}\n")
 
-        self.ctx.dados_completos = self.ctx.dados_db.merge(self.ctx.dados_novos)
-        print(f"MERGE: {self.ctx.dados_completos}\n")
+        self.ctx.merged = self.ctx.dados_db.merge(self.ctx.dados_novos)
+        print(f"MERGE: {self.ctx.merged}\n")
 
 
 class ValidationService:
@@ -43,10 +43,10 @@ class ValidationService:
 
         self.validador.validar(self.ctx)
 
-        if self.ctx.validacao.validos:
+        if self.ctx.valid:
             self._update_draft()
 
-            if not self.ctx.validacao.is_complete:
+            if not self.ctx.validation.is_complete:
                 self._incompleto()
                 return
             
@@ -55,7 +55,7 @@ class ValidationService:
             self._msg_confirm()
             return
         
-        if self.ctx.validacao.invalidos:
+        if self.ctx.validation.invalid:
             self._invalidos()
             return
         
@@ -63,9 +63,9 @@ class ValidationService:
         return
     
     def _update_draft(self):
-        draft_dict = unflatten(self.ctx.validacao.validos)
+        draft_dict = unflatten(self.ctx.valid)
         self.conversation.update_draft(draft_dict)
-        print(f"VALIDACAO: {self.ctx.validacao}\n")
+        print(f"VALIDACAO: {self.ctx.validation}\n")
     
     def _update_state(self):
         self.conversation.update_state(ConvStatus.CONFIRMING)
@@ -77,10 +77,10 @@ class ValidationService:
 
         msg_button = self.wpp.format_msg_botao(
             text=(f"*Dados do tomador:*\n\n"
-            f"{self.ctx.dados_completos.tomador.nome}\n"
-            f"{self.ctx.dados_completos.tomador.cnpj}\n"
-            f"{self.ctx.dados_completos.servico.descricao}\n"
-            f"{self.ctx.dados_completos.valores.total}\n"
+            f"{self.ctx.merged.tomador.nome}\n"
+            f"{self.ctx.merged.tomador.cnpj}\n"
+            f"{self.ctx.merged.servico.descricao}\n"
+            f"{self.ctx.merged.valores.total}\n"
             f"Esses dados estão corretos?"
             ),
             botoes=[confirmar, corrigir],
@@ -91,10 +91,10 @@ class ValidationService:
         #     phone=self.ctx.user.phone,
         #     text=(
         #         f"*Dados do tomador:*\n\n"
-        #         f"{self.ctx.dados_completos.tomador.nome}\n"
-        #         f"{self.ctx.dados_completos.tomador.cnpj}\n"
-        #         f"{self.ctx.dados_completos.servico.descricao}\n"
-        #         f"{self.ctx.dados_completos.valores.total}\n"
+        #         f"{self.ctx.merged.tomador.nome}\n"
+        #         f"{self.ctx.merged.tomador.cnpj}\n"
+        #         f"{self.ctx.merged.servico.descricao}\n"
+        #         f"{self.ctx.merged.valores.total}\n"
         #         f"Esses dados estão corretos?"
         #     ),
         #     botoes=[confirmar, corrigir],
@@ -103,10 +103,10 @@ class ValidationService:
 
         print(
             f"*Dados do tomador:*\n\n"
-            f"{self.ctx.dados_completos.tomador.nome}\n"
-            f"{self.ctx.dados_completos.tomador.cnpj}\n"
-            f"{self.ctx.dados_completos.servico.descricao}\n"
-            f"{self.ctx.dados_completos.valores.total}\n"
+            f"{self.ctx.merged.tomador.nome}\n"
+            f"{self.ctx.merged.tomador.cnpj}\n"
+            f"{self.ctx.merged.servico.descricao}\n"
+            f"{self.ctx.merged.valores.total}\n"
             f"Esses dados estão corretos?"
         )
         print_table(table_name="conversations", where=self.ctx.user.phone)

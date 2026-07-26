@@ -2,7 +2,7 @@ import os
 import hashlib
 import hmac
 
-def verificar_ass(payload_raw: bytes, assinatura_arrived: str) -> bool:
+def validate_assinature(payload_raw: bytes, assinatura_arrived: str) -> bool:
     
     secret = os.environ["WEBHOOK_SECRET_NOTAAS"].encode()
     expected = "sha256=" + hmac.new(

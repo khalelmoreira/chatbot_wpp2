@@ -1,6 +1,6 @@
 import json
 import time
-from src.database.db import marcar_processamento, marcar_emitido, marcar_erro, executar_modif
+from src.database.db import marcar_processamento, marcar_emitido, marcar_erro, exe
 from src.services.notaas.emission_service import emitir_nf
 
 def processar_job(job):
@@ -31,7 +31,7 @@ def processar_job(job):
     
 def print_fila():
 
-    jobs = executar_modif(
+    jobs = exe(
         """
         SELECT
             id,
