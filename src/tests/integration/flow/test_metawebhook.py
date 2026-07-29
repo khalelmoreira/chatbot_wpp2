@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
-from chatbot_wpp2.src.handlers.wpp_handler import processar_webhook
-from chatbot_wpp2.src.handlers.initial_handler import fluxo_principal
+from src.handlers.wpp_handler import processar_webhook
+from src.handlers.initial_handler import fluxo_principal
 
 FIXTURES = Path("app/tests/integration/meta")
 

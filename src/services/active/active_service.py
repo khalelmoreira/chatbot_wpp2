@@ -1,3 +1,4 @@
+from chatbot_wpp2.src.types.conversation import Conversation
 from src.types import ContextTomador, ConvStatus, Role
 from src.managers.conversations import ConvManager
 from src.managers.msg_manager import MsgManager
@@ -14,11 +15,11 @@ class ConvActiveService:
     
     def tem_conv(self):
         conversa = self._get_conv()
-        if not conversa:
+        if conversa is None:
             self._save_msg()
             return conversa
 
-        self._conv_id(conversa)
+        self.ctx.conv_id = conversa.id
         self._save_msg()
         return conversa
     
@@ -27,13 +28,9 @@ class ConvActiveService:
         msg.save_msg(role=Role.USER, content=self.ctx.text)
         print_table(table_name="messages", where="phone = ?", params=(self.ctx.user.phone,))
 
-    def _conv_id(self, conversa):
-        self.ctx.conversation_id = conversa["id"]
-        print(f"CTX.CONVERSATION_ID: {self.ctx.conversation_id}\n")
-
     def _get_conv(self):
         conversa = self.conversation.get_ativa()
-        print(f"CONVERSA: {conversa}\n") if conversa is None else print(f"CONVERSA: {dict(conversa)}\n")
+        print(f"CONVERSA: {conversa}\n")
         return conversa
 
 class DispatchActiveService:
@@ -41,13 +38,13 @@ class DispatchActiveService:
         self.ctx = ctx
         self.conversation = ConvManager(ctx)
         
-    def dispatch(self, conversa):
+    def dispatch(self, conversa: Conversation):
         print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
 
         if not conversa:
             return idle_flow(self.ctx, self.conversation)
         
-        self.ctx.conv_status = self._status(conversa)
+        self.ctx.conv_status = conversa.status
 
         dispatchers = {
             ConvStatus.COLLECTING: self._collecting_flow,
@@ -61,7 +58,6 @@ class DispatchActiveService:
             return idle_flow(self.ctx, self.conversation)
         return dispatcher()
     
-    
     def _collecting_flow(self):
         return collecting_flow(self.ctx, self.conversation)
     
@@ -70,8 +66,3 @@ class DispatchActiveService:
     
     def _queued_flow(self):
         return queued_flow(self.ctx, self.conversation)
-
-    def _status(self, conversa):
-        status = conversa["status"]
-        print(f"STATUS: {status}\n")
-        return status

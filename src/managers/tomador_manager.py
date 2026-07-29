@@ -12,10 +12,10 @@ class TomadorManager:
         self.ctx = ctx
         self.db  = DB()
 
-    def update_nf_from_draft(self, draft: dict) -> None:
+    def update_nf_from_draft(self, draft: dict) -> int | None:
 
         prestador_id = self.ctx.user.id
-        conversation_id = self.ctx.conversation_id
+        conv_id = self.ctx.conv_id
 
         data = TomadorData.from_dict(draft)
 
@@ -25,7 +25,7 @@ class TomadorManager:
         valor_total  = data.valores.total
         aliquota_iss = ALIQUOTA_ISS
 
-        tomador_id = self._upsert_tomador(prestador_id, nome, cnpj)
+        tomador_id = self._upsert_tomador(prestador_id, nome, cnpj) # type: ignore
 
         payload = asdict(data)
         payload_enviado = json.dumps(payload, ensure_ascii=False, sort_keys=True)
@@ -35,7 +35,7 @@ class TomadorManager:
         ).hexdigest()
 
         return self._upsert_nf(
-            prestador_id, tomador_id, conversation_id,
+            prestador_id, tomador_id, conv_id,
             idempotency_key, payload_enviado,
             nome, cnpj, descricao, valor_total, aliquota_iss,
         )
@@ -51,23 +51,23 @@ class TomadorManager:
             RETURNING id
         """, (prestador_id, nome, cnpj),)
 
-        print(f"ROW[ID]: {row["id"]}\n")
+        print(f"ROW[ID]: {row['id']}\n")
         return row["id"]
     
     def _upsert_nf(
-            self, prestador_id, tomador_id, conversation_id,
+            self, prestador_id, tomador_id, conv_id,
             idempotency_key, payload_enviado,
             nome, cnpj, descricao, valor_total, aliquota_iss
-    ) -> int:
+    ) -> int | None:
         
         row = self.db.fetchone_exe("""
             INSERT INTO nfs (
-                prestador_id, tomador_id, conversation_id,
+                prestador_id, tomador_id, conv_id,
                 idempotency_key, payload_enviado, nome,
                 cnpj, descricao_servico, valor_total, aliquota_iss
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT (conversation_id) DO UPDATE SET
+            ON CONFLICT (conv_id) DO UPDATE SET
                 tomador_id        = excluded.tomador_id,
                 idempotency_key   = excluded.idempotency_key,
                 payload_enviado   = excluded.payload_enviado,
@@ -79,32 +79,12 @@ class TomadorManager:
                 updated_at        = CURRENT_TIMESTAMP
             RETURNING id
         """, (
-            prestador_id, tomador_id, conversation_id,
+            prestador_id, tomador_id, conv_id,
             idempotency_key, payload_enviado,nome,
             cnpj, descricao, valor_total, aliquota_iss
             ),
         )
+        if row is None:
+            return None
         print(f"ROW[ID]: {row["id"]}\n")
         return row["id"]
-
-    def get_db_data(self) -> None:
-        result = self.db.select(
-            "nfs",
-            columns="nome, cnpj, descricao_servico, aliquota_iss, valor_total",
-            where={"prestador_id": self.ctx.user.id}
-        )
-
-        if not result[0]:
-            self.ctx.db_data = TomadorData()
-            return
-        
-        nf = result[0]["nf"]
-
-        if not nf:
-            self.ctx.db_data = TomadorData()
-            return
-        
-        data = json.loads(nf)
-
-        print(f"nfse_drafts.loads: {data}\n")
-        self.ctx.db_data = TomadorData.from_dict(data)

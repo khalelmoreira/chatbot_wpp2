@@ -157,6 +157,6 @@ class TomadorData:
     
 @dataclass
 class ContextTomador(ContextBase[TomadorData]):
-    conversation_id: int | None = None
+    conv_id:         int | None = None
     idempotency_key: str = ""
     conv_status:     str | None = None

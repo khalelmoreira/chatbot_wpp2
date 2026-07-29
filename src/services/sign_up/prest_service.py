@@ -18,8 +18,8 @@ class ConvPrestService:
         return conv
 
     def _conv_id(self, conv):
-        self.ctx.conversation_id = conv["id"]
-        print(f"CTX.CONVERSATION_ID: {self.ctx.conversation_id}\n")
+        self.ctx.conv_id = conv["id"]
+        print(f"CTX.conv_id: {self.ctx.conv_id}\n")
 
     def _save_msg(self):
         MsgManager(self.ctx).save_msg(role=Role.USER, content=self.ctx.text)

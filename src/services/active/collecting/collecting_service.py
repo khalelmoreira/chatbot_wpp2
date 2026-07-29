@@ -20,13 +20,14 @@ class ExtractionService:
     def extract_e_merge(self):
 
         self.ai.extract_nfse_data()
-        print(f"DADOS NOVOS: {self.ctx.dados_novos}\n")
+        print(f"DADOS NOVOS: {self.ctx.new_data}\n")
 
         draft = self.conversation.get_draft()
-        self.ctx.dados_db = TomadorData.from_dict(draft)
-        print(f"DADOS DRAFT:{self.ctx.dados_db}\n")
+        if draft is not None:
+            self.ctx.db_data = TomadorData.from_dict(draft)
+        print(f"DADOS DRAFT:{self.ctx.db_data}\n")
 
-        self.ctx.merged = self.ctx.dados_db.merge(self.ctx.dados_novos)
+        self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
         print(f"MERGE: {self.ctx.merged}\n")
 
 

@@ -3,15 +3,16 @@ from src.managers.nfs.nf_manager import NfsManager
 
 class NfseService:
     def __init__(self, data: dict):
-        self.data            = data
-        self.manager         = NfsManager(data)
-        self.wpp             = WhatsAppService()
+        self.data    = data
+        self.manager = NfsManager(data)
+        self.wpp     = WhatsAppService()
     
     def _notf_prestador(self, msg: str) -> None:
         row = self.manager.get_phone()
-        if row:
-            #self.wpp.send_msg_text(row["phone"], msg)
-            print(msg)
+        if row is None:
+            raise LookupError(f"phone/prestador_id não encontrado para user")
+        #self.wpp.send_msg_text(row["phone"], msg)
+        print(msg)
 
 
     def issued(self):

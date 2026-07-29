@@ -84,7 +84,7 @@ def init_db():
                    
             prestador_id               INTEGER NOT NULL REFERENCES prestador(id),
             tomador_id                 INTEGER NOT NULL REFERENCES tomador(id),
-            conversation_id            INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
+            conv_id            INTEGER NOT NULL UNIQUE REFERENCES conversations(id) ON DELETE CASCADE,
             idempotency_key            TEXT UNIQUE NOT NULL,                                        -- sha256(payload + prestador_id)
             status                     TEXT NOT NULL DEFAULT 'QUEUED',    -- QUEUED | DONE | ERROR | CANCELLED
             tentativas                 INTEGER NOT NULL DEFAULT 0,

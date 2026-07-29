@@ -128,5 +128,5 @@ class PrestadorData:
 
 @dataclass
 class ContextPrestador(ContextBase[PrestadorData]):
-    conversation_id: int | None = None
+    conv_id: int | None = None
     idempotency_key: str = ""

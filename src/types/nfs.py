@@ -1,5 +1,5 @@
 from enum import StrEnum
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 from src.types.base import Address
 
@@ -39,7 +39,7 @@ class Nfs:
             
     prestador_id:              int
     tomador_id:                int
-    conversation_id:           int
+    conv_id:           int
 
     nome:                      str
     cnpj:                      str
@@ -87,3 +87,22 @@ class Nfs:
     processado_em:             str | None = None
     cancelled_at:              str | None = None
     cancel_xml_url:            str | None = None
+
+@dataclass
+class NfsJob:
+    id:                int
+    conv_id:           int
+    nome:              str
+    cnpj:              str
+    descricao_servico: str
+    valor_total:       float
+    aliquota_iss:      float
+    tentativas:        int
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "NfsJob":
+        campos = {f.name for f in fields(cls)}
+        faltantes = campos - d.keys()
+        if faltantes:
+            raise ValueError(f"campos faltantes: {faltantes}")
+        return cls(**{k: d[k] for k in campos})

@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Any
 import xml
 from src.database.db import DB
 from src.types import NfNotFoundError
@@ -9,31 +10,29 @@ class NfsManager:
         self.db   = DB()
         self.ivid = data.get("invoiceId")
         self.nf   = self.get_nf()
-        self.cid  = self.nf["conversation_id"]
+        self.cid  = self.nf["conv_id"]
+        self.nfi  = self.nf["id"]
 
-    def get_nf(self) -> sqlite3.Row:
+    def get_nf(self) -> dict[str, Any]:
         nf = self.db.select(
             "nfs",
-            columns="id, conversation_id",
+            columns="id, conv_id",
             where={"invoice_id": self.ivid}
         )
         if not nf:
             raise NfNotFoundError(f"NF não encontrada para invoiceId={self.ivid}")
-        return nf[0]
+        return dict(nf[0])
     
-    def get_phone(self) -> sqlite3.Row | None:
-        
-        """
-        SQL explícito (não usa select() genérico): requer JOIN
-        """
+    def get_phone(self) -> dict[str, Any] | None:
 
         row = self.db.fetchone("""
             SELECT p.phone FROM conversations c
             JOIN prestador p ON p.id = c.prestador_id
             WHERE c.id = ?
         """, (self.cid,))
-        if row:
-            return row
+        if row is None:
+            return None
+        return dict(row)
         
     def reset_conv(self, novo_status: str) -> None:
         self.db.update(
@@ -52,10 +51,10 @@ class NfsManager:
                 "emitido_em": self.data.get("emittedAt"),
                 "updated_at": "CURRENT_TIMESTAMP"
             },
-            where={"id": self.nf["id"]}
+            where={"id": self.nfi}
         )
 
-    def update_nf_error(self):
+    def update_nf_error(self) -> None:
         self.db.update(
             "nfs",
             data={
@@ -64,10 +63,10 @@ class NfsManager:
                 "erro_msg": self.data.get("errorMessage", "Erro desconhecido"),
                 "updated_at": "CURRENT_TIMESTAMP"
             },
-            where={"id": self.nf["id"]}
+            where={"id": self.nfi}
         )
 
-    def update_nf_cancelled(self):
+    def update_nf_cancelled(self) -> None:
         self.db.update(
             "nfs",
             data={
@@ -78,7 +77,7 @@ class NfsManager:
             where={"id": self.nf["id"]}
         )
 
-    def coalesce(self):
+    def coalesce(self) -> None:
 
         pdf_url = self.data.get("pdfUrl")
         xml_url = self.data.get("xmlUrl")
@@ -90,5 +89,5 @@ class NfsManager:
                 "xml_url": f"COALESCE({xml_url}, xml_url)",
                 "updated_at": "CURRENT_TIMESTAMP"
             },
-            where={"id": self.nf["id"]}
+            where={"id": self.nfi}
         )

@@ -1,4 +1,4 @@
-import sqlite3
+from typing import Any
 from src.types import ContextTomador
 from src.database.db import DB
 
@@ -8,14 +8,13 @@ class OnboardingManager:
         self.ctx = ctx
         self.id = ctx.user.id
 
-    def resumo_nfs(self) -> sqlite3.Row:
-
+    def resumo_nfs(self) -> dict[str, Any] | None:
         """
         SQL explícito (não usa select() genérico): requer JOIN com conversations
         e ORDER BY + LIMIT para pegar o registro mais recente.
         """
 
-        return self.db.fetchone("""
+        row = self.db.fetchone("""
             SELECT 
                 n.status,
                 n.erro_msg,
@@ -24,18 +23,21 @@ class OnboardingManager:
                 n.invoice_id
             FROM nfs n
             JOIN conversations c ON
-                c.id = n.conversation_id
+                c.id = n.conv_id
             WHERE c.prestador_id = ?
             ORDER BY n.created_at DESC
             LIMIT 1
-        """, (self.ctx.user.id,))
+        """, (self.id,))
+        if row is None:
+            return None
+        return dict(row)
     
-    def get_nf_history(self, limit: int = 5) -> list[sqlite3.Row]:
-        return self.db.fetchall("""
+    def get_nf_history(self, limit: int = 5) -> list[dict[str, Any]]:
+        rows = self.db.fetchall("""
             SELECT
                 id,
                 status,
-                conversation_id,
+                conv_id,
                 tentativas,
                 nome,
                 cnpj,
@@ -54,13 +56,15 @@ class OnboardingManager:
                 AND status IN ('DONE', 'ERROR', 'CANCELLED')
             ORDER BY created_at ASC
             LIMIT ?
-        """, (self.ctx.user.id, limit))
+        """, (self.id, limit))
+        return [dict(row) for row in rows]
     
-    def get_msg_history(self, limit: int = 5) -> list[sqlite3.Row]:
-        return self.db.select(
+    def get_msg_history(self, limit: int = 5) -> list[dict[str, str]]:
+        rows = self.db.select(
             "messages",
             columns="role, content",
             where={"prestador_id": self.id},
             order_by="id ASC",
             limit=limit
         )
+        return [dict(row) for row in rows]

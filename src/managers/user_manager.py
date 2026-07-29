@@ -1,4 +1,3 @@
-import sqlite3
 from typing import Any
 from dataclasses import fields
 from src.database.db import DB
@@ -112,25 +111,27 @@ class PrestadorManager:
         return [Prestador.from_dict(dict(row)) for row in rows]
     
     def update_project_id(self, ntaas_project_id: str, novo_status: str) -> None:
-        row = self.db.update_guarded(
+        self.db.update_guarded(
             "prestador",
             data={"ntaas_project_id": ntaas_project_id, "status": novo_status},
             where={"id": self.id, "status": "CONFIRMING"}
         )
-        if not row:
-            return
+
         
-    def get_project_id(self) -> list[sqlite3.Row]:
-        return self.db.select(
+    def get_project_id(self) -> list[dict[str, Any]]:
+        rows = self.db.select(
             "prestador",
             columns="ntaas_project_id",
             where={"id": self.id, "status": 'CERTIFICATE'}
         )
+        return [dict(row) for row in rows]
 
-    def update_api_key(self, api_key, novo_status: str) -> sqlite3.Row | None:
+    def update_api_key(self, api_key, novo_status: str) -> dict[str, Any] | None:
         row = self.db.update_guarded(
             "prestador",
             data={"ntaas_api_key": api_key, "status": novo_status},
             where={"id": self.id, "status": "CERTIFICATE"}
         )
-        return row
+        if row is None:
+            return None
+        return dict(row)

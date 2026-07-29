@@ -1,4 +1,3 @@
-# DATACLASSES
 from src.types.base import (
     ContextBase,
     UserStatus,
@@ -39,9 +38,6 @@ from src.types.wpp_msg import (
 from src.types.conversation import (
     ConvStatus,
     IntentType,
-    StatusResumo,
-    HistoryResumo,
-    MsgResumo,
     Conversation,
 )
 from src.types.nfs import (
@@ -50,6 +46,7 @@ from src.types.nfs import (
     StatusInvoice,
     PayloadNotaas,
     Nfs,
+    NfsJob,
 )
 
 from src.types.exceptions import (
@@ -60,6 +57,16 @@ from src.types.exceptions import (
     CnpjJaCadastradoError,
     LimitePlanoAtingidoError,
     DadosInvalidosError,
+)
+
+from src.types.handler_result import (
+    HandlerResult,
+)
+
+from src.types.resumo_types import (
+    StatusResumo,
+    HistoryResumo,
+    MsgResumo,
 )
 
 __all__ = [
@@ -94,9 +101,6 @@ __all__ = [
     # Conversation
     "ConvStatus",
     "IntentType",
-    "StatusResumo",
-    "HistoryResumo",
-    "MsgResumo",
     "Conversation",
     # nfs
     "NfseStatus",
@@ -104,6 +108,7 @@ __all__ = [
     "StatusInvoice",
     "PayloadNotaas",
     "Nfs",
+    "NfsJob",
     # exceptions
     "NfNotFoundError",
     "InvalidTransactionError",
@@ -112,4 +117,10 @@ __all__ = [
     "CnpjJaCadastradoError",
     "LimitePlanoAtingidoError",
     "DadosInvalidosError",
+    # handler result
+    "HandlerResult",
+    # resumo_types
+    "StatusResumo",
+    "HistoryResumo",
+    "MsgResumo",
 ]

@@ -1,6 +1,6 @@
 from calendar import c
 from datetime import datetime
-import sqlite3
+from typing import Any
 from src.database.db import DB
 
 class TokensManager:
@@ -18,15 +18,17 @@ class TokensManager:
             }
         )
 
-    def get_token(self, token: str) -> sqlite3.Row | None:
+    def get_token(self, token: str) -> dict[str, Any] | None:
         row = self.db.select(
             "upload_tokens",
             columns="prestador_id, expire_at, used",
             where={"token": token}
         )
-        return row[0]
+        if row is None:
+            return None
+        return dict(row[0])
     
-    def update_used(self, token: str) -> sqlite3.Row | None:
+    def update_used(self, token: str) -> dict[str, Any] | None:
         row = self.db.fetchone_exe("""
             UPDATE upload_tokens SET
                 used = 1
@@ -34,5 +36,6 @@ class TokensManager:
             AND used = 0
             AND expire_at > datetime('now')
         """, (token,))
-
-        return row
+        if row is None:
+            return None
+        return dict(row)

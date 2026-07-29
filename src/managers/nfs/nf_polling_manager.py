@@ -21,7 +21,7 @@ class NfsPollingManager:
         result =  db.fetchall("""
             SELECT
                 id,
-                conversation_id,
+                conv_id,
                 invoice_id,
                 prestador_id
             FROM nfs

@@ -47,7 +47,7 @@ class Role(StrEnum):
 
 @dataclass
 class MsgConvType:
-    conversation_id: int
+    conv_id: int
     role: Role
     content: str
     created_at: str

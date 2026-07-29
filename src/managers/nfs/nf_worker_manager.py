@@ -1,30 +1,28 @@
 import sqlite3
-from src.types import NfseStatus
+from src.types import NfseStatus, NfsJob
 from config import MAX_TENTATIVAS
 from src.database.db import DB
 from src.database.get_connection import get_connection
 from src.utils.debug import print_table
 
 class NfsWorkerManager:
-    def __init__(self, job: int):
+    def __init__(self, job: NfsJob):
         self.db  = DB()
         self.job = job
-        self.jid = job["id"]
-        self.cid = job["conversation_id"]
+        self.jid = job.id
+        self.cid = job.conv_id
 
     @classmethod
     def reserva_job(cls) -> "NfsWorkerManager | None":
         job = cls._get_next_job()
-        
         if not job:
             return None
         return cls(job)
     
     @staticmethod
-    def _get_next_job() -> sqlite3.Row | None:
+    def _get_next_job() -> NfsJob | None:
 
-        db = DB()
-        return db.fetchone_exe("""
+        row = DB().fetchone_exe("""
             UPDATE nfs
             SET status = 'PROCESSING',
                 processado_em = CURRENT_TIMESTAMP,
@@ -38,7 +36,7 @@ class NfsWorkerManager:
             )
             RETURNING 
                 id,
-                conversation_id,
+                conv_id,
                 nome,
                 cnpj,
                 descricao_servico,
@@ -46,6 +44,9 @@ class NfsWorkerManager:
                 aliquota_iss,
                 tentativas
         """, (MAX_TENTATIVAS,))
+        if row is None:
+            return None
+        return NfsJob.from_dict(dict(row))
     
     def marcar_emitido(self) -> None:
 
@@ -57,16 +58,16 @@ class NfsWorkerManager:
                 SET status = '{NfseStatus.ISSUED}',
                     processado_em = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (self.job_id,))
-            print_table(table_name="nfs", columns=["status", "processado_em"], where="id = ?", params=(self.job_id,))
+            """, (self.jid,))
+            print_table(table_name="nfs", columns=["status", "processado_em"], where="id = ?", params=(self.jid,))
 
             conn.execute("""
                 UPDATE conversations
                 SET status = 'DONE',
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (self.conversation_id,))
-            print_table(table_name="conversations", columns=["status", "updated_at"], where="id = ?", params=(self.conversation_id,))
+            """, (self.cid,))
+            print_table(table_name="conversations", columns=["status", "updated_at"], where="id = ?", params=(self.cid,))
 
             conn.execute("COMMIT")
 

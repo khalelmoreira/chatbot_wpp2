@@ -21,7 +21,7 @@ class IntentService:
 
         match intencao:
             case IntentType.EMITIR:
-                self.ctx.conversation_id = self.conversation.create_conversation()
+                self.ctx.conv_id = self.conversation.create_conversation()
                 return collecting_flow(self.ctx, self.conversation)
             
             case IntentType.CONSULTA:
