@@ -2,21 +2,6 @@ from dataclasses import dataclass
 from typing import Any, Protocol, TypedDict, Literal
 from enum import StrEnum
 
-@dataclass
-class IncomingMessage:
-    #MENSAGEM RECEBIDA E NORMALIZADA
-
-    msg_id:    str
-    phone:     str
-    name:      str
-    tipo:      MsgType
-    timestamp: int
-    text:      str
-    button_id: str | None = None
-
-    def is_duplicate(self, processed_ids: set[str]) -> bool:
-        return self.msg_id in processed_ids
-    
 class MsgType(StrEnum):
     TEXT     = "text"
     IMAGE    = "image"
@@ -36,14 +21,29 @@ class BotaoId(StrEnum):
     PRESTADOR_CONFIRMADO = "prestador_confirmado"
     PRESTADOR_CORRIGIR   = "prestador_corrigir"
 
+class Role(StrEnum):
+    USER = "USER"
+    AI   = "AI"
+
+@dataclass
+class IncomingMessage:
+    #MENSAGEM RECEBIDA E NORMALIZADA
+
+    msg_id:    str
+    phone:     str
+    name:      str
+    tipo:      MsgType
+    timestamp: int
+    text:      str
+    button_id: str | None = None
+
+    def is_duplicate(self, processed_ids: set[str]) -> bool:
+        return self.msg_id in processed_ids
+    
 @dataclass
 class BotaoResponse:
     id: str
     title: str
-
-class Role(StrEnum):
-    USER = "USER"
-    AI   = "AI"
 
 @dataclass
 class MsgConvType:

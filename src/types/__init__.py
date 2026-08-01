@@ -1,18 +1,18 @@
 from src.types.base import (
     ContextBase,
-    UserStatus,
-    User,
     ValidationResult,
-    Address,
     FromDictable,
+    Mergeable,
+    IsDataclass,
 )
 
-# Enums (tipos de estado)
 from src.types.user import (
+    UserStatus,
+    User,
+    Address,
     IntentUserType,
     Prestador,
     PrestadorData,
-    ContextPrestador,
 )
 
 from src.types.tomador import (
@@ -23,7 +23,6 @@ from src.types.tomador import (
     Servico,
     Valores,
     TomadorData,
-    ContextTomador,
 )
 
 from src.types.wpp_msg import (
@@ -86,19 +85,31 @@ from src.types.ai_types import (
     TomExtractKey,
 )
 
+from src.types.context import (
+    ContextPrestador,
+    ContextTomador,
+)
+
+from src.types.mixins import (
+    MergeableMixin,
+    TextMixin,
+    FromDictMixin,
+)
+
 __all__ = [
     # Base
     "ContextBase",
-    "UserStatus",
-    "User",
+    "Mergeable",
+    "IsDataclass",
     "ValidationResult",
-    "Address",
+    "User",
     "FromDictable",
     # User
+    "UserStatus",
+    "Address",
     "IntentUserType",
     "Prestador",
     "PrestadorData",
-    "ContextPrestador",
     # tomador
     "DocTomadorType",
     "Doc",
@@ -107,7 +118,6 @@ __all__ = [
     "Servico",
     "Valores",
     "TomadorData",
-    "ContextTomador",
     # wpp_msg
     "Message",
     "IncomingMessage",
@@ -155,4 +165,11 @@ __all__ = [
     "TomRespKey",
     "TomClassKey",
     "TomExtractKey",
+    # context
+    "ContextPrestador",
+    "ContextTomador",
+    # mixins
+    "MergeableMixin",
+    "TextMixin",
+    "FromDictMixin",
 ]

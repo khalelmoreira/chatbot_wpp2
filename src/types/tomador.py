@@ -1,16 +1,8 @@
 from dataclasses import dataclass, field, fields
 from typing import Any, Self, ClassVar, cast
 from enum import StrEnum
-from src.types.base import ContextBase, Address
-
-@dataclass
-class MergeableMixin:
-    def merge(self, novos: "Self") -> "Self":
-        kwargs = {
-            f.name: getattr(novos, f.name) if getattr(novos, f.name) is not None else getattr(self, f.name)
-            for f in fields(self)
-        }
-        return type(self)(**kwargs)
+from src.types.user import Address
+from src.types.mixins import TextMixin, MergeableMixin, FromDictMixin
 
 class DocTomadorType(StrEnum):
     CPF  = "CPF"
@@ -78,54 +70,36 @@ class TomadorT:
 
 
 @dataclass
-class Tomador(MergeableMixin):
+class Tomador(MergeableMixin, FromDictMixin):
     nome: str | None = None
     cnpj: str | None = None
 
     OBRIGATORIOS: ClassVar[set[str]] = {"nome", "cnpj"}
-    
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Tomador":
-        return cls(
-            nome=data.get("nome"),
-            cnpj=data.get("cnpj"),
-        )
 
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
     
 @dataclass
-class Servico(MergeableMixin):
+class Servico(MergeableMixin, FromDictMixin):
     descricao: str | None = None
 
     OBRIGATORIOS: ClassVar[set[str]] = {"descricao"}
-    
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Servico":
-        return cls(descricao=data.get("descricao"))
 
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
     
 @dataclass
-class Valores(MergeableMixin):
+class Valores(MergeableMixin, FromDictMixin):
     total:       float | None = None
     aliquotaIss: float | None = None
 
     OBRIGATORIOS: ClassVar[set[str]] = {"total"}
-    
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Valores":
-        return cls(
-            total=data.get("total"),
-            aliquotaIss=data.get("aliquotaIss"),
-        )
 
     def campos_faltantes(self) -> list[str]:
         return [c for c in self.OBRIGATORIOS if getattr(self, c) is None]
     
 @dataclass
-class TomadorData:
+class TomadorData(TextMixin):
     tomador: Tomador = field(default_factory=Tomador)
     servico: Servico = field(default_factory=Servico)
     valores: Valores = field(default_factory=Valores)
@@ -154,9 +128,3 @@ class TomadorData:
     
     def is_complete(self) -> bool:
         return not self.campos_faltantes()
-    
-@dataclass
-class ContextTomador(ContextBase[TomadorData]):
-    conv_id:         int | None = None
-    idempotency_key: str = ""
-    conv_status:     str | None = None

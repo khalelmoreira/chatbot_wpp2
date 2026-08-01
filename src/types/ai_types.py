@@ -1,14 +1,43 @@
 from dataclasses import dataclass
 import logging
-from typing import Any, Callable, Generic, TypeVar, Type
+from typing import Callable, Generic, TypeVar, Type
 from abc import ABC, abstractmethod
 from enum import StrEnum
 from src.types import FromDictable
 
 logger = logging.getLogger(__name__)
-
 TExtracted = TypeVar('TExtracted', bound=FromDictable)
 TInterpreted = TypeVar('TInterpreted')
+
+class PrestRespKey(StrEnum):
+    INCOMPLETE  = "INCOMPLETE"
+    INVALID     = "INVALID"
+    NO_DATA     = "NO_DATA"
+    GENERAL_ASK = "GENERAL_ASK"
+    NO_INTENT   = "NO_INTENT"
+
+class PrestClassKey(StrEnum):
+    HAS_INTENT = "HAS_INTENT"
+
+class PrestExtractKey(StrEnum):
+    DATA    = "DATA"
+    ADDRESS = "ADDRESS"
+
+class TomRespKey(StrEnum):
+    INCOMPLETE      = "INCOMPLETE"
+    INVALID         = "INVALID"
+    NO_DATA         = "NO_DATA"
+    ONBOARD_INFO    = "ONBOARD_INFO"
+    ONBOARD_HISTORY = "ONBOARD_HISTORY"
+    NO_INTENT       = "NO_INTENT"
+
+class TomClassKey(StrEnum):
+    ONBOARD_REF_PAST = "ONBOARD_REF_PAST"
+    HAS_INTENT       = "HAS_INTENT"
+    LOOKSLIKE_ASK    = "LOOKSLIKE_ASK"
+
+class TomExtractKey(StrEnum):
+    NF = "NF"
 
 class AIClient(ABC):
 
@@ -83,33 +112,3 @@ class AIInterpreter(Generic[TInterpreted]):
         except Exception as e:
             logger.info(f"Erro ao classificar com prompt '{self.prompt}': {e}")
             return self.fallback
-
-class PrestRespKey(StrEnum):
-    INCOMPLETE  = "INCOMPLETE"
-    INVALID     = "INVALID"
-    NO_DATA     = "NO_DATA"
-    GENERAL_ASK = "GENERAL_ASK"
-    NO_INTENT   = "NO_INTENT"
-
-class PrestClassKey(StrEnum):
-    HAS_INTENT = "HAS_INTENT"
-
-class PrestExtractKey(StrEnum):
-    DATA    = "DATA"
-    ADDRESS = "ADDRESS"
-
-class TomRespKey(StrEnum):
-    INCOMPLETE      = "INCOMPLETE"
-    INVALID         = "INVALID"
-    NO_DATA         = "NO_DATA"
-    ONBOARD_INFO    = "ONBOARD_INFO"
-    ONBOARD_HISTORY = "ONBOARD_HISTORY"
-    NO_INTENT       = "NO_INTENT"
-
-class TomClassKey(StrEnum):
-    ONBOARD_REF_PAST = "ONBOARD_REF_PAST"
-    HAS_INTENT       = "HAS_INTENT"
-    LOOKSLIKE_ASK    = "LOOKSLIKE_ASK"
-
-class TomExtractKey(StrEnum):
-    NF = "NF"

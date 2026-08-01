@@ -2,7 +2,18 @@ from operator import add
 from typing import Any, ClassVar
 from enum import StrEnum
 from dataclasses import dataclass, fields, is_dataclass
-from src.types.base import ContextBase, Mergeable, User, UserStatus, Address
+from src.types.base import Mergeable
+from src.types.mixins import MergeableMixin, TextMixin, FromDictMixin
+
+class UserStatus(StrEnum):
+    COLLECTING  = "COLLECTING"
+    ADDRESS     = "ADDRESS"
+    CONFIRMING  = "CONFIRMING"
+    PROJECT     = "PROJECT"
+    CERTIFICATE = "CERTIFICATE"
+    ACTIVE      = "ACTIVE"
+    ERROR       = "ERROR"
+    CANCELLED   = "CANCELLED"
 
 class IntentUserType(StrEnum):
     ONBOARDING  = "ONBOARDING"
@@ -11,6 +22,32 @@ class IntentUserType(StrEnum):
     GENERAL_ASK = "GENERAL_ASK"
     NENHUM      = "NENHUM"
 
+@dataclass
+class User:
+    id:     int
+    phone:  str
+    name:   str | None = None
+    status: UserStatus | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "User | None":
+        if not data or "id" not in data or "phone" not in data:
+            return None
+        return cls(
+            id=data["id"],
+            phone=data["phone"],
+            name=data.get("name"),
+            status=UserStatus(data["status"]) if data.get("status") else None
+        )
+
+@dataclass
+class Address(MergeableMixin, FromDictMixin):
+    logradouro:  str | None = None
+    bairro:      str | None = None
+    cidade:      str | None = None
+    uf:          str | None = None
+    numero:      str | None = None
+    complemento: str | None = None
 
 @dataclass
 class Prestador:
@@ -67,7 +104,7 @@ class Prestador:
         )
     
 @dataclass
-class PrestadorData:
+class PrestadorData(TextMixin, MergeableMixin):
     razao_social:      str | None = None
     cnpj:              str | None = None
     email:             str | None = None
@@ -78,21 +115,6 @@ class PrestadorData:
     OBRIGATORIOS: ClassVar[set[str]] = {
         "razao_social", "cnpj", "email", "regime_tributario", "cep"
     }
-
-    def merge(self, novos: "PrestadorData") -> "PrestadorData":
-        campos = [f.name for f in fields(self)]
-        kwargs = {}
-
-        for c in campos:
-            valor_novo = getattr(novos, c)
-            valor_atual = getattr(self, c)
-
-            if isinstance(valor_atual, Mergeable) and isinstance(valor_novo, Mergeable):
-                kwargs[c] = valor_atual.merge(valor_novo)
-            else:
-                kwargs[c] = valor_novo if valor_novo is not None else valor_atual
-
-        return PrestadorData(**kwargs)
     
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> "PrestadorData":
@@ -125,8 +147,3 @@ class PrestadorData:
     
     def is_complete(self) -> bool:
         return not self.campos_faltantes()
-
-@dataclass
-class ContextPrestador(ContextBase[PrestadorData]):
-    conv_id: int | None = None
-    idempotency_key: str = ""

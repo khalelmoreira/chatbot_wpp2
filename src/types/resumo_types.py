@@ -1,39 +1,13 @@
-from dataclasses import dataclass, fields, is_dataclass, field
-from typing import Any, Mapping, Protocol, ClassVar, cast
-
-class IsDataclass(Protocol):
-    __dataclass_fields__: ClassVar[dict[str, Any]]
-
-class ResumoMixin:
-    @classmethod
-    def from_row(cls, data: Mapping[str, Any] | IsDataclass, **aliases: Any):
-        if is_dataclass(data) and not isinstance(data, type):
-            base = {f.name: getattr(data, f.name) for f in fields(data)}
-        else:
-            base = dict(cast(Mapping[str, Any], data))
-
-        merged = {**base, **aliases}
-        return cls(**{f.name: merged.get(f.name) for f in fields(cast(IsDataclass, cls))})
-
-    def to_str(self, sep: str = "\n") -> str:
-        rows = []
-        for f in fields(cast(IsDataclass, self)):
-            v = getattr(self, f.name)
-            if v is None or f.metadata.get("oculto"):
-                continue
-
-            label = f.metadata.get("label", f.name)
-            rows.append(f"{label}: {v}")
-
-        return sep.join(rows)
+from dataclasses import dataclass, field
+from src.types.mixins import TextMixin
 
 @dataclass
-class MsgResumo(ResumoMixin):
+class MsgResumo(TextMixin):
     role:    str | None = field(default=None, metadata={"label": "De"})
     content: str | None = field(default=None, metadata={"label": "Mensagem"})
 
 @dataclass
-class StatusResumo(ResumoMixin):
+class StatusResumo(TextMixin):
     status:            str | None = field(default=None, metadata={"label": "Status"})
     erro_msg:          str | None = field(default=None, metadata={"label": "Erro"})
     created_at:        str | None = field(default=None, metadata={"label": "Criado em"})
@@ -45,7 +19,7 @@ class StatusResumo(ResumoMixin):
     emitido_em:        str | None = field(default=None, metadata={"label": "Emitido em"})
 
 @dataclass
-class HistoryResumo(ResumoMixin):
+class HistoryResumo(TextMixin):
     id:                int | None = field(default=None, metadata={"oculto": True})
     status:            str | None = field(default=None, metadata={"label": "Status"})
     conv_id:           int | None = field(default=None, metadata={"oculto": True})
