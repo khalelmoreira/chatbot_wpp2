@@ -5,7 +5,7 @@ from src.types import NtaasCertificadoError
 from src.managers.tokens_manager import TokensManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.models.urls import NOTAAS_BASE_URL
-from src.services.notaas.upload_certificate import gen_upload_token
+from src.services.ntaas.upload_certificate import gen_upload_token
 
 logger = logging.getLogger(__name__)
 

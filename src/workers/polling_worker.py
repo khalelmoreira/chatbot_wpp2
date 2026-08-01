@@ -1,6 +1,6 @@
 import logging
 import threading
-from src.services.notaas.polling_service import match_jobs_processing
+from src.services.ntaas.polling_service import match_jobs_processing
 
 logger = logging.getLogger(__name__)
 

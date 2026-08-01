@@ -5,6 +5,7 @@ from src.types import ContextPrestador
 def idle_user_flow(ctx: ContextPrestador):
 
     print(f"\n\n----------------IDLE USER FLOW----------------\n\n")
+    print(f"CTX: {ctx}\n")
 
     conv = PrestadorManager(ctx)
     intent = IntentUserService(ctx, conv)

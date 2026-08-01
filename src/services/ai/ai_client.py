@@ -1,31 +1,15 @@
 import json
-from abc import ABC, abstractmethod
+from src.types import AIClient
 from openai import OpenAI
 
-class AIClient(ABC):
-    """Interface para qualquer cliente de IA"""
-
-    @abstractmethod
-    def extract_json(self, system_prompt: str, user_msg: str) -> dict:
-        """Extrai JSON da resposta da IA"""
-        pass
-
-    @abstractmethod
-    def extract_text(self, system_prompt: str, user_msg: str) -> str:
-        """Extrai texto da resposta da IA"""
-        pass
-
 class GemmaClient(AIClient):
-    """Cliente para Gemma via LM-Studio"""
 
-    def __init__(self, model: str, base_url: str = "http://localhost:1234/v1"):
+    def __init__(self, model: str = "google/gemma-4-e4b", base_url: str = "http://localhost:1234/v1"):
         self.client = OpenAI(base_url=base_url, api_key="lm-studio")
         self.model = model
         self.temperature = 0
 
     def extract_json(self, system_prompt: str, user_msg: str) -> dict:
-        """Extrai e valida JSON"""
-        
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -35,8 +19,10 @@ class GemmaClient(AIClient):
                     {"role": "user", "content": user_msg}
                 ]
             )
-            conteudo = response.choices[0].message.content.strip()
-            return json.loads(conteudo)
+            conteudo = response.choices[0].message.content
+            if conteudo is None:
+                return {}
+            return json.loads(conteudo.strip())
         
         except json.JSONDecodeError as e:
             raise ValueError(f"Resposta inválida da IA. Esperado JSON válido: {e}")
@@ -44,8 +30,6 @@ class GemmaClient(AIClient):
             raise Exception(f"Erro ao chamar IA: {e}")
         
     def extract_text(self, system_prompt: str, user_msg: str) -> str:
-        """Extrai texto simples"""
-
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -55,6 +39,9 @@ class GemmaClient(AIClient):
                     {"role": "user", "content": user_msg}
                 ]
             )
-            return response.choices[0].message.content
+            conteudo = response.choices[0].message.content
+            if conteudo is None:
+                return ""
+            return conteudo
         except Exception as e:
             raise Exception(f"Erro ao chamar IA: {e}")

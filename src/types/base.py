@@ -61,6 +61,10 @@ class Address:
 class Mergeable(Protocol):
     def merge(self, novos: Self) -> Self: ...
 
+class FromDictable(Protocol):
+    @classmethod
+    def from_dict(cls, data: dict) -> Self: ...
+
 T = TypeVar("T", bound=Mergeable)
 
 @dataclass

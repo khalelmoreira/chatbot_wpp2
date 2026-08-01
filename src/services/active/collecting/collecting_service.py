@@ -1,5 +1,6 @@
+from src.services.ai.ai_client import GemmaClient
 from src.services.validators.validador_tomador import ValidadorTomador
-from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, TomadorData
+from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, TomadorData, TomExtractKey, TomRespKey
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIService
@@ -14,12 +15,14 @@ def notf_user(msg: str) -> None:
 class ExtractionService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
-        self.ai = AIService()
+        self.ai = AIService(GemmaClient())
         self.conversation = conversation
 
     def extract_e_merge(self):
 
-        self.ai.extract_nfse_data()
+        new_data = self.ai.tom.extract(TomExtractKey.NF, self.ctx.text)
+        if new_data is not None:
+            self.ctx.new_data = new_data
         print(f"DADOS NOVOS: {self.ctx.new_data}\n")
 
         draft = self.conversation.get_draft()
@@ -35,7 +38,7 @@ class ValidationService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
         self.conversation = conversation
-        self.ai = AIService(ctx)
+        self.ai = AIService(GemmaClient())
         self.validador = ValidadorTomador()
         self.msg = MsgManager(ctx)
         self.wpp = WhatsAppService()
@@ -113,16 +116,16 @@ class ValidationService:
         print_table(table_name="conversations", where=self.ctx.user.phone)
 
     def _incompleto(self):
-        response = self.ai.incomplete_response()
+        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, [self.ctx.valid, self.ctx.validation.missing])
         self.msg.save_msg(Role.AI, response)
         notf_user(response)
     
     def _invalidos(self):
-        response = self.ai.invalidos_response()
+        response = self.ai.tom.respond(TomRespKey.INVALID, self.ctx.text, [self.ctx.validation.invalid])
         self.msg.save_msg(Role.AI, response)
         notf_user(response)
 
     def _no_data(self):
-        response = self.ai.no_data_response()
+        response = self.ai.tom.respond(TomRespKey.NO_DATA, self.ctx.text)
         self.msg.save_msg(Role.AI, response)
         notf_user(response)

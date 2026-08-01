@@ -5,6 +5,7 @@ from src.managers.user_manager import PrestadorManager
 def address_flow(ctx: ContextPrestador):
     
     print(f"\n\n----------------TESTE FLUXO ADDRESS----------------\n\n")
+    print(f"CTX: {ctx}\n")
 
     prestador = PrestadorManager(ctx)
     ExtractionService(ctx, prestador).extract_e_merge()

@@ -41,7 +41,11 @@ class PrestadorManager:
         )
         if not row:
             return None
-        return Prestador.from_dict(dict(row))
+
+        data = dict(row)
+        data["id"] = self.id
+        data["phone"] = self.ctx.user.phone
+        return Prestador.from_dict(dict(data))
 
     def update_valid(self) -> None:
 

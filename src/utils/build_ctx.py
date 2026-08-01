@@ -11,7 +11,7 @@ def build_ctx(ctx_cls: type[C], data_cls: type[T], user: User, msg: IncomingMess
         new_data=data_cls(),
         db_data=data_cls(),
         merged=data_cls(),
-        validated=data_cls(),
+        valid=data_cls(),
         msg_type=msg.tipo,
         button_id=msg.button_id,
         **extra,

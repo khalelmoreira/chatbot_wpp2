@@ -1,4 +1,7 @@
-from src.types import ContextTomador, IntentType, Role
+from typing import cast
+
+from src.services.ai.ai_client import GemmaClient
+from src.types import ContextTomador, IntentType, Role, TomClassKey, TomRespKey
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
 from src.services.ai.ai_service import AIService
@@ -13,7 +16,7 @@ class IntentService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
         self.conversation = conversation
-        self.ai = AIService()
+        self.ai = AIService(GemmaClient())
         self.resumo = ResumoBuilder(ctx, ctx.conv_status)
         self.msg = MsgManager(ctx)
 
@@ -36,30 +39,32 @@ class IntentService:
                 raise ValueError(f"Intenção de usuario não tratada: {intencao}")
             
     def intent(self) -> IntentType:
-        intencao = self.ai.classificar_intent()
+        intencao = cast(
+            IntentType,
+            self.ai.tom.classify(TomClassKey.HAS_INTENT, self.ctx.text))
         print(f"INTENCAO: {intencao}\n")
         return intencao
     
     def _consulta(self):
-
         resumo_data = self.resumo.resumo_status()
-        print(f"RESUMO: {resumo_data}\n")
+        resumo_str = resumo_data.to_str()
 
-        response = self.ai.status_response(resumo_data)
+        response = self.ai.tom.respond(TomRespKey.ONBOARD_INFO, self.ctx.text, [resumo_str])
         self.msg.save_msg(role=Role.AI, content=response)
         notf_user(response)
     
     def _ref_past(self):
-        nfs_history = self.resumo.resumo_nfs_history()
-        msgs_history = self.resumo.resumo_msg_history()
-        print(f"NFS_HISTORY: {nfs_history}\n")
-        print(f"MSGS_HISTORY: {msgs_history}\n")
+        nfs = self.resumo.resumo_nfs_history()
+        nfs_str = "\n\n".join(nf.to_str() for nf in nfs) or "Nenhuma nota recente."
 
-        response = self.ai.history_response(nfs_history, msgs_history)
+        msgs = self.resumo.resumo_msg_history()
+        msgs_str = "\n".join(msg.to_str() for msg in msgs) or "Nenhum historico de conversa."
+
+        response = self.ai.tom.respond(TomRespKey.ONBOARD_HISTORY, self.ctx.text, [nfs_str, msgs_str])
         self.msg.save_msg(role=Role.AI, content=response)
         notf_user(response)
 
     def _nenhum(self):
-        response = self.ai.no_intent_response(self.ctx)
+        response = self.ai.tom.respond(TomRespKey.NO_INTENT, self.ctx.text)
         self.msg.save_msg(role=Role.AI, content=response)
         notf_user(response)

@@ -1,4 +1,7 @@
-from src.types import ContextPrestador, IntentUserType, Role, UserStatus
+from typing import cast
+
+from src.services.ai.ai_client import GemmaClient
+from src.types import ContextPrestador, IntentUserType, Role, UserStatus, PrestClassKey, PrestRespKey
 from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
@@ -12,7 +15,7 @@ class IntentUserService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
-        self.ai = AIService()
+        self.ai = AIService(GemmaClient())
         self.msg = MsgManager(ctx)
 
     def dispatch_intent(self, intencao: IntentUserType):
@@ -34,16 +37,18 @@ class IntentUserService:
                 raise ValueError(f"Intenção de usuario não tratada: {intencao}")
             
     def intent(self) -> IntentUserType:
-        intencao = self.ai.classificar_intent_user(self.ctx)
+        intencao = cast(
+            IntentUserType,
+            self.ai.prest.classify(PrestClassKey.HAS_INTENT, self.ctx.text))
         print(f"INTENCAO: {intencao}\n")
         return intencao
     
     def _general_ask(self):
-        response = self.ai.general_ask(self.ctx)
+        response = self.ai.prest.respond(PrestRespKey.GENERAL_ASK, self.ctx.text)
         self.msg.save_msg(role=Role.AI, content=response)
         notf_user(response)
 
     def _nenhum(self):
-        response = self.ai.no_intent_prest(self.ctx)
+        response = self.ai.prest.respond(PrestRespKey.NO_INTENT, self.ctx.text)
         self.msg.save_msg(role=Role.AI, content=response)
         notf_user(response)

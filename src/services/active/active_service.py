@@ -1,4 +1,4 @@
-from chatbot_wpp2.src.types.conversation import Conversation
+from src.types.conversation import Conversation
 from src.types import ContextTomador, ConvStatus, Role
 from src.managers.conversations import ConvManager
 from src.managers.msg_manager import MsgManager

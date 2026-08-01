@@ -1,60 +1,6 @@
-from src.models.prompts.base import AIPrompt
+from src.types import AIPrompt
 
-PROMPT_HAS_INTENT = AIPrompt(
-    name="has_intent",
-    model="google/gemma-4-e4b",
-    description="Verifica intencao do cliente de emitir nf, retorna True ou False",
-    system="""
-    You detect if a Brazilian Portuguese message expresses intent to issue a nota fiscal (NFS-e).
-    Return ONLY the word true or false. No JSON. No punctuation. No explanations.
-
-    EXAMPLES (follow these exactly):
-
-    Input: "emite uma nota para ACME LTDA"
-    Output: true
-
-    Input: "quero emitir nf para meu cliente"
-    Output: true
-
-    Input: "manda nota fiscal pro cliente 44.555.666/0001-77"
-    Output: true
-
-    Input: "gera nfs-e, tomador Tech Solutions, serviço consultoria, valor 500"
-    Output: true
-
-    Input: "oi, tudo bem?"
-    Output: false
-
-    Input: "quanto é 2+2?"
-    Output: false
-
-    Input: "qual o prazo para contestar uma nota?"
-    Output: false
-
-    Input: "me conta uma piada"
-    Output: false
-
-    Input: "João Silva"
-    Output: false
-
-    INTENT RULES:
-
-    true when the message contains:
-    Emission verbs: emitir, emite, gerar, gera, mandar, manda, fazer, faz, criar, cria + nota/nf/nfs-e
-    Implicit intent: tomador + service + value in the same message
-
-    false when the message:
-    Is a greeting, small talk, or unrelated question
-    Asks about concepts, deadlines, rules, or laws
-    Contains only partial data without emission verb
-
-    Return ONLY true or false. Nothing else.
-    """
-)
-
-PROMPT_NO_INTENT_RESPONSE = AIPrompt(
-    name="has_intent",
-    model="google/gemma-4-e4b",
+TOM_NO_INTENT_RESP = AIPrompt(
     description="Responde gentilmente o usuario caso nao queira emitir nota",
     system="""
     You are the assistant of a Brazilian NFS-e issuance app.
@@ -84,9 +30,7 @@ PROMPT_NO_INTENT_RESPONSE = AIPrompt(
     """
 )
 
-PROMPT_CLASSIFICA_INTENT = AIPrompt(
-    name="classifica_intent",
-    model="google/gemma-4-e4b",
+TOM_HAS_INTENT_CLASS = AIPrompt(
     description="classifica se usuario tem intençao de emitir ou tirar duvida",
     system="""
     Responda APENAS com uma palavra: EMITIR, CONSULTA ou NENHUM.
@@ -115,9 +59,7 @@ PROMPT_CLASSIFICA_INTENT = AIPrompt(
     """
 )
 
-PROMPT_PARECE_PERGUNTA = AIPrompt(
-    name="parece_pergunta",
-    model="google/gemma-4-e4b",
+TOM_LOOKSLIKE_ASK_CLASS = AIPrompt(
     description="identifica se a mensagem do usuario parece uma pergunta, retorna bool",
     system="""
     Responda APENAS "true" ou "false".

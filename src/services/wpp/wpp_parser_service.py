@@ -1,12 +1,11 @@
-from typing import Optional
-from src.types import IncomingMessage
+from src.types import IncomingMessage, MsgType
 from src.services.ai.audio_service import transcrever_audio_wpp
 
 class WppParser:
     def __init__(self, payload):
         self.payload = payload
 
-    def parse(self) -> Optional[IncomingMessage]:
+    def parse(self) -> IncomingMessage | None:
 
         try:
             value = self._extrair_value()
@@ -38,10 +37,9 @@ class WppParser:
                 msg_id=msg_id,
                 phone=phone,
                 name=name,
-                tipo="text",
+                tipo=MsgType.TEXT,
                 timestamp=timestamp,
                 text=message["text"]["body"],
-                id_botao=None,
             )
 
         if tipo_raw == "audio":
@@ -50,10 +48,9 @@ class WppParser:
                 msg_id=msg_id,
                 phone=phone,
                 name=name,
-                tipo="audio",
+                tipo=MsgType.AUDIO,
                 timestamp=timestamp,
                 text = transcrever_audio_wpp(msg_id),
-                id_botao=None,
             )
             
         if tipo_raw == "interactive":
@@ -67,10 +64,10 @@ class WppParser:
                     msg_id=msg_id,
                     phone=phone,
                     name=name,
-                    tipo="button_reply",
+                    tipo=MsgType.BUTTON,
                     timestamp=timestamp,
-                    text=None,
-                    id_botao=button_reply["id"]
+                    text="",
+                    button_id=button_reply["id"]
                 )
             
             print(f"subtipo interativo nao tratado: {subtipo}")

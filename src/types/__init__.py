@@ -4,6 +4,7 @@ from src.types.base import (
     User,
     ValidationResult,
     Address,
+    FromDictable,
 )
 
 # Enums (tipos de estado)
@@ -69,6 +70,22 @@ from src.types.resumo_types import (
     MsgResumo,
 )
 
+from src.types.ai_types import (
+    AIClient,
+    AIPrompt,
+    AIExtractor,
+    ExtractionConfig,
+    ClassificationConfig,
+    AIInterpreter,
+    ResponseConfig,
+    PrestRespKey,
+    PrestClassKey,
+    PrestExtractKey,
+    TomRespKey,
+    TomClassKey,
+    TomExtractKey,
+)
+
 __all__ = [
     # Base
     "ContextBase",
@@ -76,6 +93,7 @@ __all__ = [
     "User",
     "ValidationResult",
     "Address",
+    "FromDictable",
     # User
     "IntentUserType",
     "Prestador",
@@ -123,4 +141,18 @@ __all__ = [
     "StatusResumo",
     "HistoryResumo",
     "MsgResumo",
+    # ai_types
+    "AIClient",
+    "AIPrompt",
+    "AIExtractor",
+    "ExtractionConfig",
+    "ClassificationConfig",
+    "AIInterpreter",
+    "ResponseConfig",
+    "PrestRespKey",
+    "PrestClassKey",
+    "PrestExtractKey",
+    "TomRespKey",
+    "TomClassKey",
+    "TomExtractKey",
 ]

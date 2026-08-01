@@ -1,8 +1,6 @@
-from src.models.prompts.base import AIPrompt
+from src.types import AIPrompt
 
-PROMPT_EXTRACT_NFSE_GEMMA = AIPrompt(
-    name="extract_nfse_gemma",
-    model="google/gemma-4-e4b",
+TOM_NF_EXTRACT = AIPrompt(
     description="Extrai dados estruturados de NFSE de mensagens em portugues do wpp",
     system="""
     You extract Brazilian NFS-e fiscal data from messages and return ONLY valid JSON.
@@ -63,9 +61,7 @@ PROMPT_EXTRACT_NFSE_GEMMA = AIPrompt(
     """
 )
 
-PROMPT_INCOMPLETE_RESPONSE = AIPrompt(
-    name="incomplete_response_gemma",
-    model="google/gemma-4-e4b",
+TOM_INCOMPLETE_RESP = AIPrompt(
     description="responde usuario caso haja dados incompletos em collecting stage",
     system="""
     Você ajuda prestadores de serviço a emitir notas fiscais via WhatsApp.
@@ -85,9 +81,7 @@ PROMPT_INCOMPLETE_RESPONSE = AIPrompt(
     """
 )
 
-PROMPT_INVALIDOS_RESPONSE = AIPrompt(
-    name="invalidos_response_gemma",
-    model="google/gemma-4-e4b",
+TOM_INVALID_RESP = AIPrompt(
     description="responde usuario caso haja dados invalidos em collecting stage",
     system="""
     Você ajuda prestadores de serviço a emitir notas fiscais via WhatsApp.
@@ -106,9 +100,7 @@ PROMPT_INVALIDOS_RESPONSE = AIPrompt(
     """
 )
 
-PROMPT_NO_DATA_RESPONSE = AIPrompt(
-    name="no_data_response",
-    model="google/gemma-4-e4b",
+TOM_NO_DATA_RESP = AIPrompt(
     description="reponde usuario caso não haja dados em collecting stage",
     system="""
     Você ajuda prestadores de serviço a emitir notas fiscais via WhatsApp.

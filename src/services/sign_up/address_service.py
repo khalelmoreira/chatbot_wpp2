@@ -1,4 +1,5 @@
-from src.types import ContextPrestador, PrestadorData, Role
+from src.services.ai.ai_client import GemmaClient
+from src.types import ContextPrestador, PrestadorData, Role, PrestExtractKey, PrestRespKey
 from src.managers.user_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
 from src.managers.msg_manager import MsgManager
@@ -13,10 +14,12 @@ class ExtractionService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
-        self.ai = AIService()
+        self.ai = AIService(GemmaClient())
 
     def extract_e_merge(self):
-        self.ai.extract_address(self.ctx)
+        new_data = self.ai.prest.extract(PrestExtractKey.ADDRESS, self.ctx.text)
+        if new_data is not None:
+            self.ctx.new_data = new_data
         print(f"DADOS NOVOS: {self.ctx.new_data}\n")
 
         draft = self.prestador.get_all()
@@ -31,7 +34,7 @@ class ValidationService:
         self.ctx = ctx
         self.prestador = prestador
         self.msg = MsgManager(ctx)
-        self.ai = AIService()
+        self.ai = AIService(GemmaClient())
         self.validador = ValidadorPrestador()
         
     def valido(self) -> bool:
@@ -86,19 +89,19 @@ class ValidationService:
         return
     
     def _no_data(self):
-        response = self.ai.no_data_prest_response(self.ctx)
+        response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text)
         self.msg.save_msg(Role.AI, response)
         notf_user(response)
     
     def _incompleto(self):
-        response = self.ai.incomplete_prest_response(self.ctx)
+        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [self.ctx.valid, self.ctx.validation.missing])
         self.msg.save_msg(Role.AI, response)
         notf_user(response)
     
     def _invalidos(self):
-        response = self.ai.invalidos_prest_response()
+        response = self.ai.prest.respond(PrestRespKey.INVALID, self.ctx.text, [self.ctx.validation.invalid])
         self.msg.save_msg(Role.AI, response)
         notf_user(response)
     
     def _update_draft(self):
-        self.prestador.update_validos()
+        self.prestador.update_valid()

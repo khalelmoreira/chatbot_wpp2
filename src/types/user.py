@@ -103,9 +103,9 @@ class PrestadorData:
         endereco_data = {k: data.get(k) for k in campos_endereco if k in data}
         endereco = Address(**endereco_data) if any(v is not None for v in endereco_data.values()) else None
 
-        campos_diretos = {f.name for f in fields(cls)} - {"endereco"}
+        campos_diretos = {f.name for f in fields(cls)} - {"address"}
         kwargs = {f: data.get(f) for f in campos_diretos}
-        kwargs["endereco"] = endereco
+        kwargs["address"] = endereco
 
         return cls(**kwargs)
     

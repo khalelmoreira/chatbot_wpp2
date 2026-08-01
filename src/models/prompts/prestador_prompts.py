@@ -1,8 +1,6 @@
-from src.models.prompts.base import AIPrompt
+from src.types import AIPrompt
 
-PROMPT_EXTRACT_PREST_DATA = AIPrompt(
-    name="extractor_prestador_data_gemma",
-    model="google/gemma-4-e4b",
+PREST_DATA_EXTRACT = AIPrompt(
     description="extrai dados do prestador para cadastro",
     system="""
     You extract Brazilian prestador registration data from messages and return ONLY valid JSON.
@@ -47,9 +45,7 @@ PROMPT_EXTRACT_PREST_DATA = AIPrompt(
     """
 )
 
-PROMPT_INCOMPLETE_PREST_DATA_RESPONSE = AIPrompt(
-    name="incomplete_prest_data_response_gemma",
-    model="google/gemma-4-e4b",
+PREST_INCOMPLETE_RESP = AIPrompt(
     description="responde usuario caso haja dados incompletos em collecting stage do prestador",
     system="""
     Você ajuda prestadores de serviço a se cadastrar para emitir notas fiscais via WhatsApp.
@@ -69,9 +65,7 @@ PROMPT_INCOMPLETE_PREST_DATA_RESPONSE = AIPrompt(
     """
 )
 
-PROMPT_INVALIDOS_PREST_RESPONSE = AIPrompt(
-    name="invalidos_response_prest_gemma",
-    model="google/gemma-4-e4b",
+PREST_INVALID_RESP = AIPrompt(
     description="responde usuario caso haja dados invalidos em collecting prest stage",
     system="""
     Você ajuda prestadores de serviço a se cadastrar para emitir notas fiscais via WhatsApp.
@@ -90,9 +84,7 @@ PROMPT_INVALIDOS_PREST_RESPONSE = AIPrompt(
     """
 )
 
-PROMPT_NO_DATA_PREST_RESPONSE = AIPrompt(
-    name="no_data_prest_response_gemma",
-    model="google/gemma-4-e4b",
+PREST_NO_DATA_RESP = AIPrompt(
     description="reponde usuario caso não haja dados em collecting prest stage",
     system="""
     Você ajuda prestadores de serviço a se cadastrar para emitir notas fiscais via WhatsApp.
@@ -108,9 +100,7 @@ PROMPT_NO_DATA_PREST_RESPONSE = AIPrompt(
     """
 )
 
-PROMTP_EXTRACT_ADDRESS = AIPrompt(
-    name="extract_address_gemma",
-    model="google/gemma-4-e4b",
+PREST_ADDRESS_EXTRACT = AIPrompt(
     description="extrai os dados em caso de ViaCep nao econtrar o endereco",
     system="""
     You extract Brazilian prestador registration and address data from messages and return ONLY valid JSON.
@@ -167,9 +157,7 @@ PROMTP_EXTRACT_ADDRESS = AIPrompt(
     """
 )
 
-PROMPT_CLASSIFICA_INTENT_PREST = AIPrompt(
-    name="classifica_intent_prest_gemma",
-    model="google/gemma-4-e4b",
+PREST_HAS_INTENT_CLASS = AIPrompt(
     description="classifica intencao do user de criar conta",
     system="""
     Responda APENAS com uma palavra: ONBOARDING, GENERAL_ASK ou NENHUM.
@@ -198,9 +186,7 @@ PROMPT_CLASSIFICA_INTENT_PREST = AIPrompt(
     """
 )
 
-PROMPT_GENERAL_ASK = AIPrompt(
-    name="general_ask_gemma",
-    model="google/gemma-4-e4b",
+PREST_GENERAL_ASK_RESP = AIPrompt(
     description="responde user caso general ask intencao",
     system="""
     Você ajuda prestadores de serviço com dúvidas sobre o uso do sistema de emissão de notas fiscais via WhatsApp.
@@ -222,9 +208,7 @@ PROMPT_GENERAL_ASK = AIPrompt(
     """
 )
 
-PROMPT_NO_INTENT_PREST = AIPrompt(
-    name="no_intent_prest_gemma",
-    model="google/gemma-4-e4b",
+PREST_NO_INTENT_RESP = AIPrompt(
     description="responde user caso sem intencao",
     system="""
     Você ajuda prestadores de serviço a emitir notas fiscais via WhatsApp.

@@ -1,22 +1,12 @@
-from src.models.prompts.base import AIPrompt
+from src.types import AIPrompt
 
-PROMPT_CONSULTA = AIPrompt(
-    name="prompt_consulta_gemma",
-    model="google/gemma-4-e4b",
+ONBOARD_INFO_RESP = AIPrompt(
     description="responde perguntas do usuario, é alimentado por dados da nota.",
     system="""
     Você é um assistente de emissão de notas fiscais via WhatsApp. Responda apenas sobre o status da nota fiscal do usuário. Seja direto e breve.
 
     ## Dados da nota fiscal
-    status: {}
-    erro: {}
-    criada_em: {}
-    atualizada_em: {}
-    invoice_id: {}
-    draft_payload: {}
-    solicitado_em: {}
-    cancelada_em: {}
-    emitida em: {}
+    {}
 
     ## Exemplos de resposta por status
 
@@ -35,9 +25,7 @@ PROMPT_CONSULTA = AIPrompt(
     """
 )
 
-PROMPT_REF_PAST = AIPrompt(
-    name="referencia_passado_gemma",
-    model="google/gemma-4-e4b",
+ONBOARD_REF_PAST_CLASS = AIPrompt(
     description="identifica se a mensagem referencia o passado de alguma forma, retorna bool",
     system="""
     Responda APENAS "true" ou "false".
@@ -64,9 +52,7 @@ PROMPT_REF_PAST = AIPrompt(
     """
 )
 
-PROMPT_HISTORY_RESPONSE = AIPrompt(
-    name="history_response_gemma",
-    model="google/gemma-4-e4b",
+ONBOARD_HISTORY_RESP = AIPrompt(
     description="responde a ultima pergunta do usuario com base no historico nfs + msgs",
     system="""
     Você responde perguntas sobre notas fiscais (NFS-e) de um prestador de serviço, em português, de forma direta e curta (1-2 frases).

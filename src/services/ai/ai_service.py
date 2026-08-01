@@ -1,311 +1,134 @@
-import json
+from dataclasses import replace
+from enum import StrEnum
 import logging
-from src.integrations.ai_client import GemmaClient
+from typing import Generic, TypeVar
 from src.types import (
-    ContextTomador,
-    ContextPrestador,
     TomadorData,
     PrestadorData,
-    StatusResumo,
     IntentType,
-    HistoryResumo,
-    MsgResumo,
     IntentUserType,
-)
-from src.utils.build_prompt import build_list_prompt
-from src.services.ai.ai_extractors import (
+    Address,
+    AIClient,
+    AIInterpreter,
+    ClassificationConfig,
+    ExtractionConfig,
     AIExtractor,
-    parse_tomador_data,
-    parse_prestador_data,
+    PrestRespKey,
+    PrestClassKey,
+    PrestExtractKey,
+    ResponseConfig,
+    TomExtractKey,
+    TomRespKey,
+    TomClassKey,
+    AIPrompt,
 )
 from src.models.prompts import (
-    PROMPT_EXTRACT_NFSE_GEMMA,
-    PROMPT_HAS_INTENT,
-    PROMPT_NO_INTENT_RESPONSE,
-    PROMPT_CONSULTA,
-    PROMPT_CLASSIFICA_INTENT,
-    PROMPT_PARECE_PERGUNTA,
-    PROMPT_REF_PAST,
-    PROMPT_HISTORY_RESPONSE,
-    PROMPT_INCOMPLETE_RESPONSE,
-    PROMPT_INVALIDOS_RESPONSE,
-    PROMPT_NO_DATA_RESPONSE,
-    PROMPT_EXTRACT_PREST_DATA,
-    PROMPT_INCOMPLETE_PREST_DATA_RESPONSE,
-    PROMPT_INVALIDOS_PREST_RESPONSE,
-    PROMPT_NO_DATA_PREST_RESPONSE,
-    PROMTP_EXTRACT_ADDRESS,
-    PROMPT_CLASSIFICA_INTENT_PREST,
-    PROMPT_GENERAL_ASK,
-    PROMPT_NO_INTENT_PREST,
+    TOM_NF_EXTRACT,
+    TOM_HAS_INTENT_CLASS,
+    TOM_NO_INTENT_RESP,
+    TOM_INCOMPLETE_RESP,
+    TOM_INVALID_RESP,
+    TOM_NO_DATA_RESP,
+    ONBOARD_INFO_RESP,
+    ONBOARD_REF_PAST_CLASS,
+    ONBOARD_HISTORY_RESP,
+    PREST_DATA_EXTRACT,
+    PREST_ADDRESS_EXTRACT,
+    PREST_NO_INTENT_RESP,
+    PREST_NO_DATA_RESP,
+    PREST_GENERAL_ASK_RESP,
+    PREST_INCOMPLETE_RESP,
+    PREST_HAS_INTENT_CLASS,
+    PREST_INVALID_RESP,
 )
 
 logger = logging.getLogger(__name__)
 
+KE = TypeVar('KE', bound=StrEnum)
+KC = TypeVar('KC', bound=StrEnum)
+KR = TypeVar('KR', bound=StrEnum)
+
+class AIOperations(Generic[KE, KC, KR]):
+    def __init__(
+        self,
+        client: AIClient,
+        extract_conf: dict[KE, ExtractionConfig],
+        classify_conf: dict[KC, ClassificationConfig],
+        respond_conf: dict[KR, ResponseConfig],
+    ):
+        self.client = client
+        self._extract_conf = extract_conf
+        self._classify_conf = classify_conf
+        self._respond_conf = respond_conf
+
+    def _render(self, prompt: AIPrompt, params: list[str] | tuple[str, ...] = ()) -> AIPrompt:
+        return replace(prompt, system=prompt.render(*params)) if params else prompt
+
+    def extract(self, key: KE, text: str, params: list[str] | tuple[str, ...] = ()) -> object | None:
+        config = self._extract_conf[key]
+        prompt = self._render(config.prompt, params)
+        return AIExtractor(self.client, prompt, config.output_type).extract(text)
+
+    def classify(self, key: KC, text: str, params: list[str] | tuple[str, ...] = ()) -> object:
+        config = self._classify_conf[key]
+        prompt = self._render(config.prompt, params)
+        return AIInterpreter(self.client, prompt, config.parser, config.fallback).interpret(text)
+
+    def respond(self, key: KR, text: str, params: list[str] | tuple[str, ...] = ()) -> str:
+        config = self._respond_conf[key]
+        prompt = self._render(config.prompt, params)
+        return AIInterpreter(self.client, prompt, lambda r: r, config.fallback).interpret(text)
+        
+
 class AIService:
-    def __init__(self):
-        self.client = GemmaClient(model="google/gemma-4-e4b")
-        self.extractor = AIExtractor
+    def __init__(self, client: AIClient):
+        self.client = client
 
-    def extract_nfse_data(self, ctx: ContextTomador) -> None:
-        extractor = self.extractor(
-            client=self.client,
-            prompt=PROMPT_EXTRACT_NFSE_GEMMA,
-            output_type=TomadorData,
-            parser=parse_tomador_data
-        )
-        ctx.new_data = extractor.extract(ctx.text)
-
-    def extract_prest_data(self, ctx: ContextPrestador):
-        extractor = self.extractor(
-            client=self.client,
-            prompt=PROMPT_EXTRACT_PREST_DATA,
-            output_type=PrestadorData,
-            parser=parse_prestador_data
-        )
-        ctx.new_data = extractor.extract(ctx.text)
-
-    def extract_address(self, ctx: ContextPrestador) -> str:
-        extractor = self.extractor(
-            client=self.client,
-            prompt=PROMTP_EXTRACT_ADDRESS,
-            output_type=PrestadorData,
-            parser=parse_prestador_data
-        )
-        ctx.new_data = extractor.extract(ctx.text)
-
-    def has_intent(self, ctx: ContextTomador) -> bool:
-
-        try:
-            response = self.client.extract_text(
-                system_prompt=PROMPT_HAS_INTENT,
-                user_msg=ctx.text
-            )
-            return response.lower().startswith("true")
-        
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return False
-        
-    def no_intent_response(self, ctx: ContextTomador) -> str:
-
-        try:
-            return self.client.extract_text(
-                system_prompt=PROMPT_NO_INTENT_RESPONSE,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."
-        
-    def no_intent_prest(self, ctx: ContextPrestador) -> str:
-        try:
-            return self.client.extract_text(
-                system_prompt=PROMPT_NO_INTENT_PREST,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def general_ask(self, ctx: ContextPrestador) -> str:
-        try:
-            return self.client.extract_text(
-                system_prompt=PROMPT_GENERAL_ASK,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def incomplete_response(self, ctx: ContextTomador) -> str:
-        try:
-            prompt = build_list_prompt(PROMPT_INCOMPLETE_RESPONSE, [ctx.valid, ctx.validation.missing])
-            return self.client.extract_text(
-                system_prompt=prompt,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def incomplete_prest_response(self, ctx: ContextPrestador) -> str:
-        try:
-            prompt = build_list_prompt(PROMPT_INCOMPLETE_PREST_DATA_RESPONSE, [ctx.valid, ctx.validation.missing])
-            return self.client.extract_text(
-                system_prompt=prompt,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def invalidos_response(self, ctx: ContextTomador) -> str:
-        try:
-            prompt = build_list_prompt(PROMPT_INVALIDOS_RESPONSE, (ctx.validation.invalid,))
-            return self.client.extract_text(
-                system_prompt=prompt,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def invalidos_prest_response(self, ctx: ContextPrestador) -> str:
-        try:
-            prompt = build_list_prompt(PROMPT_INVALIDOS_PREST_RESPONSE, (ctx.validation.invalid,))
-            return self.client.extract_text(
-                system_prompt=prompt,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def no_data_response(self, ctx: ContextTomador) -> str:
-        try:
-            return self.client.extract_text(
-                system_prompt=PROMPT_NO_DATA_RESPONSE,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def no_data_prest_response(self, ctx: ContextPrestador) -> str:
-        try:
-            return self.client.extract_text(
-                system_prompt=PROMPT_NO_DATA_PREST_RESPONSE,
-                user_msg=ctx.text
-            )
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-
-    def status_response(self, resumo: StatusResumo):
-        try:
-            response = self.client.extract_text(
-                system_prompt=build_list_prompt(
-                    template=PROMPT_CONSULTA,
-                    params=self._resumo_to_params(resumo)
+        self.prest = AIOperations(
+            client,
+            extract_conf={
+                PrestExtractKey.DATA: ExtractionConfig(PREST_DATA_EXTRACT, PrestadorData),
+                PrestExtractKey.ADDRESS: ExtractionConfig(PREST_ADDRESS_EXTRACT, Address),
+            },
+            classify_conf={
+                PrestClassKey.HAS_INTENT: ClassificationConfig(
+                    prompt=PREST_HAS_INTENT_CLASS,
+                    parser=lambda r: IntentUserType(r.strip().upper()),
+                    fallback="erro ao classificar",
                 ),
-                user_msg=self.ctx.text
-            )
-            return response
-        
-        except Exception as e:
-            print(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-        
-    def classificar_intent(self) -> IntentType:
-        try:
-            response = self.client.extract_text(
-                system_prompt=PROMPT_CLASSIFICA_INTENT,
-                user_msg=self.ctx.text
-            )
-            return IntentType(response.strip().upper())
-        
-        except (ValueError, Exception) as e:
-            print(f"Erro ao classificar intencao: {e}")
-            return IntentType.NENHUM
-        
-    def classificar_intent_user(self, ctx: ContextPrestador) -> IntentUserType:
-        try:
-            response = self.client.extract_text(
-                system_prompt=PROMPT_CLASSIFICA_INTENT_PREST,
-                user_msg=ctx.text
-            )
-            return IntentUserType(response.strip().upper())
-        
-        except (ValueError, Exception) as e:
-            print(f"Erro ao classificar intencao: {e}")
-            return IntentUserType.NENHUM
-        
-    def parece_pergunta(self) -> bool:
-        try:
-            response = self.client.extract_text(
-                system_prompt=PROMPT_PARECE_PERGUNTA,
-                user_msg=self.ctx.text
-            )
-            return response.strip().lower().startswith("true")
-        
-        except Exception as e:
-            print(f"Erro ao classificar parece_pergunta: {e}")
-            return False
-        
-    def ref_past(self) -> bool:
-        try:
-            response = self.client.extract_text(
-                system_prompt=PROMPT_REF_PAST,
-                user_msg=self.ctx.text
-            )
-            return response.strip().lower().startswith("true")
-        
-        except Exception as e:
-            print(f"Erro ao identificar referencia_passado: {e}")
-            return False
-        
-    def history_response(self, nf_resumo: list[HistoryResumo] | None, msg_resumo: list[MsgResumo] | None):
+            },
+            respond_conf={
+                PrestRespKey.NO_INTENT: ResponseConfig(PREST_NO_INTENT_RESP),
+                PrestRespKey.NO_DATA: ResponseConfig(PREST_NO_DATA_RESP),
+                PrestRespKey.GENERAL_ASK: ResponseConfig(PREST_GENERAL_ASK_RESP),
+                PrestRespKey.INCOMPLETE: ResponseConfig(PREST_INCOMPLETE_RESP),
+                PrestRespKey.INVALID: ResponseConfig(PREST_INVALID_RESP),
+            },
+        )
 
-        print(f"ENTROU EM HISTORY_RESPONSE\n")
-        try:
-            nf_history_str = self._nf_history_to_str(nf_resumo)
-            msg_history_str = self._msg_history_to_str(msg_resumo)
-            
-            prompt = build_list_prompt(PROMPT_HISTORY_RESPONSE, [nf_history_str, msg_history_str])
-            print(f"NF_HISTORY_STR: \n{nf_history_str}\n")
-            print(f"MSG_HISTORY_STR: \n{msg_history_str}\n")
-
-            response = self.client.extract_text(
-                system_prompt=prompt,
-                user_msg=self.ctx.text
-                )
-            return response
-        
-        except Exception as e:
-            logger.warning(f"Erro ao responder: {e}")
-            return "Não pude entender sua mensagem, tente novamente em alguns minutos."
-
-    def _nf_history_to_str(self, nfs: list[HistoryResumo]) -> str:
-        rows = []
-        for i, nf in enumerate(nfs, 1):
-            row = (
-                f"{i}. Id: {nf.id} | "
-                f"Status: {nf.status} | "
-                f"Tentativas: {nf.tentativas} | "
-                f"Nome tomador: {nf.nome} | "
-                f"Cnpj tomador: {nf.cnpj} | "
-                f"Descricao do serviço: {nf.descricao_servico} | "
-                f"Valor total: {nf.valor_total} | "
-                f"Invoice_id: {nf.invoice_id or 'não informado'} | "
-                f"Criada em: {nf.created_at} | "
-                f"Emitida em: {nf.emitido_em or 'não informado'} | "
-                f"Codigo de erro: {nf.erro_code or 'não informado'} | "
-                f"Mensagem de erro: {nf.erro_msg or 'não informado'} | "
-                f"Cancelado em: {nf.cancelled_at or 'não informado'}"
-            )
-            rows.append(row)
-        return "\n".join(rows)
-        
-    def _msg_history_to_str(self, msgs: list[MsgResumo]) -> str:
-        rows = []
-        for i, msg in enumerate(msgs, 1):
-            row = (
-                f"{i}. Role: {msg.role} | "
-                f"Content: {msg.content} | "
-            )
-            rows.append(row)
-        return "\n".join(rows)
-        
-    def _resumo_to_params(self, resumo: StatusResumo) -> list:
-        return [
-            resumo.nf_status or "NENHUMA",
-            resumo.erro_msg or "nenhum",
-            resumo.created_at or "—",
-            resumo.updated_at or "—",
-            resumo.invoice_id or "—",
-            resumo.draft or "_",
-            resumo.requested_at or "_",
-            resumo.cancelled_at or "_",
-            resumo.emitido_em or "_",
-        ]
+        self.tom = AIOperations(
+            client,
+            extract_conf={
+                TomExtractKey.NF: ExtractionConfig(TOM_NF_EXTRACT, TomadorData),
+            },
+            classify_conf={
+                TomClassKey.HAS_INTENT: ClassificationConfig(
+                    TOM_HAS_INTENT_CLASS,
+                    lambda r: r.lower().startswith("true"),
+                    False,
+                ),
+                TomClassKey.ONBOARD_REF_PAST: ClassificationConfig(
+                    ONBOARD_REF_PAST_CLASS,
+                    lambda r: r.strip().lower().startswith("true"),
+                    False,
+                ),
+            },
+            respond_conf={
+                TomRespKey.NO_DATA: ResponseConfig(TOM_NO_DATA_RESP),
+                TomRespKey.NO_INTENT: ResponseConfig(TOM_NO_INTENT_RESP, "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."),
+                TomRespKey.INCOMPLETE: ResponseConfig(TOM_INCOMPLETE_RESP),
+                TomRespKey.INVALID: ResponseConfig(TOM_INVALID_RESP),
+                TomRespKey.ONBOARD_INFO: ResponseConfig(ONBOARD_INFO_RESP),
+                TomRespKey.ONBOARD_HISTORY: ResponseConfig(ONBOARD_HISTORY_RESP),
+            },
+        )

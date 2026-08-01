@@ -5,6 +5,7 @@ from src.services.sign_up.collecting_user_service import ExtractionService, Vali
 def collecting_flow(ctx: ContextPrestador) -> None:
 
     print(f"\n\n----------------TESTE FLUXO PREST COLLECTING----------------\n\n")
+    print(f"CTX: {ctx}\n")
 
     prestador = PrestadorManager(ctx)
     validation = ValidationService(ctx, prestador)

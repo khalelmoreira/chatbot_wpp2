@@ -3,7 +3,7 @@ import os
 from src.managers.nfs.nf_polling_manager import NfsPollingManager
 from src.types import NfseStatus
 from dotenv import load_dotenv
-from src.services.notaas.req_status import req_status_notaas
+from src.services.ntaas.req_status import req_status_notaas
 
 logger = logging.getLogger(__name__)
 load_dotenv()
