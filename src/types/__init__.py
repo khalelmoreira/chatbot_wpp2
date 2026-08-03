@@ -1,9 +1,6 @@
 from src.types.base import (
     ContextBase,
     ValidationResult,
-    FromDictable,
-    Mergeable,
-    IsDataclass,
 )
 
 from src.types.user import (
@@ -96,15 +93,18 @@ from src.types.mixins import (
     FromDictMixin,
 )
 
+from src.types.protocols import (
+    FromDictable,
+    Mergeable,
+    IsDataclass,
+)
+
 __all__ = [
     # Base
     "ContextBase",
-    "Mergeable",
-    "IsDataclass",
     "ValidationResult",
-    "User",
-    "FromDictable",
     # User
+    "User",
     "UserStatus",
     "Address",
     "IntentUserType",
@@ -172,4 +172,8 @@ __all__ = [
     "MergeableMixin",
     "TextMixin",
     "FromDictMixin",
+    # protocols
+    "FromDictable",
+    "Mergeable",
+    "IsDataclass",
 ]

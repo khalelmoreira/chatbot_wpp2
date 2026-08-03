@@ -5,7 +5,6 @@ from typing import Generic, TypeVar
 from src.types import (
     TomadorData,
     PrestadorData,
-    IntentType,
     IntentUserType,
     Address,
     AIClient,

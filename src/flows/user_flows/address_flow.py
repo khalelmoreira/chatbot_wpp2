@@ -1,5 +1,5 @@
 from src.services.sign_up.address_service import ExtractionService, ValidationService
-from src.types import IncomingMessage, UserStatus, ContextPrestador
+from src.types import UserStatus, ContextPrestador
 from src.managers.user_manager import PrestadorManager
 
 def address_flow(ctx: ContextPrestador):
@@ -8,15 +8,15 @@ def address_flow(ctx: ContextPrestador):
     print(f"CTX: {ctx}\n")
 
     prestador = PrestadorManager(ctx)
-    ExtractionService(ctx, prestador).extract_e_merge()
     validation = ValidationService(ctx, prestador)
 
-    valido = validation.valido()
-    if not valido:
+    ExtractionService(ctx, prestador).extract_e_merge()
+
+    if not validation.valido():
         return
     
-    completo = validation.completo()
-    if not completo:
+    if not validation.completo():
         return
+    
     prestador.update_state(UserStatus.CONFIRMING)
     validation.msg_confirm()

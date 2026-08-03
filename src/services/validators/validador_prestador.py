@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 from operator import truediv
 import re
 from enum import StrEnum
-from typing import Any, Callable
+from typing import Any, Callable, Generic, TypeVar
 from src.types.user import PrestadorData
-from src.types import ContextPrestador, ValidationResult, Address
+from src.types import ContextPrestador, ValidationResult, Address, Mergeable
 
 class RegimeTributario(StrEnum):
     NORMAL = "1"
@@ -160,54 +161,65 @@ _VALIDATIONS_ADDRESS: dict[str, Callable[[Any], bool]] = {
     "uf":          val_uf,
 }
 
-class ValidadorPrestador:
+T = TypeVar('T', bound=Mergeable)
 
-    def validar(self, ctx: ContextPrestador) -> None:
+@dataclass
+class ValidationOutput(Generic[T]):
+    valid:  T
+    result: ValidationResult
 
-        valid = PrestadorData()
-        invalid: list[str] = []
-        missing: list[str] = []
-        
-        dados = ctx.merged
-        for campo, fn_validar in _VALIDATIONS_PRESTADOR.items():
-            valor = getattr(dados, campo, None)
-            self._checar(campo, valor, fn_validar, valid, invalid, missing)
 
-        address = dados.address
-        valid_address = Address()
-        address_c_is_valid = False
+def _validar(
+    data: T,
+    validations: dict[str, Callable],
+    factory: Callable[[], T],
+    prefix: str = "",
+) -> ValidationOutput[T]:
 
-        for campo, fn_validar in _VALIDATIONS_ADDRESS.items():
-            valor = getattr(address, campo, None) if address is not None else None
+    valid = factory()
+    invalid: list[str] = []
+    missing: list[str] = []
+    
+    for campo, fn_validar in validations.items():
+        valor = getattr(data, campo, None)
+        _checar(campo, valor, fn_validar, valid, invalid, missing, prefix)
 
-            full = self._checar(
-                campo, valor, fn_validar, valid_address,
-                invalid, missing, prefix="address."
-            )
+    return ValidationOutput(
+        valid=valid,
+        result=ValidationResult(invalid=invalid, missing=missing),
+    )   
 
-            address_c_is_valid = address_c_is_valid or full
 
-        if address_c_is_valid:
-            valid.address = valid_address
+def _checar(campo, valor, fn_validar, target, invalid, missing, prefix="") -> bool:
+    key = f"{prefix}{campo}"
 
-        ctx.valid = valid
-        ctx.validation = ValidationResult(
-            invalid=invalid,
-            missing=missing,
-        )
+    if valor is None:
+        missing.append(key)
+        return False
+    
+    elif not fn_validar(valor):
+        invalid.append(key)
+        return False
+    
+    else:
+        setattr(target, campo, valor)
+        return True
 
+class ValidatorPrestador:
     @staticmethod
-    def _checar(campo, valor, fn_validar, target, invalid, missing, prefix="") -> bool:
-        key = f"{prefix}{campo}"
+    def validar(data: PrestadorData) -> ValidationOutput[PrestadorData]:
+        output = _validar(data, _VALIDATIONS_PRESTADOR, PrestadorData)
 
-        if valor is None:
-            missing.append(key)
-            return False
-        
-        elif not fn_validar(valor):
-            invalid.append(key)
-            return False
-        
-        else:
-            setattr(target, campo, valor)
-            return True
+        if data.address is not None:
+            address_output = ValidatorAddress.validar(data.address)
+
+            output.valid.address = address_output.valid
+            output.result.invalid.extend(f"address.{c}"for c in address_output.result.invalid)
+            output.result.missing.extend(f"address.{c}"for c in address_output.result.missing)
+
+        return output
+
+class ValidatorAddress:
+    @staticmethod
+    def validar(data: Address) -> ValidationOutput[Address]:
+        return _validar(data, _VALIDATIONS_ADDRESS, Address)

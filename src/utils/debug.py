@@ -1,13 +1,13 @@
 from src.database.db import DB
 
 def print_table(
-        table_name: str, 
-        columns: list = None, 
-        where: str = None, 
-        params: tuple = (),
-        limit: int = None,
-        max_width: int = 80
-        ):
+    table_name: str,
+    columns: list[str] | None = None,
+    where: str | None = None,
+    params: tuple = (),
+    limit: int | None = None,
+    max_width: int = 80,
+) -> None:
     """
     Imprime tabela com tratamento para campos longos (como JSON).
     """

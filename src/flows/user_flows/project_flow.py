@@ -23,4 +23,5 @@ def project_flow(ctx: ContextPrestador):
         prestador.update_error(UserStatus.ERROR, str(e))
         raise
 
-    prestador.update_project_id(project_id, UserStatus.CERTIFICATE)
+    if project_id is not None:
+        prestador.update_project_id(project_id, UserStatus.CERTIFICATE)

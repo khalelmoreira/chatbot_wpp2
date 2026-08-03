@@ -6,8 +6,8 @@ from src.types import ContextPrestador, CnpjJaCadastradoError, LimitePlanoAtingi
 
 class ProjectService:
     def __init__(self, ctx: ContextPrestador):
-        self.validated = ctx.validated
-        self.address = ctx.validated.address
+        self.valid = ctx.valid
+        self.address = ctx.valid.address
 
     def _only_digits(self, value: str) -> str:
         return re.sub(r"\D", "", value or "")
@@ -39,10 +39,10 @@ class ProjectService:
 
     def build_payload(self) -> dict:
         payload = {
-            "name": self.validated.razao_social,
-            "cnpj": self.validated.cnpj,
-            "razaoSocial": self.validated.razao_social,
-            "regimeTributario": self.validated.regime_tributario,
+            "name": self.valid.razao_social,
+            "cnpj": self.valid.cnpj,
+            "razaoSocial": self.valid.razao_social,
+            "regimeTributario": self.valid.regime_tributario,
         }
 
         opcionais_diretos = {
@@ -52,9 +52,12 @@ class ProjectService:
         }
 
         for campos_ntaas, campo_interno in opcionais_diretos.items():
-            valor = getattr(self.validated, campo_interno, None)
+            valor = getattr(self.valid, campo_interno, None)
             if valor:
                 payload[campos_ntaas] = valor
+
+        if self.address is None:
+            raise DadosInvalidosError("Address não pode ser None")
 
         address = {
             "logradouro": self.address.logradouro,
@@ -63,7 +66,7 @@ class ProjectService:
             "bairro": self.address.bairro,
             "cidade": self.address.cidade,
             "uf": self.address.uf,
-            "cep": self.validated.cep,
+            "cep": self.valid.cep,
         }
 
         address_preenchido = {k: v for k, v in address.items() if v}

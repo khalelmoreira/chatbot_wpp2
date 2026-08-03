@@ -26,5 +26,4 @@ def get_endereco_by_cep(cep: str) -> Address | None:
         bairro=data["bairro"],
         cidade=data["localidade"],
         uf=data["uf"],
-        cep=cep,
     )

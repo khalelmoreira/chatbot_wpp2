@@ -1,7 +1,7 @@
 from typing import TypeVar
-from src.types import IncomingMessage, User, ContextBase
+from src.types import IncomingMessage, User, ContextBase, Mergeable
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Mergeable)
 C = TypeVar("C", bound=ContextBase)
 
 def build_ctx(ctx_cls: type[C], data_cls: type[T], user: User, msg: IncomingMessage, **extra) -> C:

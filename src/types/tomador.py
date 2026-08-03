@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, fields
-from typing import Any, Self, ClassVar, cast
+from typing import Any, ClassVar
 from enum import StrEnum
 from src.types.user import Address
 from src.types.mixins import TextMixin, MergeableMixin, FromDictMixin

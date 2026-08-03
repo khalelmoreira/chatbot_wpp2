@@ -1,5 +1,5 @@
 from src.managers.user_manager import UserManager
-from src.types import UserStatus, User, ContextTomador, PrestadorData, TomadorData, ContextPrestador, IncomingMessage
+from src.types import UserStatus, User, ContextTomador, PrestadorData, TomadorData, ContextPrestador, IncomingMessage, Address
 from src.services.wpp.msg_service import WhatsAppService
 from src.flows.user_flows.idle_user_flow import idle_user_flow
 from src.flows.user_flows.collecting_user_flow import collecting_flow
@@ -70,7 +70,7 @@ class DispatchUser:
         return confirming_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
     
     def _address(self):
-        return address_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
+        return address_flow(ctx=build_ctx(ContextPrestador, Address, self.user, self.msg))
     
     def _project(self):
         return project_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))

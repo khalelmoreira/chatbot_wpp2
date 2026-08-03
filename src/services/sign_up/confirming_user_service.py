@@ -2,6 +2,7 @@ from src.types import ContextPrestador, MsgType, Role, BotaoId, UserStatus
 from src.managers.user_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.managers.msg_manager import MsgManager
+from src.flows.user_flows.project_flow import project_flow
 
 def _notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -21,8 +22,8 @@ class ConfirmUserService:
         
         match self.ctx.button_id:
             case BotaoId.PRESTADOR_CONFIRMADO:
-                self._prestador_confirmado()
-                return
+                self.prestador.update_state(UserStatus.PROJECT)
+                return project_flow(self.ctx)
             
             case BotaoId.PRESTADOR_CORRIGIR:
                 self._prestador_corrigir()
@@ -32,13 +33,12 @@ class ConfirmUserService:
                 raise ValueError(f"Button ID não encontrado: {self.ctx.button_id}")
 
     def _prestador_corrigir(self):
-        self.prestador.update_state(UserStatus.COLLECTING)
-        msg = "Por favor, digite os dados novamente para podermos continuar"
+        self.prestador.update_state(UserStatus.ADDRESS)
+        msg = "Por favor, digite sem endereço completo."
         _notf_user(msg)
         MsgManager(self.ctx).save_msg(Role.AI, msg)
-
-    def _prestador_confirmado(self):
-        self.prestador.update_state(UserStatus.PROJECT)
         
     def _use_botoes_msg(self):
-        _notf_user(msg="Por favor, use os botões para confirmar ou corrigir os dados.")
+        msg="Por favor, use os botões para confirmar ou corrigir os dados."
+        _notf_user(msg)
+        MsgManager(self.ctx).save_msg(Role.AI, msg)

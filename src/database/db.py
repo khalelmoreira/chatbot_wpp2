@@ -53,7 +53,7 @@ class DB:
 
         return self.fetchall(query, params)
     
-    def select_one(self, table: str, where: dict[str, object], columns: str = "*"):
+    def select_one(self, table: str, where: dict[str, object], columns: str = "*") -> sqlite3.Row | None:
 
         """
         Atalho para select() quando se espera no máximo uma linha (ex.: busca por chave única).

@@ -3,7 +3,7 @@ import logging
 from typing import Callable, Generic, TypeVar, Type
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from src.types import FromDictable
+from src.types.protocols import FromDictable
 
 logger = logging.getLogger(__name__)
 TExtracted = TypeVar('TExtracted', bound=FromDictable)

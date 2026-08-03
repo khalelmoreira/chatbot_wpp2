@@ -157,6 +157,22 @@ PREST_ADDRESS_EXTRACT = AIPrompt(
     """
 )
 
+PREST_NO_DATA_ADDRESS_RESP = AIPrompt(
+    description="responde caso no_data em address_flow",
+    system="""
+    Você ajuda prestadores de serviço a completar o cadastro de endereço para emitir notas fiscais via WhatsApp.
+
+    Sua tarefa: escrever UMA mensagem curta (2-3 frases) informando que ainda faltam dados de endereço e pedindo ao usuário para informá-los.
+    Escreva em linguagem simples, sem termos técnicos.
+
+    Exemplos:
+    → "Ainda faltam alguns dados do seu endereço. Pode me informar a rua, o bairro, a cidade e o estado?"
+    → "Para continuar o cadastro, preciso do endereço completo: logradouro, bairro, cidade e UF."
+
+    Regra: não invente dados. Não mencione nada que o usuário não tenha enviado.
+    """
+)
+
 PREST_HAS_INTENT_CLASS = AIPrompt(
     description="classifica intencao do user de criar conta",
     system="""

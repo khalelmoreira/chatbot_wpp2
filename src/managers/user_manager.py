@@ -2,7 +2,7 @@ from typing import Any
 from dataclasses import fields
 from src.database.db import DB
 from src.types import IncomingMessage
-from src.types import ContextPrestador, InvalidTransactionError, Prestador, User
+from src.types import ContextPrestador, InvalidTransactionError, Prestador, User, Address
 
 
 class UserManager:
@@ -59,7 +59,7 @@ class PrestadorManager:
 
         if valid.address is not None:
             data |= {
-                f.name: getattr(valid.address, f.name)
+                f"address_{f.name}": getattr(valid.address, f.name)
                 for f in fields(valid.address)
                 if getattr(valid.address, f.name) is not None
             }
@@ -67,7 +67,6 @@ class PrestadorManager:
         if not data:
             return
         
-        # SQL explícito: guarded update com RETURNING não suportado pelos helpers genéricos
         set_clause = ", ".join(f"{campo} = ?" for campo in data)
         row = self.db.fetchone_exe(f"""
             UPDATE prestador SET
@@ -113,7 +112,48 @@ class PrestadorManager:
             where={"id": self.id}
         )
         return [Prestador.from_dict(dict(row)) for row in rows]
-    
+
+    def get_address(self) -> Address | None:
+        row = self.db.select_one(
+            "prestador",
+            columns=(
+                "address_logradouro,"
+                "address_numero,"
+                "address_complemento,"
+                "address_bairro,"
+                "address_cidade,"
+                "address_uf"
+            ),
+            where={"id": self.id},
+        )
+        if not row:
+            return None
+        return Address.from_dict(dict(row))
+
+    def update_address(self) -> None:
+        address = self.ctx.valid
+
+        data: dict[str, Any] = {
+            f"address_{f.name}": getattr(address, f.name)
+            for f in fields(address)
+            if getattr(address, f.name) is not None
+        }
+        if not data:
+            return
+
+        set_clause = ", ".join(f"{campo} = ?" for campo in data)
+        row = self.db.fetchone_exe(f"""
+            UPDATE prestador SET
+                {set_clause},
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            AND status = 'ADDRESS'
+            RETURNING id
+        """, (*data.values(), self.id))
+
+        if row is None:
+            raise InvalidTransactionError(f"Nenhuma linha COLETANDO encontrada para id={self.id}")
+        
     def update_project_id(self, ntaas_project_id: str, novo_status: str) -> None:
         self.db.update_guarded(
             "prestador",
@@ -121,7 +161,6 @@ class PrestadorManager:
             where={"id": self.id, "status": "CONFIRMING"}
         )
 
-        
     def get_project_id(self) -> list[dict[str, Any]]:
         rows = self.db.select(
             "prestador",

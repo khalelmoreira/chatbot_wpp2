@@ -116,12 +116,15 @@ class ValidationService:
         print_table(table_name="conversations", where=self.ctx.user.phone)
 
     def _incompleto(self):
-        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, [self.ctx.valid, self.ctx.validation.missing])
+        valid_missing_list = self.ctx.validation.missing
+        valid_missing_list.insert(0, self.ctx.valid.to_str())
+
+        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
         self.msg.save_msg(Role.AI, response)
         notf_user(response)
     
     def _invalidos(self):
-        response = self.ai.tom.respond(TomRespKey.INVALID, self.ctx.text, [self.ctx.validation.invalid])
+        response = self.ai.tom.respond(TomRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
         self.msg.save_msg(Role.AI, response)
         notf_user(response)
 

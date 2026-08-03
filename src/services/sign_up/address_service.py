@@ -1,9 +1,9 @@
 from src.services.ai.ai_client import GemmaClient
-from src.types import ContextPrestador, PrestadorData, Role, PrestExtractKey, PrestRespKey
+from src.types import ContextPrestador, PrestadorData, Role, PrestExtractKey, PrestRespKey, Address
 from src.managers.user_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
 from src.managers.msg_manager import MsgManager
-from src.services.validators.validador_prestador import ValidadorPrestador
+from src.services.validators.validador_prestador import ValidatorAddress
 from src.utils.debug import print_table
 
 def notf_user(msg: str) -> None:
@@ -18,12 +18,16 @@ class ExtractionService:
 
     def extract_e_merge(self):
         new_data = self.ai.prest.extract(PrestExtractKey.ADDRESS, self.ctx.text)
+
         if new_data is not None:
-            self.ctx.new_data = new_data
+            self.ctx.new_data = new_data                       #type: ignore
         print(f"DADOS NOVOS: {self.ctx.new_data}\n")
 
-        draft = self.prestador.get_all()
-        self.ctx.db_data = PrestadorData.from_dict(draft)
+        draft = self.prestador.get_address()
+        print(f"DARFT: {self.ctx.db_data}\n")
+
+        if draft is not None:
+            self.ctx.db_data.address = draft
         print(f"DADOS DARFT: {self.ctx.db_data}\n")
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
@@ -35,17 +39,20 @@ class ValidationService:
         self.prestador = prestador
         self.msg = MsgManager(ctx)
         self.ai = AIService(GemmaClient())
-        self.validador = ValidadorPrestador()
+        self.validador = ValidatorAddress()
         
     def valido(self) -> bool:
 
-        self.validador.validar(self.ctx)
+        result = self.validador.validar(self.ctx.merged)
+        self.ctx.valid = result.valid
+        self.ctx.validation = result.result
+        print(f"VALIDATION: {self.ctx.validation}\n")
 
-        if self.ctx.validation.valid:
+        if self.ctx.valid != Address:
             self._update_draft()
             return True
         
-        if self.ctx.validation.invalid:
+        if not self.ctx.validation.is_valid:
             self._invalidos()
             return False
         
@@ -58,8 +65,35 @@ class ValidationService:
             return False
         return True
     
+    def _no_data(self):
+        response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text)
+        self.msg.save_msg(Role.AI, response)
+        notf_user(response)
+    
+    def _incompleto(self):
+        valid_missing_list = self.ctx.validation.missing
+        valid_missing_list.insert(0, self.ctx.valid.to_str())
+
+        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
+        self.msg.save_msg(Role.AI, response)
+        notf_user(response)
+    
+    def _invalidos(self):
+        response = self.ai.prest.respond(PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
+        self.msg.save_msg(Role.AI, response)
+        notf_user(response)
+    
+    def _update_draft(self):
+        self.prestador.update_address()
+    
     def msg_confirm(self):
-        self.ctx.validated = PrestadorData.from_dict(self.ctx.validation.valid)
+        if self.ctx.valid.address is None:
+            return
+        logradouro = self.ctx.valid.address.logradouro
+        bairro = self.ctx.valid.address.bairro
+        cidade = self.ctx.valid.address.cidade
+        uf = self.ctx.valid.address.uf
+
         # wpp.send_msg_botao(
         #     phone=ctx.user.phone,
         #     text=(
@@ -76,32 +110,31 @@ class ValidationService:
         # )
 
         print(
-            f"Seus dados:*\n\n"
-            f"Razão Social: {self.ctx.validated.razao_social}\n"
-            f"CNPJ: {self.ctx.validated.cnpj}\n"
-            f"Email: {self.ctx.validated.email}\n"
-            f"Regime Tributário: {self.ctx.validated.regime_tributario}\n"
-            f"Endereco: {self.ctx.validated.address.logradouro} — {self.ctx.validated.address.bairro} — {self.ctx.validated.address.cidade}/{self.ctx.validated.address.uf}\n"
-            f"CEP: {self.ctx.validated.cep}\n\n"
+            f"Seu Endereço:*\n\n"
+            f"Logradouro: {logradouro}\n"
+            f"bairro: {bairro}\n"
+            f"cidade: {cidade}\n"
+            f"uf: {uf}\n"
+            f"CEP: {self.ctx.valid.cep}\n\n"
             f"Esses dados estão corretos?\n"
         )
-        print_table(table_name="users", where=self.ctx.user.phone)
+        print(f"DADOS SALVOS NO DB:")
+        print_table(
+            table_name="prestador",
+            columns=[
+                "status",
+                "email",
+                "cnpj",
+                "razao_social",
+                "regime_tributario",
+                "cep",
+                "address_logradouro",
+                "address_numero",
+                "address_complemento",
+                "address_bairro",
+                "address_cidade",
+                "address_uf",
+            ],
+            where=self.ctx.user.phone,
+        )
         return
-    
-    def _no_data(self):
-        response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text)
-        self.msg.save_msg(Role.AI, response)
-        notf_user(response)
-    
-    def _incompleto(self):
-        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [self.ctx.valid, self.ctx.validation.missing])
-        self.msg.save_msg(Role.AI, response)
-        notf_user(response)
-    
-    def _invalidos(self):
-        response = self.ai.prest.respond(PrestRespKey.INVALID, self.ctx.text, [self.ctx.validation.invalid])
-        self.msg.save_msg(Role.AI, response)
-        notf_user(response)
-    
-    def _update_draft(self):
-        self.prestador.update_valid()
