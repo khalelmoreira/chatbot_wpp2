@@ -1,0 +1,35 @@
+{
+  "name": "chatbot_wpp2",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "dev",
+
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+
+  // Persiste login e settings do Claude Code entre rebuilds do container.
+  // Sem isso, você teria que fazer login de novo toda vez que reconstruir a imagem.
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/dev/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/dev/.claude"
+  },
+
+  // Instala as dependências do projeto assim que o container sobe
+  "postCreateCommand": "pip install --user --break-system-packages -r requirements.txt 2>/dev/null || echo 'requirements.txt não encontrado ainda, ok por enquanto'",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python3"
+      }
+    }
+  }
+}
