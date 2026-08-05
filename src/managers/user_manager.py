@@ -28,15 +28,27 @@ class UserManager:
         )
 
 class PrestadorManager:
-    def __init__(self, ctx: ContextPrestador):
+    def __init__(self, ctx: ContextPrestador | None = None):
         self.db  = DB()
         self.ctx = ctx
-        self.id = ctx.user.id
+        self.id  = ctx.user.id if ctx is not None else None
+
+    @classmethod
+    def for_id(cls, prestador_id: int) -> "PrestadorManager":
+        """Constrói o manager fora do fluxo conversacional (ex.: handler HTTP do upload de certificado), onde não existe ContextPrestador."""
+        manager = cls()
+        manager.id = prestador_id
+        return manager
 
     def get_db_data(self) -> Prestador | None:
         row = self.db.select_one(
             "prestador",
-            columns="razao_social, cnpj, email, regime_tributario, cep",
+            columns=(
+                "razao_social, cnpj, email, regime_tributario, cep, "
+                "address_logradouro AS logradouro, address_numero AS numero, "
+                "address_complemento AS complemento, address_bairro AS bairro, "
+                "address_cidade AS cidade, address_uf AS uf"
+            ),
             where={"id": self.id},
         )
         if not row:
@@ -155,19 +167,21 @@ class PrestadorManager:
             raise InvalidTransactionError(f"Nenhuma linha COLETANDO encontrada para id={self.id}")
         
     def update_project_id(self, ntaas_project_id: str, novo_status: str) -> None:
-        self.db.update_guarded(
+        row = self.db.update_guarded(
             "prestador",
             data={"ntaas_project_id": ntaas_project_id, "status": novo_status},
-            where={"id": self.id, "status": "CONFIRMING"}
+            where={"id": self.id, "status": "PROJECT"}
         )
+        if row is None:
+            raise InvalidTransactionError(f"Prestador id={self.id} não estava em PROJECT ao persistir ntaas_project_id")
 
-    def get_project_id(self) -> list[dict[str, Any]]:
-        rows = self.db.select(
+    def get_project_id(self) -> str | None:
+        row = self.db.select_one(
             "prestador",
             columns="ntaas_project_id",
-            where={"id": self.id, "status": 'CERTIFICATE'}
+            where={"id": self.id, "status": "CERTIFICATE"}
         )
-        return [dict(row) for row in rows]
+        return row["ntaas_project_id"] if row else None
 
     def update_api_key(self, api_key, novo_status: str) -> dict[str, Any] | None:
         row = self.db.update_guarded(

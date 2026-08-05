@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import re
 import requests
 from src.models.urls import NOTAAS_BASE_URL

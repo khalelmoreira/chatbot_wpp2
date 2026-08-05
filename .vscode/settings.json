@@ -1,0 +1,8 @@
+{
+    "python.defaultInterpreterPath": "/usr/local/bin/python3",
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "src/tests"
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:system"
+}

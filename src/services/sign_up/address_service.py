@@ -27,7 +27,7 @@ class ExtractionService:
         print(f"DARFT: {self.ctx.db_data}\n")
 
         if draft is not None:
-            self.ctx.db_data.address = draft
+            self.ctx.db_data = draft
         print(f"DADOS DARFT: {self.ctx.db_data}\n")
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
@@ -48,7 +48,7 @@ class ValidationService:
         self.ctx.validation = result.result
         print(f"VALIDATION: {self.ctx.validation}\n")
 
-        if self.ctx.valid != Address:
+        if self.ctx.valid != Address():
             self._update_draft()
             return True
         
@@ -87,12 +87,13 @@ class ValidationService:
         self.prestador.update_address()
     
     def msg_confirm(self):
-        if self.ctx.valid.address is None:
-            return
-        logradouro = self.ctx.valid.address.logradouro
-        bairro = self.ctx.valid.address.bairro
-        cidade = self.ctx.valid.address.cidade
-        uf = self.ctx.valid.address.uf
+        logradouro = self.ctx.valid.logradouro
+        bairro = self.ctx.valid.bairro
+        cidade = self.ctx.valid.cidade
+        uf = self.ctx.valid.uf
+
+        db_data = self.prestador.get_db_data()
+        cep = db_data.cep if db_data is not None else None
 
         # wpp.send_msg_botao(
         #     phone=ctx.user.phone,
@@ -115,7 +116,7 @@ class ValidationService:
             f"bairro: {bairro}\n"
             f"cidade: {cidade}\n"
             f"uf: {uf}\n"
-            f"CEP: {self.ctx.valid.cep}\n\n"
+            f"CEP: {cep}\n\n"
             f"Esses dados estão corretos?\n"
         )
         print(f"DADOS SALVOS NO DB:")
