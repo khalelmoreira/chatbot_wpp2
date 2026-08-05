@@ -2,10 +2,9 @@ from src.services.ai.ai_client import GemmaClient
 from src.managers.user_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.services.validators.validador_prestador import ValidatorPrestador
-from src.types import ContextPrestador, UserStatus, BotaoResponse, Role, PrestadorData, Address, PrestExtractKey, PrestRespKey
+from src.types import ContextPrestador, UserStatus, Role, PrestadorData, Address, PrestExtractKey, PrestRespKey
 from src.services.ai.ai_service import AIService
 from src.managers.msg_manager import MsgManager
-from src.utils.debug import print_table
 from src.utils.get_endereco import get_endereco_by_cep
 
 def notf_user(msg: str) -> None:
@@ -99,59 +98,25 @@ class AddressService:
 
         if cep is None:
             return
-        
+
         endereco = get_endereco_by_cep(cep)
         print(f"ENDERECO: {endereco}\n")
-        
+
         if not endereco:
             notf_user(f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?\n")
             self.prestador.update_state(UserStatus.ADDRESS)
             return
 
-        self.prestador.update_state(UserStatus.CONFIRMING)
-        self._msg_confirm(endereco)
+        self.prestador.update_state(UserStatus.ADDRESS)
+        self.ctx.valid = endereco
+        self.prestador.update_address()
+        self._msg_falta_numero(endereco)
 
-    def _msg_confirm(self, endereco: Address):
-
-        # wpp.send_msg_botao(
-        #     phone=ctx.user.phone,
-        #     text=(
-        #         f"📍 *Endereço encontrado:*\n\n"
-        #         f"{endereco.logradouro}\n"
-        #         f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n"
-        #         f"CEP: {endereco.cep}\n\n"
-        #         f"Esse é o endereço correto?"
-        #     ),
-        #     botoes=[
-        #         BotaoResponse(id=,"prestador_confirmado", title="✅ Confirmar"),
-        #         BotaoResponse(id="prestador_corrigir", title="✏️ Corrigir"),
-        #     ],
-        # )
-
-        print(
-            f"📍 *Endereço encontrado:*\n\n"
+    def _msg_falta_numero(self, endereco: Address):
+        notf_user(
+            f"📍 Encontrei seu endereço:\n\n"
             f"{endereco.logradouro}\n"
-            f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n"
-            f"CEP: {self.ctx.valid.cep}\n\n"
-            f"Esse é o endereço correto?\n"
+            f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n\n"
+            f"Falta o número (e complemento, se houver). Pode enviar?\n"
         )
-        print(f"DADOS SALVOS NO DB:")
-        print_table(
-            table_name="prestador",
-            columns=[
-                "status",
-                "email",
-                "cnpj",
-                "razao_social",
-                "regime_tributario",
-                "cep",
-                "address_logradouro",
-                "address_numero",
-                "address_complemento",
-                "address_bairro",
-                "address_cidade",
-                "address_uf",
-            ],
-            where=self.ctx.user.phone,
-        )
-        return
+

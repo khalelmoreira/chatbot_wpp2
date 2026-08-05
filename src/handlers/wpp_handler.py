@@ -1,5 +1,8 @@
+from src.types import IncomingMessage
 from src.handlers.initial_handler import initial_handler
 from src.services.wpp.wpp_parser_service import WppParser
+from src.services.wpp.debounce_service import buffer_message
+from src.services.wpp.user_lock_service import with_user_lock
 
 def wpp_handler(payload_raw) -> None:
     print(f"\n\n----------------TESTE PROCESSAMENTO PAYLOAD WHATSAPP----------------\n\n")
@@ -10,5 +13,9 @@ def wpp_handler(payload_raw) -> None:
     if msg is None:
         return
     print(f"msg: {msg}\n")
-    
-    initial_handler(msg)
+
+    buffer_message(msg, on_flush=_process)
+
+def _process(msg: IncomingMessage) -> None:
+    with with_user_lock(msg.phone):
+        initial_handler(msg)

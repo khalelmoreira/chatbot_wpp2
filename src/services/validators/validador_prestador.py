@@ -138,13 +138,19 @@ def val_cidade(cidade: str | None) -> bool:
 def val_uf(uf: str | None) -> bool:
     if not uf:
         return False
-    
+
     uf = uf.strip()
 
     if len(uf) < 2:
         return False
-    
+
     return True
+
+def val_numero(numero: str | None) -> bool:
+    if not numero:
+        return False
+
+    return bool(numero.strip())
 
 _VALIDATIONS_PRESTADOR: dict[str, Callable[[Any], bool]] = {
     "cnpj":              val_cnpj,
@@ -159,6 +165,7 @@ _VALIDATIONS_ADDRESS: dict[str, Callable[[Any], bool]] = {
     "bairro":      val_bairro,
     "cidade":      val_cidade,
     "uf":          val_uf,
+    "numero":      val_numero,
 }
 
 T = TypeVar('T', bound=Mergeable)

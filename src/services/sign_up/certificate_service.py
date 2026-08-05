@@ -1,7 +1,7 @@
 import os
 import httpx
 import logging
-from src.types import NtaasCertificadoError, UserStatus
+from src.types import InvalidTransactionError, NtaasCertificadoError, UserStatus
 from src.managers.user_manager import PrestadorManager
 from src.services.ntaas.upload_certificate import gen_upload_token
 from src.models.urls import NOTAAS_BASE_URL
@@ -56,7 +56,13 @@ class CertificateService:
 
         row = self.prestador.update_api_key(encrypted_key, UserStatus.ACTIVE)
         if row is None:
-            logger.warning("prestador_id=%s saiu de CERTIFICATE antes da persistência da api-key.", self.prestador.id)
+            logger.critical(
+                "prestador_id=%s saiu de CERTIFICATE antes da persistência da api-key. "
+                "api-key criada na Notaas mas não persistida localmente.", self.prestador.id
+            )
+            raise InvalidTransactionError(
+                f"prestador_id={self.prestador.id} não está mais em CERTIFICATE; api-key não persistida."
+            )
 
         return cert_result
 

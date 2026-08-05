@@ -129,12 +129,12 @@ class PrestadorManager:
         row = self.db.select_one(
             "prestador",
             columns=(
-                "address_logradouro,"
-                "address_numero,"
-                "address_complemento,"
-                "address_bairro,"
-                "address_cidade,"
-                "address_uf"
+                "address_logradouro AS logradouro,"
+                "address_numero AS numero,"
+                "address_complemento AS complemento,"
+                "address_bairro AS bairro,"
+                "address_cidade AS cidade,"
+                "address_uf AS uf"
             ),
             where={"id": self.id},
         )
