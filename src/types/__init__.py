@@ -68,8 +68,11 @@ from src.types.resumo_types import (
 
 from src.types.ai_types import (
     AIClient,
+    AIClientError,
+    AIClientRetryableError,
     AIPrompt,
     AIExtractor,
+    AIClassifier,
     ExtractionConfig,
     ClassificationConfig,
     AIInterpreter,
@@ -153,8 +156,11 @@ __all__ = [
     "MsgResumo",
     # ai_types
     "AIClient",
+    "AIClientError",
+    "AIClientRetryableError",
     "AIPrompt",
     "AIExtractor",
+    "AIClassifier",
     "ExtractionConfig",
     "ClassificationConfig",
     "AIInterpreter",

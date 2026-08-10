@@ -1,47 +1,165 @@
 import json
-from src.types import AIClient
+import logging
+from src.types import AIClient, AIClientError, AIClientRetryableError
 from openai import OpenAI
+import openai
+from anthropic import Anthropic
+import anthropic
 
-class GemmaClient(AIClient):
+logger = logging.getLogger(__name__)
 
-    def __init__(self, model: str = "google/gemma-4-e4b", base_url: str = "http://localhost:1234/v1"):
-        self.client = OpenAI(base_url=base_url, api_key="lm-studio")
+def _map_openai_error(e: Exception) -> Exception:
+    if isinstance(e, (openai.APITimeoutError, openai.APIConnectionError)):
+        return AIClientRetryableError(f"Falha transitoria na OpenAI: {e}")
+    if isinstance(e, openai.RateLimitError):
+        return AIClientRetryableError(f"Rate limit da OpenAI: {e}")
+    if isinstance(e, openai.APIStatusError):
+        if e.status_code >= 500:
+            return AIClientRetryableError(f"Erro no servidor da OpenAI ({e.status_code}): {e}")
+        return AIClientError(f"Erro na chamada a OpenAI ({e.status_code}): {e}")
+    return AIClientError(f"Erro inesperado ao chamar OpenAI: {e}")
+
+
+class OpenAIClient(AIClient):
+    """Provedor primario. Structured Outputs (response_format json_schema, strict) garante
+    que o JSON retornado respeita `schema` — a validação de forma é feita pela API, não por
+    instrução no prompt."""
+
+    def __init__(self, api_key: str, model: str = "gpt-5-mini"):
+        self.client = OpenAI(api_key=api_key)
         self.model = model
-        self.temperature = 0
 
-    def extract_json(self, system_prompt: str, user_msg: str) -> dict:
+    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                temperature=self.temperature,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg}
-                ]
+                    {"role": "user", "content": user_msg},
+                ],
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "extraction",
+                        "schema": schema,
+                        "strict": True,
+                    },
+                },
             )
-            conteudo = response.choices[0].message.content
-            if conteudo is None:
-                return {}
-            return json.loads(conteudo.strip())
-        
+            message = response.choices[0].message
+            if message.refusal:
+                raise AIClientRetryableError(f"OpenAI recusou a extração: {message.refusal}")
+            if not message.content:
+                raise AIClientRetryableError("OpenAI retornou conteúdo vazio apesar do schema")
+            return json.loads(message.content)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Resposta inválida da IA. Esperado JSON válido: {e}")
+            raise AIClientRetryableError(f"OpenAI retornou JSON invalido apesar do schema: {e}") from e
+        except AIClientError:
+            raise
         except Exception as e:
-            raise Exception(f"Erro ao chamar IA: {e}")
-        
+            raise _map_openai_error(e) from e
+
     def extract_text(self, system_prompt: str, user_msg: str) -> str:
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                temperature=self.temperature,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg}
-                ]
+                    {"role": "user", "content": user_msg},
+                ],
             )
-            conteudo = response.choices[0].message.content
-            if conteudo is None:
-                return ""
-            return conteudo
+            return response.choices[0].message.content or ""
         except Exception as e:
-            raise Exception(f"Erro ao chamar IA: {e}")
+            raise _map_openai_error(e) from e
+
+
+def _map_anthropic_error(e: Exception) -> Exception:
+    if isinstance(e, (anthropic.APITimeoutError, anthropic.APIConnectionError)):
+        return AIClientRetryableError(f"Falha transitoria na Anthropic: {e}")
+    if isinstance(e, (anthropic.RateLimitError, anthropic.OverloadedError)):
+        return AIClientRetryableError(f"Rate limit/sobrecarga na Anthropic: {e}")
+    if isinstance(e, anthropic.APIStatusError):
+        if e.status_code >= 500:
+            return AIClientRetryableError(f"Erro no servidor da Anthropic ({e.status_code}): {e}")
+        return AIClientError(f"Erro na chamada a Anthropic ({e.status_code}): {e}")
+    return AIClientError(f"Erro inesperado ao chamar Anthropic: {e}")
+
+
+class AnthropicClient(AIClient):
+    """Provedor de fallback. Structured Outputs via tool use forçado (strict) — mesmo
+    contrato de determinismo do OpenAIClient, aplicado via `tool_choice` em vez de
+    `response_format`."""
+
+    TOOL_NAME = "extract"
+
+    def __init__(self, api_key: str, model: str = "claude-haiku-4-5", max_tokens: int = 2048):
+        self.client = Anthropic(api_key=api_key)
+        self.model = model
+        self.max_tokens = max_tokens
+
+    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
+        try:
+            message = self.client.messages.create(
+                model=self.model,
+                max_tokens=self.max_tokens,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_msg}],
+                tools=[{
+                    "name": self.TOOL_NAME,
+                    "description": "Retorna os dados extraidos no formato especificado.",
+                    "input_schema": schema,
+                    "strict": True,
+                }],
+                tool_choice={"type": "tool", "name": self.TOOL_NAME},
+            )
+            for block in message.content:
+                if block.type == "tool_use":
+                    return block.input
+            raise AIClientRetryableError("Anthropic não retornou um bloco tool_use apesar do tool_choice forçado")
+        except AIClientError:
+            raise
+        except Exception as e:
+            raise _map_anthropic_error(e) from e
+
+    def extract_text(self, system_prompt: str, user_msg: str) -> str:
+        try:
+            message = self.client.messages.create(
+                model=self.model,
+                max_tokens=self.max_tokens,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_msg}],
+            )
+            return "".join(block.text for block in message.content if block.type == "text")
+        except Exception as e:
+            raise _map_anthropic_error(e) from e
+
+
+class FallbackAIClient(AIClient):
+    """Tenta cada client em ordem; só avança para o proximo em AIClientRetryableError.
+    Erros não-retentáveis (ex: chave invalida, request malformado) propagam imediatamente —
+    são bugs estaticos, não ruido para contornar."""
+
+    def __init__(self, clients: list[AIClient]):
+        if not clients:
+            raise ValueError("FallbackAIClient requer ao menos um client")
+        self._clients = clients
+
+    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
+        last_error: Exception | None = None
+        for client in self._clients:
+            try:
+                return client.extract_json(system_prompt, user_msg, schema)
+            except AIClientRetryableError as e:
+                logger.warning(f"{type(client).__name__} falhou, tentando proximo provedor: {e}")
+                last_error = e
+        raise AIClientRetryableError(f"Todos os provedores de IA falharam: {last_error}") from last_error
+
+    def extract_text(self, system_prompt: str, user_msg: str) -> str:
+        last_error: Exception | None = None
+        for client in self._clients:
+            try:
+                return client.extract_text(system_prompt, user_msg)
+            except AIClientRetryableError as e:
+                logger.warning(f"{type(client).__name__} falhou, tentando proximo provedor: {e}")
+                last_error = e
+        raise AIClientRetryableError(f"Todos os provedores de IA falharam: {last_error}") from last_error

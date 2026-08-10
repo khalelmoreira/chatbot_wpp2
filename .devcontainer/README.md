@@ -3,28 +3,13 @@
 ## Onde colocar
 Copie a pasta `.devcontainer/` inteira pra raiz do seu repositório, ao lado de `app.py`.
 
-## Usando Podman no Fedora (em vez de Docker)
+## Engine
 
-O Fedora já vem com Podman. O VS Code Dev Containers extension fala com "docker" por
-padrão, mas dá pra apontar pro socket do Podman de duas formas:
-
-**Opção A — symlink `docker` -> `podman` (mais simples):**
-```bash
-sudo dnf install -y podman podman-docker
-```
-O pacote `podman-docker` cria o comando `docker` como alias de `podman`, então a
-extensão nem percebe a diferença.
-
-**Opção B — apontar a extensão direto pro Podman:**
-No VS Code, em `settings.json`:
-```json
-"dev.containers.dockerPath": "podman"
-```
-
-Em ambos os casos, o socket do Podman precisa estar ativo:
-```bash
-systemctl --user enable --now podman.socket
-```
+Usa Docker diretamente (nada de Podman aqui). Nada no Dockerfile ou no
+devcontainer.json é específico de engine — segue o spec padrão de devcontainers
+— então se um dia precisar rodar em Podman de novo, basta apontar a extensão
+pro socket dele (`dev.containers.dockerPath` no settings.json, ou o pacote
+`podman-docker`), sem tocar nesses arquivos.
 
 ## Rodando
 

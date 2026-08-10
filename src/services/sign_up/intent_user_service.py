@@ -1,6 +1,6 @@
 from typing import cast
 
-from src.services.ai.ai_client import GemmaClient
+from src.services.ai import ai_client_factory
 from src.types import ContextPrestador, IntentUserType, Role, UserStatus, PrestClassKey, PrestRespKey
 from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
@@ -15,7 +15,7 @@ class IntentUserService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
         self.msg = MsgManager(ctx)
 
     def dispatch_intent(self, intencao: IntentUserType):

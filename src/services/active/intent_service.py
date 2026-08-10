@@ -1,6 +1,6 @@
 from typing import cast
 
-from src.services.ai.ai_client import GemmaClient
+from src.services.ai import ai_client_factory
 from src.types import ContextTomador, IntentType, Role, TomClassKey, TomRespKey
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
@@ -16,7 +16,7 @@ class IntentService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
         self.conversation = conversation
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
         self.resumo = ResumoBuilder(ctx, ctx.conv_status)
         self.msg = MsgManager(ctx)
 

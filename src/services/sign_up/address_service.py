@@ -1,4 +1,4 @@
-from src.services.ai.ai_client import GemmaClient
+from src.services.ai import ai_client_factory
 from src.types import ContextPrestador, PrestadorData, Role, PrestExtractKey, PrestRespKey, Address
 from src.managers.user_manager import PrestadorManager
 from src.services.ai.ai_service import AIService
@@ -14,7 +14,7 @@ class ExtractionService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
 
     def extract_e_merge(self):
         new_data = self.ai.prest.extract(PrestExtractKey.ADDRESS, self.ctx.text)
@@ -38,7 +38,7 @@ class ValidationService:
         self.ctx = ctx
         self.prestador = prestador
         self.msg = MsgManager(ctx)
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidatorAddress()
         
     def valido(self) -> bool:

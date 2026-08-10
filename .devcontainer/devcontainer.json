@@ -5,21 +5,27 @@
   },
   "remoteUser": "dev",
 
-  "features": {
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
-  },
+  // Fixa o mount do workspace em vez de deixar no default (/workspaces/<pasta>).
+  // Precisa bater com o WORKDIR do Dockerfile, senão o WORKDIR vira código morto.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+
 
   // Persiste login e settings do Claude Code entre rebuilds do container.
-  // Sem isso, você teria que fazer login de novo toda vez que reconstruir a imagem.
+  // Nome estático (não usa ${devcontainerId}) — esse ID não é estável entre
+  // edições do devcontainer.json/rebuilds, e um ID instável é o que causava
+  // o volume ficar órfão e pedir login de novo toda hora.
   "mounts": [
-    "source=claude-code-config-${devcontainerId},target=/home/dev/.claude,type=volume"
+    "source=claude-code-config-chatbot_wpp2,target=/home/dev/.claude,type=volume"
   ],
   "containerEnv": {
     "CLAUDE_CONFIG_DIR": "/home/dev/.claude"
   },
 
-  // Instala as dependências do projeto assim que o container sobe
-  "postCreateCommand": "pip install --user --break-system-packages -r requirements.txt 2>/dev/null || echo 'requirements.txt não encontrado ainda, ok por enquanto'",
+  // Corrige ownership antes de instalar dependências: se o volume nomeado ou o
+  // bind mount do workspace subirem com dono errado (root, ou outro uid do
+  // host), isso se autocorrige aqui em vez de quebrar silenciosamente.
+  "postCreateCommand": "sudo chown -R dev:dev /home/dev/.claude /workspace 2>/dev/null; pip install --user --break-system-packages -r requirements.txt 2>/dev/null || echo 'requirements.txt não encontrado ainda, ok por enquanto'",
 
   "customizations": {
     "vscode": {

@@ -1,6 +1,7 @@
 from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.address_flow import address_flow
-from src.services.ai.ai_client import GemmaClient
+from src.services.ai import ai_client_factory
+from src.tests.fixtures.fake_ai_client import FakeAIClient
 from src.utils import get_endereco as get_endereco_module
 from src.types import ContextPrestador, PrestadorData, Address, User, UserStatus, MsgType
 
@@ -37,21 +38,17 @@ def test_collecting_to_confirming_flow_end_to_end(db, monkeypatch):
     phone = "5511988887777"
     prestador_id = _novo_prestador(db, phone)
 
-    extract_calls: list[str] = []
-
-    def fake_extract_json(self, system_prompt: str, user_msg: str) -> dict:
-        extract_calls.append(user_msg)
-        if len(extract_calls) == 1:
-            return {
-                "cnpj": "11222333000181",
-                "razao_social": "Empresa LTDA",
-                "email": "a@a.com",
-                "regime_tributario": "1",
-                "cep": "01310100",
-            }
-        return {"numero": "100"}
-
-    monkeypatch.setattr(GemmaClient, "extract_json", fake_extract_json)
+    fake_client = FakeAIClient(extract_json_responses=[
+        {
+            "cnpj": "11222333000181",
+            "razao_social": "Empresa LTDA",
+            "email": "a@a.com",
+            "regime_tributario": "1",
+            "cep": "01310100",
+        },
+        {"numero": "100"},
+    ])
+    monkeypatch.setattr(ai_client_factory, "build_ai_client", lambda: fake_client)
     monkeypatch.setattr(
         get_endereco_module.requests, "get",
         lambda url, **kw: FakeCepResp(200, {
@@ -84,4 +81,4 @@ def test_collecting_to_confirming_flow_end_to_end(db, monkeypatch):
     assert row["address_numero"] == "100"
     assert row["address_logradouro"] == "Avenida Paulista"
 
-    assert len(extract_calls) == 2
+    assert len(fake_client.extract_calls) == 2

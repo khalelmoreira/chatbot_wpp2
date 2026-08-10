@@ -14,10 +14,10 @@
 
 ### Week 2 — Merge, improve prompts, and end-to-end validation
 - [✓] Fix the merge step (re-typed data vs. existing partial registration) — historically the point most prone to subtle bugs
-- [ ] Rewrite all prompts for the cloud model — review what was a local-model limitation vs. what can now become a richer prompt
-- [ ] Test extraction quality against varied real cases
-- [ ] Implement fallback between AI providers — define what counts as a "failure" that triggers the fallback
-- [ ] Decide whether the local model stays on as the final fallback
+- [✓] Rewrite all prompts for the cloud model — review what was a local-model limitation vs. what can now become a richer prompt
+- [✓] Test extraction quality against varied real cases (gpt-5-mini; Anthropic fallback still needs a real key to test live)
+- [✓] Implement fallback between AI providers — define what counts as a "failure" that triggers the fallback
+- [✓] Decide whether the local model stays on as the final fallback — no, removed (`GemmaClient` deleted)
 - [ ] End-to-end test: register a real prestador from scratch through to a working `Prestador`
 - [ ] Edge-case tests: partially registered prestador, divergent data across attempts, invalid tax regime
 

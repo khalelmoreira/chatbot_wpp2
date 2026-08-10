@@ -1,4 +1,4 @@
-from src.services.ai.ai_client import GemmaClient
+from src.services.ai import ai_client_factory
 from src.managers.user_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
 from src.services.validators.validador_prestador import ValidatorPrestador
@@ -15,7 +15,7 @@ class ExtractionService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
 
     def extract_e_merge(self) -> None:
         new_data = self.ai.prest.extract(PrestExtractKey.DATA, self.ctx.text)
@@ -39,7 +39,7 @@ class ValidationService:
         self.ctx = ctx
         self.prestador = prestador
         self.msg = MsgManager(ctx)
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidatorPrestador()
         
     def valido(self) -> bool:

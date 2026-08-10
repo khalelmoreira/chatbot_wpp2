@@ -1,19 +1,26 @@
 FROM python:3.14-slim-bookworm
 
 # Ferramentas de sistema necessárias pro projeto (git, sqlite3 CLI, build tools
-# pra dependências Python que compilam C, curl pra debug de rede)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# pra dependências Python que compilam C, curl pra debug de rede, sudo pro
+# postCreateCommand poder se autocorrigir se o mount subir com ownership errado)
+RUN apt-get update && apt-get install -y --no-install-recommends iptables ipset \
     git \
     curl \
     sqlite3 \
     build-essential \
     ca-certificates \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
+    
+COPY init-firewall.sh /usr/local/bin/init-firewall.sh
+RUN chmod +x /usr/local/bin/init-firewall.sh
 
 # Usuário não-root — obrigatório pra poder rodar
-# `claude --dangerously-skip-permissions` (a CLI recusa rodar como root)
+# `claude --dangerously-skip-permissions` (a CLI recusa rodar como root).
+# sudo sem senha só pra esse usuário, só dentro do container — é o safety net
+# de ownership usado no postCreateCommand (ver devcontainer.json).
 ARG USERNAME=dev
-RUN useradd --create-home --shell /bin/bash ${USERNAME}
+
 USER ${USERNAME}
 WORKDIR /workspace
 

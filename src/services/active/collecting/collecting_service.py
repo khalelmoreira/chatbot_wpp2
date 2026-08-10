@@ -1,4 +1,4 @@
-from src.services.ai.ai_client import GemmaClient
+from src.services.ai import ai_client_factory
 from src.services.validators.validador_tomador import ValidadorTomador
 from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, TomadorData, TomExtractKey, TomRespKey
 from src.managers.conversations.conv_manager import ConvManager
@@ -15,7 +15,7 @@ def notf_user(msg: str) -> None:
 class ExtractionService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
         self.conversation = conversation
 
     def extract_e_merge(self):
@@ -38,7 +38,7 @@ class ValidationService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
         self.conversation = conversation
-        self.ai = AIService(GemmaClient())
+        self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidadorTomador()
         self.msg = MsgManager(ctx)
         self.wpp = WhatsAppService()

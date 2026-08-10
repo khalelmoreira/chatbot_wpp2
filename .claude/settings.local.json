@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m pytest src/tests/unit/test_merge.py src/tests/unit/test_validador_prestador.py src/tests/unit/test_prestador_manager_transitions.py src/tests/integration/flow/test_project_flow.py src/tests/unit/test_tokens_manager.py -v)",
+      "Bash(python3 -m pytest src/tests/unit/test_merge.py src/tests/unit/test_validador_prestador.py src/tests/unit/test_prestador_manager_transitions.py src/tests/integration/flow/test_project_flow.py src/tests/unit/test_tokens_manager.py -q)",
+      "Bash(python3 -m pytest -q)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Bash(cat .env*)",
+      "Bash(grep * .env*)"
+    ]
+  }
+}

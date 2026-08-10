@@ -39,10 +39,16 @@ class TomClassKey(StrEnum):
 class TomExtractKey(StrEnum):
     NF = "NF"
 
+class AIClientError(Exception):
+    """Chamada ao provedor de IA falhou. Não é retentável por padrão (ex: chave invalida, request malformado)."""
+
+class AIClientRetryableError(AIClientError):
+    """Falha transitoria ou do lado do provedor — seguro tentar um provedor de fallback."""
+
 class AIClient(ABC):
 
     @abstractmethod
-    def extract_json(self, system_prompt: str, user_msg: str) -> dict:
+    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
         pass
 
     @abstractmethod
@@ -65,12 +71,14 @@ class AIExtractor(Generic[TExtracted]):
     client:      AIClient
     prompt:      AIPrompt
     output_type: Type[TExtracted]
+    schema:      dict
 
     def extract(self, text: str) -> TExtracted | None:
         try:
             response_json = self.client.extract_json(
                 system_prompt=str(self.prompt),
-                user_msg=text
+                user_msg=text,
+                schema=self.schema,
             )
             print(f"RESPONSE: {response_json}\n")
             return self.output_type.from_dict(response_json)
@@ -83,11 +91,13 @@ class AIExtractor(Generic[TExtracted]):
 class ExtractionConfig(Generic[TExtracted]):
     prompt:      AIPrompt
     output_type: Type[TExtracted]
+    schema:      dict
 
 @dataclass(frozen=True)
 class ClassificationConfig(Generic[TInterpreted]):
     prompt:   AIPrompt
-    parser:   Callable[[str], TInterpreted]
+    schema:   dict
+    parser:   Callable[[object], TInterpreted]
     fallback: TInterpreted
 
 @dataclass(frozen=True)
@@ -109,6 +119,26 @@ class AIInterpreter(Generic[TInterpreted]):
                 user_msg=text
             )
             return self.parser(response)
+        except Exception as e:
+            logger.info(f"Erro ao classificar com prompt '{self.prompt}': {e}")
+            return self.fallback
+
+@dataclass
+class AIClassifier(Generic[TInterpreted]):
+    client:   AIClient
+    prompt:   AIPrompt
+    schema:   dict
+    parser:   Callable[[object], TInterpreted]
+    fallback: TInterpreted
+
+    def classify(self, text: str) -> TInterpreted:
+        try:
+            response = self.client.extract_json(
+                system_prompt=str(self.prompt),
+                user_msg=text,
+                schema=self.schema,
+            )
+            return self.parser(response["value"])
         except Exception as e:
             logger.info(f"Erro ao classificar com prompt '{self.prompt}': {e}")
             return self.fallback
