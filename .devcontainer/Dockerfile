@@ -1,9 +1,6 @@
 FROM python:3.14-slim-bookworm
 
-# Ferramentas de sistema necessárias pro projeto (git, sqlite3 CLI, build tools
-# pra dependências Python que compilam C, curl pra debug de rede, sudo pro
-# postCreateCommand poder se autocorrigir se o mount subir com ownership errado)
-RUN apt-get update && apt-get install -y --no-install-recommends iptables ipset \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     sqlite3 \
@@ -11,18 +8,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends iptables ipset 
     ca-certificates \
     sudo \
     && rm -rf /var/lib/apt/lists/*
-    
-COPY init-firewall.sh /usr/local/bin/init-firewall.sh
-RUN chmod +x /usr/local/bin/init-firewall.sh
 
-# Usuário não-root — obrigatório pra poder rodar
-# `claude --dangerously-skip-permissions` (a CLI recusa rodar como root).
-# sudo sem senha só pra esse usuário, só dentro do container — é o safety net
-# de ownership usado no postCreateCommand (ver devcontainer.json).
 ARG USERNAME=dev
+RUN useradd --create-home --shell /bin/bash ${USERNAME} \
+    && echo "${USERNAME} ALL=(root) NOPASSWD: /usr/bin/chown -R ${USERNAME}\:${USERNAME} *" \
+       > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
 
 USER ${USERNAME}
-WORKDIR /workspace
+WORKDIR /tmp
+RUN curl -fsSL https://claude.ai/install.sh | bash
+ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 
-# requirements.txt é copiado e instalado no postCreateCommand (ver devcontainer.json),
-# não aqui, pra não precisar rebuildar a imagem toda vez que uma dependência muda
+WORKDIR /workspace

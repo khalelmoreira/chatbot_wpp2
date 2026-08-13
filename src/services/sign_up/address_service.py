@@ -48,14 +48,16 @@ class ValidationService:
         self.ctx.validation = result.result
         print(f"VALIDATION: {self.ctx.validation}\n")
 
+        if not self.ctx.validation.is_valid:
+            if self.ctx.valid != Address():
+                self._update_draft()
+            self._invalidos()
+            return False
+
         if self.ctx.valid != Address():
             self._update_draft()
             return True
-        
-        if not self.ctx.validation.is_valid:
-            self._invalidos()
-            return False
-        
+
         self._no_data()
         return False
     

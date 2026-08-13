@@ -1,11 +1,12 @@
 from src.services.ai import ai_client_factory
 from src.managers.user_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
-from src.services.validators.validador_prestador import ValidatorPrestador
+from src.services.validators.validador_prestador import ValidatorPrestador, extrair_digitos
 from src.types import ContextPrestador, UserStatus, Role, PrestadorData, Address, PrestExtractKey, PrestRespKey
 from src.services.ai.ai_service import AIService
 from src.managers.msg_manager import MsgManager
 from src.utils.get_endereco import get_endereco_by_cep
+from src.utils.get_cnpj import get_cnpj_info
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -49,14 +50,16 @@ class ValidationService:
         self.ctx.validation = result.result
         print(f"VALIDATION: {self.ctx.validation}\n")
 
+        if not self.ctx.validation.is_valid:
+            if self.ctx.valid != PrestadorData():
+                self._update_draft()
+            self._invalidos()
+            return False
+
         if self.ctx.valid != PrestadorData():
             self._update_draft()
             return True
-        
-        if not self.ctx.validation.is_valid:
-            self._invalidos()
-            return False
-        
+
         self._no_data()
         return False
     
@@ -119,4 +122,36 @@ class AddressService:
             f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n\n"
             f"Falta o número (e complemento, se houver). Pode enviar?\n"
         )
+
+class CnpjService:
+    def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
+        self.ctx = ctx
+        self.prestador = prestador
+
+    def verificar(self) -> bool:
+        cnpj = extrair_digitos(self.ctx.valid.cnpj)
+        print(f"CNPJ: {cnpj}\n")
+
+        if cnpj is None:
+            return True
+
+        info = get_cnpj_info(cnpj)
+        print(f"CNPJ INFO: {info}\n")
+
+        if info is None:
+            notf_user(
+                f"Não consegui confirmar o CNPJ {cnpj} na Receita Federal.\n"
+                f"Pode conferir e enviar novamente?\n"
+            )
+            return False
+
+        situacao = info.get("descricao_situacao_cadastral")
+        if situacao and situacao.upper() != "ATIVA":
+            notf_user(
+                f"O CNPJ {cnpj} está com situação cadastral \"{situacao}\" na Receita Federal.\n"
+                f"Não é possível emitir notas fiscais para um CNPJ que não está ativo.\n"
+            )
+            return False
+
+        return True
 
