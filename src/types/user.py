@@ -76,7 +76,7 @@ class PrestadorData(TextMixin, MergeableMixin):
         return cls(**kwargs)
     
     @classmethod
-    def from_prestador(cls, p: Prestador) -> "PrestadorData":
+    def from_prestador(cls, p: "Prestador") -> "PrestadorData":
         return cls(
             razao_social=p.razao_social,
             cnpj=p.cnpj,
