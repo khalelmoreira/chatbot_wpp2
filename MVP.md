@@ -49,10 +49,11 @@
 - [✓] Basic firewall (UFW): allow SSH, HTTP, HTTPS only
 - [✓] Disable root SSH login and password auth in `sshd_config` (via `00-hardening.conf` drop-in, wins over cloud-init's conflicting defaults), key-based auth only, verified via fresh session before closing root access
 - [ ] Domain + real HTTPS (Let's Encrypt/Certbot), replacing ngrok
-- [ ] Deploy Flask with gunicorn under `systemd` (as `nfse-app`), not an open terminal session
-- [ ] `EmissaoWorker` as its own systemd service with automatic restart (`PollingWorker` kept in code, unused — webhook covers that role now)
-- [ ] Automated SQLite backups
-- [ ] (Later, when adding an AI agent on the VPS) restrict `nfse-agent`'s outbound network egress to Anthropic's API + package registries only
+- [✓] Deploy Flask with gunicorn under `systemd` (as `nfse-app`), not an open terminal session
+- [✓] `EmissaoWorker` as its own systemd service with automatic restart (`PollingWorker` kept in code, unused — webhook covers that role now)
+- [✓] Automated SQLite backups (daily systemd timer, `.backup` snapshot + 14-day rotation)
+- [✓] Claude Code running on the VPS as `nfse-agent`: real shell + home dir (`usermod`), own git checkout at `~/chatbot_wpp2` (separate from `nfse-app`'s deployment checkout, no `.env`), Node via user-space `nvm` (no `sudo` ever needed), Claude Code via `npm install -g`, own independent login — verified it cannot read `/opt/nfse-app/.env`
+- [ ] (Later) restrict `nfse-agent`'s outbound network egress to Anthropic's API + package registries only
 
 ---
 

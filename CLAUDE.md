@@ -47,6 +47,12 @@ Before adding code to a layer, ask: *does this function need to know what an HTT
 - If a shortcut is proposed for MVP scope, say so explicitly rather than presenting it as the ideal solution.
 - Organize code by domain principle (entity vs. cross-cutting concern), not by coincidence of current usage.
 
+## Production deployment (VPS)
+
+The app runs on a Hostinger VPS as `nfse-app` (systemd services `nfse-app` and `nfse-emissao-worker`, gunicorn in front of Flask). `PollingWorker` exists in code but is intentionally not run — the webhook covers that role.
+
+A second, unrelated Unix user, `nfse-agent`, runs a separate Claude Code instance directly on the VPS for coding tasks there. It has its own git checkout (`~/chatbot_wpp2`, no `.env`) and its own independent Claude Code login — deliberately not shared with `nfse-app` or with any devcontainer identity. `nfse-agent` has no sudo, no group overlap with `nfse-app`, and cannot read `nfse-app`'s files (including the production `.env`) — this is enforced by OS-level file permissions, not app-level config, so it holds regardless of what runs inside that session. Don't "fix" this separation by merging the two users or sharing credentials between them — it's the deliberate boundary keeping an AI agent away from production secrets. See `MVP.md` Week 4 for how it was set up.
+
 ## Commands
 
 - Run: `python app.py` — loads `.env`, starts Flask on port 5000, and starts the `EmissaoWorker`/`PollingWorker` background workers.
