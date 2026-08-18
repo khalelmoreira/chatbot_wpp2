@@ -1,9 +1,10 @@
-from src.types import IncomingMessage
 from src.services.initial.initital_service import DispatchUser, UserResolv
+from src.types import IncomingMessage
+
 
 def initial_handler(msg: IncomingMessage):
 
-    print(f"\n\n----------------INITIAL HANDLER----------------\n\n")
+    print("\n\n----------------INITIAL HANDLER----------------\n\n")
 
     user, is_new = UserResolv(msg).resolv()
     if is_new:

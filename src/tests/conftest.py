@@ -1,7 +1,8 @@
 import pytest
+
 import src.database.get_connection as get_connection_module
-from src.database.tables_db import init_db
 from src.database.db import DB
+from src.database.tables_db import init_db
 
 
 @pytest.fixture

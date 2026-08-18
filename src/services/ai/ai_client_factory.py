@@ -1,5 +1,6 @@
 import os
-from src.services.ai.ai_client import OpenAIClient, AnthropicClient, FallbackAIClient
+
+from src.services.ai.ai_client import AnthropicClient, FallbackAIClient, OpenAIClient
 from src.types import AIClient
 
 

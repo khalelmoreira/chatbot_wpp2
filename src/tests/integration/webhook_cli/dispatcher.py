@@ -1,5 +1,7 @@
 import json
+
 import requests
+
 
 def dispatch(url: str, payload: dict) -> None:
 

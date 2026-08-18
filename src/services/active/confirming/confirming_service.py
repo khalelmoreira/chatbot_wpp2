@@ -1,8 +1,9 @@
-from src.types import IncomingMessage, ContextTomador, ConvStatus, MsgType, BotaoId, Role
 from src.managers.conversations.conv_manager import ConvManager
+from src.managers.msg_manager import MsgManager
 from src.managers.tomador_manager import TomadorManager
 from src.services.wpp.msg_service import WhatsAppService
-from src.managers.msg_manager import MsgManager
+from src.types import BotaoId, ContextTomador, ConvStatus, MsgType, Role
+
 
 class ConfirmingService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):

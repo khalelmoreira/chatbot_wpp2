@@ -1,6 +1,8 @@
 import sqlite3
 from typing import Any
+
 from src.database.get_connection import get_connection
+
 
 class DB:
     def exe(self, query: str, params: tuple = ()):
@@ -42,7 +44,7 @@ class DB:
 
         if where:
             clauses = [f"{k} = ?" for k in where]
-            query += f" WHERE " + " AND ".join(clauses)
+            query += " WHERE " + " AND ".join(clauses)
             params = tuple(where.values())
 
         if order_by:

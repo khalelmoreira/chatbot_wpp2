@@ -1,6 +1,7 @@
 import pytest
-from src.types import AIClient, AIClientError, AIClientRetryableError
+
 from src.services.ai.ai_client import FallbackAIClient
+from src.types import AIClient, AIClientError, AIClientRetryableError
 
 
 class _ScriptedClient(AIClient):

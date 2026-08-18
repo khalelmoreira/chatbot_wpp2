@@ -1,6 +1,8 @@
-from config import DB_PATH
 import sqlite3
 from contextlib import contextmanager
+
+from config import DB_PATH
+
 
 @contextmanager
 def get_connection():

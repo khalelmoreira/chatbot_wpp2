@@ -1,12 +1,13 @@
-from src.types.conversation import Conversation
-from src.types import ContextTomador, ConvStatus, Role
-from src.managers.conversations import ConvManager
-from src.managers.msg_manager import MsgManager
 from src.flows.active_flows.collecting_flow import collecting_flow
 from src.flows.active_flows.confirming_flow import confirming_flow
-from src.flows.active_flows.queued_flow import queued_flow
 from src.flows.active_flows.idle_flow import idle_flow
+from src.flows.active_flows.queued_flow import queued_flow
+from src.managers.conversations import ConvManager
+from src.managers.msg_manager import MsgManager
+from src.types import ContextTomador, ConvStatus, Role
+from src.types.conversation import Conversation
 from src.utils.debug import print_table
+
 
 class ConvActiveService:
     def __init__(self, ctx: ContextTomador):
@@ -39,7 +40,7 @@ class DispatchActiveService:
         self.conversation = ConvManager(ctx)
         
     def dispatch(self, conversa: Conversation):
-        print(f"\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
+        print("\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
 
         if not conversa:
             return idle_flow(self.ctx, self.conversation)

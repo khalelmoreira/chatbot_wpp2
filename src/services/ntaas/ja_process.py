@@ -1,5 +1,6 @@
 from src.database.get_connection import get_connection
 
+
 def ja_process(delivery_id: str) -> bool:
     
     with get_connection() as conn:

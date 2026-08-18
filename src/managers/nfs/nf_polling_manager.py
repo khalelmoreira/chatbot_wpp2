@@ -1,8 +1,9 @@
 import sqlite3
 from typing import Self
-from src.types import StatusInvoice
+
 from src.database.db import DB
-from src.types import NfseStatus
+from src.types import NfseStatus, StatusInvoice
+
 
 class NfsPollingManager:
     def __init__(self, job: int):

@@ -1,9 +1,11 @@
 import logging
 import os
-from src.managers.nfs.nf_polling_manager import NfsPollingManager
-from src.types import NfseStatus
+
 from dotenv import load_dotenv
+
+from src.managers.nfs.nf_polling_manager import NfsPollingManager
 from src.services.ntaas.req_status import req_status_notaas
+from src.types import NfseStatus
 
 logger = logging.getLogger(__name__)
 load_dotenv()
@@ -18,7 +20,7 @@ def match_jobs_processing() -> None:
 
     for manager in jobs:
         try:
-            print(f"\n\n----------------TESTE POLLING----------------\n\n")
+            print("\n\n----------------TESTE POLLING----------------\n\n")
             result = req_status_notaas(manager.job["invoice_id"], os.getenv("NOTAAS_API_KEY"))
             print(f"RESULTADO CONSULTA: {result}")
 

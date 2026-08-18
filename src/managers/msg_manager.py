@@ -1,5 +1,6 @@
 from src.database.db import DB
-from src.types import ContextTomador, ContextPrestador, Role, MsgConvType
+from src.types import ContextPrestador, ContextTomador, MsgConvType, Role
+
 
 class MsgManager:
     def __init__(self, ctx: ContextTomador | ContextPrestador):

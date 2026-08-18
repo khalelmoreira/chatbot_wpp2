@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field, fields
-from typing import Any, ClassVar
 from enum import StrEnum
+from typing import Any, ClassVar
+
+from src.types.mixins import FromDictMixin, MergeableMixin, TextMixin
 from src.types.user import Address
-from src.types.mixins import TextMixin, MergeableMixin, FromDictMixin
+
 
 class DocTomadorType(StrEnum):
     CPF  = "CPF"

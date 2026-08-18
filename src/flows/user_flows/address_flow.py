@@ -1,10 +1,11 @@
-from src.services.sign_up.address_service import ExtractionService, ValidationService
-from src.types import UserStatus, ContextPrestador
 from src.managers.user_manager import PrestadorManager
+from src.services.sign_up.address_service import ExtractionService, ValidationService
+from src.types import ContextPrestador, UserStatus
+
 
 def address_flow(ctx: ContextPrestador):
     
-    print(f"\n\n----------------TESTE FLUXO ADDRESS----------------\n\n")
+    print("\n\n----------------TESTE FLUXO ADDRESS----------------\n\n")
     print(f"CTX: {ctx}\n")
 
     prestador = PrestadorManager(ctx)

@@ -1,6 +1,7 @@
+import hashlib
 import hmac
 import os
-import hashlib
+
 
 def validar_assinatura(request):
 

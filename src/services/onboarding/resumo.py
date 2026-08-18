@@ -1,6 +1,6 @@
-import sqlite3
-from src.types import ContextTomador, ConvStatus, StatusResumo, HistoryResumo, MsgResumo
 from src.managers.conversations import ConvManager, OnboardingManager
+from src.types import ContextTomador, ConvStatus, HistoryResumo, MsgResumo, StatusResumo
+
 
 class ResumoBuilder:
     def __init__(self, ctx: ContextTomador, status: ConvStatus):

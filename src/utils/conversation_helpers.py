@@ -1,5 +1,7 @@
 import json
-from src.models.conversation_constants import CAMPOS_OBRIGATORIOS, CANCEl_WORDS, CONFIRM_WORDS
+
+from src.models.conversation_constants import CAMPOS_OBRIGATORIOS, CONFIRM_WORDS, CANCEl_WORDS
+
 
 def campos_faltando(dados: dict) -> list[tuple]:
 

@@ -1,8 +1,9 @@
-from dataclasses import dataclass
 import logging
-from typing import Callable, Generic, TypeVar, Type
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import StrEnum
+from typing import Callable, Generic, Type, TypeVar
+
 from src.types.protocols import FromDictable
 
 logger = logging.getLogger(__name__)

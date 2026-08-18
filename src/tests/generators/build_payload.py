@@ -1,7 +1,5 @@
-from src.tests.generators.base import (
-    generate_message_id,
-    generate_timestamp
-)
+from src.tests.generators.base import generate_message_id, generate_timestamp
+
 
 def build_text_message(phone: str, text: str) -> dict:
 

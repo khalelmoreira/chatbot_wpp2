@@ -1,5 +1,7 @@
 import requests
+
 from src.types import Address
+
 
 def get_endereco_by_cep(cep: str) -> Address | None:
 

@@ -1,9 +1,10 @@
 from src.managers.tokens_manager import TokensManager
 from src.managers.user_manager import PrestadorManager
-from src.services.sign_up.certificate_service import CertificateService
 from src.services.ntaas.upload_certificate import expirado
-from src.types.exceptions import NtaasCertificadoError
+from src.services.sign_up.certificate_service import CertificateService
 from src.types import HandlerResult
+from src.types.exceptions import NtaasCertificadoError
+
 
 def certificate_form_handler(token: str) -> HandlerResult:
 

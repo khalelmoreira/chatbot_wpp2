@@ -1,4 +1,4 @@
-from src.types import PrestadorData, Address
+from src.types import Address, PrestadorData
 
 
 def test_merge_novo_sobrescreve_quando_presente():

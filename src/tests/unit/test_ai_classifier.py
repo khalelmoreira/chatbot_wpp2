@@ -1,5 +1,5 @@
-from src.types import AIClassifier, AIPrompt
 from src.tests.fixtures.fake_ai_client import FakeAIClient
+from src.types import AIClassifier, AIPrompt
 
 
 def test_classifier_parses_valid_value():

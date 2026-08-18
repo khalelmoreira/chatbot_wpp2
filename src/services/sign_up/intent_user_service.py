@@ -1,11 +1,19 @@
 from typing import cast
 
-from src.services.ai import ai_client_factory
-from src.types import ContextPrestador, IntentUserType, Role, UserStatus, PrestClassKey, PrestRespKey
+from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
+from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
-from src.flows.user_flows.collecting_user_flow import collecting_flow
+from src.types import (
+    ContextPrestador,
+    IntentUserType,
+    PrestClassKey,
+    PrestRespKey,
+    Role,
+    UserStatus,
+)
+
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)

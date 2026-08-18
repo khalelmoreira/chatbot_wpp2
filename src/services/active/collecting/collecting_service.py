@@ -1,12 +1,21 @@
-from src.services.ai import ai_client_factory
-from src.services.validators.validador_tomador import ValidadorTomador
-from src.types import ContextTomador, ConvStatus, Role, BotaoResponse, TomadorData, TomExtractKey, TomRespKey
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
+from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
+from src.services.validators.validador_tomador import ValidadorTomador
 from src.services.wpp.msg_service import WhatsAppService
-from src.utils.unflatten import unflatten
+from src.types import (
+    BotaoResponse,
+    ContextTomador,
+    ConvStatus,
+    Role,
+    TomadorData,
+    TomExtractKey,
+    TomRespKey,
+)
 from src.utils.debug import print_table
+from src.utils.unflatten import unflatten
+
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)

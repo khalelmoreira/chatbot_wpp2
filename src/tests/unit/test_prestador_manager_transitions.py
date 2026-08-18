@@ -1,6 +1,14 @@
 import pytest
+
 from src.managers.user_manager import PrestadorManager
-from src.types import ContextPrestador, PrestadorData, User, UserStatus, MsgType, InvalidTransactionError
+from src.types import (
+    ContextPrestador,
+    InvalidTransactionError,
+    MsgType,
+    PrestadorData,
+    User,
+    UserStatus,
+)
 
 
 def _ctx(prestador_id: int, status: UserStatus, valid: PrestadorData) -> ContextPrestador:

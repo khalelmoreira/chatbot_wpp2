@@ -1,9 +1,9 @@
-import sqlite3
-from src.types import NfseStatus, NfsJob
 from config import MAX_TENTATIVAS
 from src.database.db import DB
 from src.database.get_connection import get_connection
+from src.types import NfseStatus, NfsJob
 from src.utils.debug import print_table
+
 
 class NfsWorkerManager:
     def __init__(self, job: NfsJob):
@@ -67,7 +67,12 @@ class NfsWorkerManager:
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             """, (self.cid,))
-            print_table(table_name="conversations", columns=["status", "updated_at"], where="id = ?", params=(self.cid,))
+            print_table(
+                table_name="conversations",
+                columns=["status", "updated_at"],
+                where="id = ?",
+                params=(self.cid,),
+            )
 
             conn.execute("COMMIT")
 

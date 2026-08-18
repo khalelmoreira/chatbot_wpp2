@@ -1,10 +1,12 @@
 import json
 import logging
-from src.types import AIClient, AIClientError, AIClientRetryableError
-from openai import OpenAI
+
+import anthropic
 import openai
 from anthropic import Anthropic
-import anthropic
+from openai import OpenAI
+
+from src.types import AIClient, AIClientError, AIClientRetryableError
 
 logger = logging.getLogger(__name__)
 

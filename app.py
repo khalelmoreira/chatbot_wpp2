@@ -1,10 +1,12 @@
-from flask import Flask
-import logging
 import atexit
-from src.workers import EmissaoWorker
-from src.database.tables_db import init_db
+import logging
+
 from dotenv import load_dotenv
-from src.routes import wpp_bp, ntaas_bp
+from flask import Flask
+
+from src.database.tables_db import init_db
+from src.routes import ntaas_bp, wpp_bp
+from src.workers import EmissaoWorker
 
 load_dotenv()
 logger = logging.getLogger(__name__)

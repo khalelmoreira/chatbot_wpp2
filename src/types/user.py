@@ -1,7 +1,9 @@
-from typing import Any, ClassVar
-from enum import StrEnum
 from dataclasses import dataclass, fields
-from src.types.mixins import MergeableMixin, TextMixin, FromDictMixin
+from enum import StrEnum
+from typing import Any, ClassVar
+
+from src.types.mixins import FromDictMixin, MergeableMixin, TextMixin
+
 
 class UserStatus(StrEnum):
     COLLECTING  = "COLLECTING"

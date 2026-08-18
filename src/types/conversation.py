@@ -1,7 +1,8 @@
-from enum import StrEnum
-from dataclasses import dataclass, field
-from typing import Any
 import json
+from dataclasses import dataclass, field
+from enum import StrEnum
+from typing import Any
+
 
 class ConvStatus(StrEnum):
     COLLECTING  = "COLLECTING"

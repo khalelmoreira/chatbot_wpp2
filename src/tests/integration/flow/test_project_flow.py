@@ -1,6 +1,7 @@
 import requests
+
 from src.flows.user_flows.project_flow import project_flow
-from src.types import ContextPrestador, PrestadorData, User, UserStatus, MsgType
+from src.types import ContextPrestador, MsgType, PrestadorData, User, UserStatus
 
 
 class FakeResp:

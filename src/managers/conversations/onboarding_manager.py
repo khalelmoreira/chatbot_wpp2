@@ -1,6 +1,8 @@
 from typing import Any
-from src.types import ContextTomador
+
 from src.database.db import DB
+from src.types import ContextTomador
+
 
 class OnboardingManager:
     def __init__(self, ctx: ContextTomador):

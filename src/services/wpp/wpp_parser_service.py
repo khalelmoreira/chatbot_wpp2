@@ -1,5 +1,6 @@
-from src.types import IncomingMessage, MsgType
 from src.services.ai.audio_service import transcrever_audio_wpp
+from src.types import IncomingMessage, MsgType
+
 
 class WppParser:
     def __init__(self, payload):

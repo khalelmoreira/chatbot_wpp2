@@ -1,6 +1,7 @@
 from src.services.ntaas.nfse_service import NfseService
 from src.types import EventsNotaas, PayloadNotaas
 
+
 class NtaasWebhook:
     def __init__(self, payload: dict):
         self.payload = payload
@@ -37,5 +38,5 @@ class NtaasWebhook:
                 return service.docs_ready()
             
             case EventsNotaas.WEBHOOK_TEST:
-                print(f"OK, 200\n")
+                print("OK, 200\n")
                 return None

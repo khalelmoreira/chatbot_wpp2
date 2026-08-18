@@ -1,8 +1,9 @@
-from src.types import ContextPrestador, MsgType, Role, BotaoId, UserStatus
+from src.flows.user_flows.project_flow import project_flow
+from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
 from src.services.wpp.msg_service import WhatsAppService
-from src.managers.msg_manager import MsgManager
-from src.flows.user_flows.project_flow import project_flow
+from src.types import BotaoId, ContextPrestador, MsgType, Role, UserStatus
+
 
 def _notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)

@@ -1,8 +1,9 @@
-import re
 from operator import attrgetter
 from typing import Any, Callable
-from src.types import ContextTomador, TomadorData, ValidationResult
+
 from src.services.validators.validador_prestador import val_cnpj
+from src.types import ContextTomador, ValidationResult
+
 
 def validar_nome(nome: str | None) -> bool:
 

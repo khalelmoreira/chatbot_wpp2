@@ -1,5 +1,6 @@
 from typing import TypeVar
-from src.types import IncomingMessage, User, ContextBase, Mergeable
+
+from src.types import ContextBase, IncomingMessage, Mergeable, User
 
 T = TypeVar("T", bound=Mergeable)
 C = TypeVar("C", bound=ContextBase)

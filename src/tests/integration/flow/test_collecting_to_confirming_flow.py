@@ -1,9 +1,9 @@
-from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.address_flow import address_flow
+from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.services.ai import ai_client_factory
 from src.tests.fixtures.fake_ai_client import FakeAIClient
+from src.types import ContextPrestador, MsgType, PrestadorData, User, UserStatus
 from src.utils import get_endereco as get_endereco_module
-from src.types import ContextPrestador, PrestadorData, Address, User, UserStatus, MsgType
 
 
 class FakeCepResp:

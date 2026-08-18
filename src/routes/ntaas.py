@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify, render_template
-from src.handlers.ntaas_handler import ntaas_handler
+from flask import Blueprint, jsonify, render_template, request
+
 from src.handlers.certificate_handler import certificate_form_handler, certificate_upload_handler
+from src.handlers.ntaas_handler import ntaas_handler
 
 ntaas_bp = Blueprint("ntaas", __name__)
 

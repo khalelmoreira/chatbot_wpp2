@@ -1,10 +1,12 @@
-import os
-import httpx
 import logging
-from src.types import InvalidTransactionError, NtaasCertificadoError, UserStatus
+import os
+
+import httpx
+
 from src.managers.user_manager import PrestadorManager
-from src.services.ntaas.upload_certificate import gen_upload_token
 from src.models.urls import NOTAAS_BASE_URL
+from src.services.ntaas.upload_certificate import gen_upload_token
+from src.types import InvalidTransactionError, NtaasCertificadoError, UserStatus
 from src.utils.crypto import fernet_encrypt
 
 logger = logging.getLogger(__name__)

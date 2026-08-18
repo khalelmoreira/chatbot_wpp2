@@ -1,4 +1,5 @@
 import logging
+
 from config import MAX_TENTATIVAS
 from src.managers.nfs.nf_worker_manager import NfsWorkerManager
 from src.services.ntaas.emission_service import emitir_nf

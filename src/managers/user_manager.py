@@ -1,8 +1,15 @@
-from typing import Any
 from dataclasses import fields
+from typing import Any
+
 from src.database.db import DB
-from src.types import IncomingMessage
-from src.types import ContextPrestador, InvalidTransactionError, Prestador, User, Address
+from src.types import (
+    Address,
+    ContextPrestador,
+    IncomingMessage,
+    InvalidTransactionError,
+    Prestador,
+    User,
+)
 
 
 class UserManager:
@@ -35,7 +42,8 @@ class PrestadorManager:
 
     @classmethod
     def for_id(cls, prestador_id: int) -> "PrestadorManager":
-        """Constrói o manager fora do fluxo conversacional (ex.: handler HTTP do upload de certificado), onde não existe ContextPrestador."""
+        """Constrói o manager fora do fluxo conversacional (ex.: handler HTTP do upload de
+        certificado), onde não existe ContextPrestador."""
         manager = cls()
         manager.id = prestador_id
         return manager

@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Any
+
 from src.database.db import DB
+
 
 class TokensManager:
     def __init__(self):

@@ -1,5 +1,6 @@
 import requests
 
+
 def get_cnpj_info(cnpj: str) -> dict | None:
 
     url = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"

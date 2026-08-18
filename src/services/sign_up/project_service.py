@@ -1,7 +1,15 @@
 import re
+
 import requests
+
 from src.models.urls import NOTAAS_BASE_URL
-from src.types import ContextPrestador, CnpjJaCadastradoError, LimitePlanoAtingidoError, DadosInvalidosError
+from src.types import (
+    CnpjJaCadastradoError,
+    ContextPrestador,
+    DadosInvalidosError,
+    LimitePlanoAtingidoError,
+)
+
 
 class ProjectService:
     def __init__(self, ctx: ContextPrestador):

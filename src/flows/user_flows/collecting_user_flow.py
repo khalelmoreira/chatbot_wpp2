@@ -1,10 +1,16 @@
-from src.types import ContextPrestador
 from src.managers.user_manager import PrestadorManager
-from src.services.sign_up.collecting_user_service import ExtractionService, ValidationService, AddressService, CnpjService
+from src.services.sign_up.collecting_user_service import (
+    AddressService,
+    CnpjService,
+    ExtractionService,
+    ValidationService,
+)
+from src.types import ContextPrestador
+
 
 def collecting_flow(ctx: ContextPrestador) -> None:
 
-    print(f"\n\n----------------TESTE FLUXO PREST COLLECTING----------------\n\n")
+    print("\n\n----------------TESTE FLUXO PREST COLLECTING----------------\n\n")
     print(f"CTX: {ctx}\n")
 
     prestador = PrestadorManager(ctx)

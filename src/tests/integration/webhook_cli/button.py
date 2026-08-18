@@ -1,4 +1,5 @@
 from dispatcher import dispatch
+
 from src.tests.generators.build_payload import build_button_reply_message
 
 WEBHOOK_URL = "http://localhost:5000/webhook"

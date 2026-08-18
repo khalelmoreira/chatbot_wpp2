@@ -1,5 +1,6 @@
 from src.database.db import DB
 
+
 def print_table(
     table_name: str,
     columns: list[str] | None = None,

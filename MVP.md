@@ -1,7 +1,5 @@
 # MVP Launch Schedule — NFS-e Automation
 
-**Total deadline:** 67 days
-
 ---
 
 ## Weeks 1–2 — Prestador Flow (Org API)
@@ -57,17 +55,16 @@
 
 ---
 
-
 ## Week 5 — User-facing errors + edge cases (emission flow)
 
 - [ ] Clear messages for: AI didn't understand, Notaas rejected the payload, city is down, AI provider timeout
 - [ ] Verify that `CONFIRMING` actually surfaces extraction errors before emission
 - [ ] Deliberate manual tests:
-  - [ ] Intentionally invalid CPF/CNPJ
-  - [ ] Two simultaneous messages (SQLite concurrency)
-  - [ ] Duplicate WhatsApp webhook
-  - [ ] City not supported by Notaas
-  - [ ] Restart the server with a conversation in `QUEUED`/`PROCESSING`
+- [ ] Intentionally invalid CPF/CNPJ
+- [ ] Two simultaneous messages (SQLite concurrency)
+- [ ] Duplicate WhatsApp webhook
+- [ ] City not supported by Notaas
+- [ ] Restart the server with a conversation in `QUEUED`/`PROCESSING`
 
 ---
 
@@ -95,10 +92,3 @@
 - [ ] Run 1–2 weeks with real usage by the partners, monitoring every emission and every registration
 - [ ] Adjust prompts based on real errors
 - [ ] Only declare it "launched" without manual supervision after this period
-
----
-
-## Known risks
-
-- **VPS (week 4):** first time setting up a production environment personally; risk of underestimating the time even with Linux familiarity.
-- **Meta/WhatsApp (week 3):** the only external blocker, outside development's direct control.

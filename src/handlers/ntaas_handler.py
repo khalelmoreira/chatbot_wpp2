@@ -1,9 +1,10 @@
-import logging
 import json
-from src.types import HandlerResult
+import logging
+
+from src.services.ntaas.ja_process import ja_process
 from src.services.ntaas.ntaas_service import NtaasWebhook
 from src.services.ntaas.webhook_validator_service import WebhookValidatorService
-from src.services.ntaas.ja_process import ja_process
+from src.types import HandlerResult
 
 logger = logging.getLogger(__name__)
 

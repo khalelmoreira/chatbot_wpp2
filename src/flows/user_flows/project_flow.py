@@ -1,18 +1,25 @@
-import os
 import logging
-from src.types import (
-    ContextPrestador, CnpjJaCadastradoError, LimitePlanoAtingidoError, DadosInvalidosError,
-    NtassOrgError, UserStatus, PrestadorData, InvalidTransactionError,
-)
-from src.services.sign_up.project_service import ProjectService
-from src.managers.user_manager import PrestadorManager
+import os
+
 from src.flows.user_flows.certificate_flow import cerfiticate_flow
+from src.managers.user_manager import PrestadorManager
+from src.services.sign_up.project_service import ProjectService
+from src.types import (
+    CnpjJaCadastradoError,
+    ContextPrestador,
+    DadosInvalidosError,
+    InvalidTransactionError,
+    LimitePlanoAtingidoError,
+    NtassOrgError,
+    PrestadorData,
+    UserStatus,
+)
 
 logger = logging.getLogger(__name__)
 
 def project_flow(ctx: ContextPrestador):
 
-    print(f"\n\n----------------PROJECT FLOW----------------\n\n")
+    print("\n\n----------------PROJECT FLOW----------------\n\n")
 
     prestador = PrestadorManager(ctx)
 

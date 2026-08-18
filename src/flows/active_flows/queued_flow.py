@@ -1,7 +1,8 @@
-from src.types import ContextTomador, Role
 from src.managers.conversations.conv_manager import ConvManager
-from src.services.wpp.msg_service import WhatsAppService
 from src.managers.msg_manager import MsgManager
+from src.services.wpp.msg_service import WhatsAppService
+from src.types import ContextTomador, Role
+
 
 def queued_flow(ctx: ContextTomador, conversation: ConvManager):
 

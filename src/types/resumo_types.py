@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+
 from src.types.mixins import TextMixin
+
 
 @dataclass
 class MsgResumo(TextMixin):

@@ -1,5 +1,6 @@
 from src.database.db import DB
 
+
 def init_db():
 
     db = DB()

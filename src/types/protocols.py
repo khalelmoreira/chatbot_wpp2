@@ -1,4 +1,5 @@
-from typing import Self, ClassVar, Any, Protocol, runtime_checkable
+from typing import Any, ClassVar, Protocol, Self, runtime_checkable
+
 
 @runtime_checkable
 class Mergeable(Protocol):

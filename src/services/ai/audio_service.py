@@ -1,8 +1,9 @@
-import requests
-from io import BytesIO
-from openai import OpenAI
 import os
+from io import BytesIO
+
+import requests
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 

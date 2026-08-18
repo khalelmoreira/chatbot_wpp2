@@ -1,6 +1,7 @@
 import pytest
+
 from src.services.ai import ai_client_factory
-from src.services.ai.ai_client import FallbackAIClient, OpenAIClient, AnthropicClient
+from src.services.ai.ai_client import AnthropicClient, FallbackAIClient, OpenAIClient
 
 
 def test_raises_when_openai_key_missing(monkeypatch):

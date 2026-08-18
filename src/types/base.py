@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Generic, TypeVar
+
+from src.types.protocols import Mergeable
 from src.types.user import User
 from src.types.wpp_msg import MsgType
-from src.types.protocols import Mergeable
 
 T = TypeVar("T", bound=Mergeable)
 

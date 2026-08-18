@@ -1,12 +1,13 @@
 from typing import cast
 
-from src.services.ai import ai_client_factory
-from src.types import ContextTomador, IntentType, Role, TomClassKey, TomRespKey
+from src.flows.active_flows.collecting_flow import collecting_flow
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
+from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
 from src.services.onboarding.resumo import ResumoBuilder
-from src.flows.active_flows.collecting_flow import collecting_flow
+from src.types import ContextTomador, IntentType, Role, TomClassKey, TomRespKey
+
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)

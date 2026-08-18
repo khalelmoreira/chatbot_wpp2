@@ -1,5 +1,6 @@
 import threading
 from typing import Callable
+
 from src.types import IncomingMessage, MsgType
 
 # MVP fix for bursts of messages from the same user (e.g. "oi", "quero

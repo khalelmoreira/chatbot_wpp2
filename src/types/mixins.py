@@ -1,7 +1,9 @@
 from dataclasses import fields, is_dataclass
 from types import NoneType, UnionType
-from typing import Self, Any, Mapping, cast, get_args, get_origin, get_type_hints
+from typing import Any, Mapping, Self, cast, get_args, get_origin, get_type_hints
+
 from src.types.protocols import IsDataclass, Mergeable
+
 
 class MergeableMixin:
     def merge(self, novos: "Self") -> "Self":

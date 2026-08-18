@@ -1,10 +1,11 @@
-from dataclasses import dataclass
-from operator import truediv
 import re
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Callable, Generic, TypeVar
+
+from src.types import Address, Mergeable, ValidationResult
 from src.types.user import PrestadorData
-from src.types import ContextPrestador, ValidationResult, Address, Mergeable
+
 
 class RegimeTributario(StrEnum):
     NORMAL = "1"

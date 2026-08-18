@@ -1,10 +1,11 @@
-from src.services.ai import ai_client_factory
-from src.types import ContextPrestador, PrestadorData, Role, PrestExtractKey, PrestRespKey, Address
-from src.managers.user_manager import PrestadorManager
-from src.services.ai.ai_service import AIService
 from src.managers.msg_manager import MsgManager
+from src.managers.user_manager import PrestadorManager
+from src.services.ai import ai_client_factory
+from src.services.ai.ai_service import AIService
 from src.services.validators.validador_prestador import ValidatorAddress
+from src.types import Address, ContextPrestador, PrestExtractKey, PrestRespKey, Role
 from src.utils.debug import print_table
+
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -121,7 +122,7 @@ class ValidationService:
             f"CEP: {cep}\n\n"
             f"Esses dados estão corretos?\n"
         )
-        print(f"DADOS SALVOS NO DB:")
+        print("DADOS SALVOS NO DB:")
         print_table(
             table_name="prestador",
             columns=[

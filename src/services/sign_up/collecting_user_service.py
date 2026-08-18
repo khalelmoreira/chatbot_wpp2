@@ -1,12 +1,20 @@
-from src.services.ai import ai_client_factory
-from src.managers.user_manager import PrestadorManager
-from src.services.wpp.msg_service import WhatsAppService
-from src.services.validators.validador_prestador import ValidatorPrestador, extrair_digitos
-from src.types import ContextPrestador, UserStatus, Role, PrestadorData, Address, PrestExtractKey, PrestRespKey
-from src.services.ai.ai_service import AIService
 from src.managers.msg_manager import MsgManager
-from src.utils.get_endereco import get_endereco_by_cep
+from src.managers.user_manager import PrestadorManager
+from src.services.ai import ai_client_factory
+from src.services.ai.ai_service import AIService
+from src.services.validators.validador_prestador import ValidatorPrestador, extrair_digitos
+from src.types import (
+    Address,
+    ContextPrestador,
+    PrestadorData,
+    PrestExtractKey,
+    PrestRespKey,
+    Role,
+    UserStatus,
+)
 from src.utils.get_cnpj import get_cnpj_info
+from src.utils.get_endereco import get_endereco_by_cep
+
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)

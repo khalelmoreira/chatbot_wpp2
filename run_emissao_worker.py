@@ -1,7 +1,9 @@
 import logging
 import signal
 import threading
+
 from dotenv import load_dotenv
+
 from src.database.tables_db import init_db
 from src.workers import EmissaoWorker
 

@@ -1,7 +1,9 @@
-import requests
 import os
 from collections.abc import Sequence
+
+import requests
 from dotenv import load_dotenv
+
 from src.types import Address, BotaoResponse
 
 load_dotenv()
@@ -96,12 +98,12 @@ class WhatsAppService:
     def msg_build_endereco(self, phone: str, endereco: Address) -> dict:
 
         rows = [
-            f"📍 *Endereço encontrado:*",
-            f"",
+            "📍 *Endereço encontrado:*",
+            "",
             f"{endereco.logradouro}",
             f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}",
-            f"",
-            f"Esse é o seu endereço?",
+            "",
+            "Esse é o seu endereço?",
         ]
 
         return {

@@ -1,6 +1,8 @@
-from enum import StrEnum
 from dataclasses import dataclass, fields
+from enum import StrEnum
+
 from src.types.user import Address
+
 
 class NfseStatus(StrEnum):
     QUEUED      = "QUEUED"

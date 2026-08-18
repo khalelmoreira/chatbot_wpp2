@@ -1,6 +1,6 @@
-import time
-import threading
 import logging
+import threading
+
 from src.managers.nfs.nf_worker_manager import NfsWorkerManager
 from src.services.worker.processar_job import processar_job
 

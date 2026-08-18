@@ -1,5 +1,6 @@
-import uuid
 import time
+import uuid
+
 
 def generate_message_id() -> str:
     return f"wamid.{uuid.uuid4().hex}"

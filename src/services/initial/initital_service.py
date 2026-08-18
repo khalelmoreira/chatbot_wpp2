@@ -1,14 +1,24 @@
-from src.managers.user_manager import UserManager
-from src.types import UserStatus, User, ContextTomador, PrestadorData, TomadorData, ContextPrestador, IncomingMessage, Address
-from src.services.wpp.msg_service import WhatsAppService
-from src.flows.user_flows.idle_user_flow import idle_user_flow
+from src.flows.active_flows import active_flow
+from src.flows.user_flows.address_flow import address_flow
+from src.flows.user_flows.certificate_flow import cerfiticate_flow
 from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.confirming_user_flow import confirming_flow
-from src.flows.user_flows.address_flow import address_flow
+from src.flows.user_flows.idle_user_flow import idle_user_flow
 from src.flows.user_flows.project_flow import project_flow
-from src.flows.user_flows.certificate_flow import cerfiticate_flow
-from src.flows.active_flows import active_flow
+from src.managers.user_manager import UserManager
+from src.services.wpp.msg_service import WhatsAppService
+from src.types import (
+    Address,
+    ContextPrestador,
+    ContextTomador,
+    IncomingMessage,
+    PrestadorData,
+    TomadorData,
+    User,
+    UserStatus,
+)
 from src.utils.build_ctx import build_ctx
+
 
 class UserResolv:
     def __init__(self, msg: IncomingMessage) -> None:
@@ -32,7 +42,7 @@ class UserResolv:
         return user, False
     
     def welcome_msg(self) -> None:
-        msg = (f"Olá! Seja bem-vindo à automação de notas fiscais.\n\n"
+        msg = ("Olá! Seja bem-vindo à automação de notas fiscais.\n\n"
                     "Para começar, me informe:\n"
                     "- Razão social\n- CNPJ\n- E-mail\n- Regime tributário\n- CEP\n- Inscrição municipal")
         #self.wpp.send_msg_text(self.self.msg.phone, self.msg)

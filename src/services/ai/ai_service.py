@@ -1,46 +1,47 @@
+import logging
 from dataclasses import replace
 from enum import StrEnum
-import logging
 from typing import Generic, TypeVar
-from src.types import (
-    TomadorData,
-    PrestadorData,
-    IntentUserType,
-    IntentType,
-    Address,
-    AIClient,
-    AIInterpreter,
-    AIClassifier,
-    ClassificationConfig,
-    ExtractionConfig,
-    AIExtractor,
-    PrestRespKey,
-    PrestClassKey,
-    PrestExtractKey,
-    ResponseConfig,
-    TomExtractKey,
-    TomRespKey,
-    TomClassKey,
-    AIPrompt,
-)
+
 from src.models.prompts import (
-    TOM_NF_EXTRACT,
-    TOM_HAS_INTENT_CLASS,
-    TOM_NO_INTENT_RESP,
-    TOM_INCOMPLETE_RESP,
-    TOM_INVALID_RESP,
-    TOM_NO_DATA_RESP,
+    ONBOARD_HISTORY_RESP,
     ONBOARD_INFO_RESP,
     ONBOARD_REF_PAST_CLASS,
-    ONBOARD_HISTORY_RESP,
-    PREST_DATA_EXTRACT,
     PREST_ADDRESS_EXTRACT,
-    PREST_NO_INTENT_RESP,
-    PREST_NO_DATA_RESP,
+    PREST_DATA_EXTRACT,
     PREST_GENERAL_ASK_RESP,
-    PREST_INCOMPLETE_RESP,
     PREST_HAS_INTENT_CLASS,
+    PREST_INCOMPLETE_RESP,
     PREST_INVALID_RESP,
+    PREST_NO_DATA_RESP,
+    PREST_NO_INTENT_RESP,
+    TOM_HAS_INTENT_CLASS,
+    TOM_INCOMPLETE_RESP,
+    TOM_INVALID_RESP,
+    TOM_NF_EXTRACT,
+    TOM_NO_DATA_RESP,
+    TOM_NO_INTENT_RESP,
+)
+from src.types import (
+    Address,
+    AIClassifier,
+    AIClient,
+    AIExtractor,
+    AIInterpreter,
+    AIPrompt,
+    ClassificationConfig,
+    ExtractionConfig,
+    IntentType,
+    IntentUserType,
+    PrestadorData,
+    PrestClassKey,
+    PrestExtractKey,
+    PrestRespKey,
+    ResponseConfig,
+    TomadorData,
+    TomClassKey,
+    TomExtractKey,
+    TomRespKey,
 )
 
 logger = logging.getLogger(__name__)
@@ -222,7 +223,10 @@ class AIService:
             },
             respond_conf={
                 TomRespKey.NO_DATA: ResponseConfig(TOM_NO_DATA_RESP),
-                TomRespKey.NO_INTENT: ResponseConfig(TOM_NO_INTENT_RESP, "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço."),
+                TomRespKey.NO_INTENT: ResponseConfig(
+                    TOM_NO_INTENT_RESP,
+                    "Estou aqui para emitir notas fiscais. Me envie os dados do tomador do serviço.",
+                ),
                 TomRespKey.INCOMPLETE: ResponseConfig(TOM_INCOMPLETE_RESP),
                 TomRespKey.INVALID: ResponseConfig(TOM_INVALID_RESP),
                 TomRespKey.ONBOARD_INFO: ResponseConfig(ONBOARD_INFO_RESP),

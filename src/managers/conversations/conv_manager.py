@@ -1,7 +1,9 @@
 import json
 from typing import Any
-from src.types import ContextTomador, Conversation
+
 from src.database.db import DB
+from src.types import ContextTomador, Conversation
+
 
 class ConvManager:
     def __init__(self, ctx: ContextTomador):

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Any, Protocol, TypedDict, Literal
 from enum import StrEnum
+from typing import Any
+
 
 class MsgType(StrEnum):
     TEXT     = "text"
@@ -63,8 +64,11 @@ class Message:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Message":
-        if not data or "id" not in data or "prestador_id" not in data or "phone" not in data or "role" not in data or "content" not in data:
-            raise ValueError("Message.from_dict requer 'id', 'prestador_id', 'phone', 'role', 'content' presente nos dados.")
+        required = ("id", "prestador_id", "phone", "role", "content")
+        if not data or any(field not in data for field in required):
+            raise ValueError(
+                "Message.from_dict requer 'id', 'prestador_id', 'phone', 'role', 'content' presente nos dados."
+            )
         
         return cls(
             id=data["id"],

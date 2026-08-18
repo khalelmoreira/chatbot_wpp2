@@ -3,19 +3,18 @@ working Prestador (ACTIVE), driving every flow module the way the app does —
 collecting_flow -> address_flow -> confirming_flow -> project_flow -> certificate_flow
 -> certificate_upload_handler. Only external I/O (AI provider, ViaCEP, Notaas) is faked."""
 
-import io
 import httpx
 import requests
 from cryptography.fernet import Fernet
 
-from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.address_flow import address_flow
+from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.confirming_user_flow import confirming_flow
 from src.handlers.certificate_handler import certificate_upload_handler
 from src.services.ai import ai_client_factory
 from src.tests.fixtures.fake_ai_client import FakeAIClient
+from src.types import BotaoId, ContextPrestador, MsgType, PrestadorData, User, UserStatus
 from src.utils import get_endereco as get_endereco_module
-from src.types import ContextPrestador, PrestadorData, User, UserStatus, MsgType, BotaoId
 
 
 class FakeCepResp:

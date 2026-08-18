@@ -1,6 +1,8 @@
 import requests
+
 from src.models import NOTAAS_BASE_URL
 from src.types import StatusInvoice
+
 
 def req_status_notaas(invoice_id: str, api_key: str) -> StatusInvoice:
     

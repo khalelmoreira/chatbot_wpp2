@@ -1,6 +1,8 @@
 import secrets
 from datetime import datetime, timedelta, timezone
+
 from src.managers.tokens_manager import TokensManager
+
 
 def gen_upload_token(prestador_id: int, project_id: str, ttl_min: int = 15) -> str:
 

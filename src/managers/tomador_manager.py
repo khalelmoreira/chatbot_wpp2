@@ -1,11 +1,11 @@
+import hashlib
 import json
 from dataclasses import asdict
-import uuid
-import hashlib
-from src.models.aliquota_iss_constant import ALIQUOTA_ISS
+
 from src.database.db import DB
+from src.models.aliquota_iss_constant import ALIQUOTA_ISS
 from src.types import ContextTomador, TomadorData
-from src.utils.debug import print_table
+
 
 class TomadorManager:
     def __init__(self, ctx: ContextTomador):

@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+
 from src.types.base import ContextBase
-from src.types.user import PrestadorData
 from src.types.tomador import TomadorData
+from src.types.user import PrestadorData
+
 
 @dataclass
 class ContextPrestador(ContextBase[PrestadorData]):

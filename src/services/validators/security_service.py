@@ -1,6 +1,7 @@
-import os
 import hashlib
 import hmac
+import os
+
 
 def validate_signature(payload_raw: bytes, assinatura_arrived: str) -> bool:
     
