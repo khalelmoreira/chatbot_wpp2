@@ -82,12 +82,10 @@ class NfsManager:
         pdf_url = self.data.get("pdfUrl")
         xml_url = self.data.get("xmlUrl")
 
-        self.db.update(
-            "nfs",
-            data={
-                "pdf_url": f"COALESCE({pdf_url}, pdf_url)",
-                "xml_url": f"COALESCE({xml_url}, xml_url)",
-                "updated_at": "CURRENT_TIMESTAMP"
-            },
-            where={"id": self.nfi}
-        )
+        self.db.exe("""
+            UPDATE nfs SET
+                pdf_url    = COALESCE(?, pdf_url),
+                xml_url    = COALESCE(?, xml_url),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (pdf_url, xml_url, self.nfi))

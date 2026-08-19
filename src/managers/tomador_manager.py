@@ -43,10 +43,10 @@ class TomadorManager:
     def _upsert_tomador(self, prestador_id: int, nome: str, cnpj: str) -> int:
 
         row = self.db.fetchone_exe("""
-            INSERT INTO tomador (prestador_id, nome, cnpj)
+            INSERT INTO tomador (prestador_id, name, cnpj)
             VALUES (?, ?, ?)
             ON CONFLICT (prestador_id, cnpj) DO UPDATE SET
-                nome       = excluded.nome,
+                name       = excluded.name,
                 updated_at = CURRENT_TIMESTAMP
             RETURNING id
         """, (prestador_id, nome, cnpj),)

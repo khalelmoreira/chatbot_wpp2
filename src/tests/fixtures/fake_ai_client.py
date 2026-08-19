@@ -17,6 +17,11 @@ class FakeAIClient(AIClient):
             return {}
         return self._extract_json_responses.pop(0)
 
+    def queue_json(self, *responses: dict) -> None:
+        """Appends responses to be consumed in order by later extract_json/classify calls.
+        Used by black-box scenarios that drive several AI-backed steps in one turn."""
+        self._extract_json_responses.extend(responses)
+
     def extract_text(self, system_prompt: str, user_msg: str) -> str:
         self.text_calls.append(user_msg)
         return self._extract_text_response
