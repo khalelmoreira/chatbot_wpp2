@@ -40,6 +40,9 @@ class TomClassKey(StrEnum):
 class TomExtractKey(StrEnum):
     NF = "NF"
 
+class IssClassKey(StrEnum):
+    SERVICE_CODE = "SERVICE_CODE"
+
 class AIClientError(Exception):
     """Chamada ao provedor de IA falhou. Não é retentável por padrão (ex: chave invalida, request malformado)."""
 

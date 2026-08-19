@@ -22,3 +22,11 @@ class DadosInvalidosError(NtassOrgError):
     def __init__(self, detalhe: str):
         self.detalhe = detalhe
         super().__init__(detalhe)
+
+class IssResolutionError(Exception):
+    """Código classificado não tem alíquota vigente na tabela local — falha visível,
+    nunca um valor default/zero silencioso."""
+
+class IssRateSyncError(Exception):
+    """Resposta da API de Parâmetros Municipais (ADN) veio em formato inesperado —
+    melhor falhar alto do que tentar adivinhar o shape."""

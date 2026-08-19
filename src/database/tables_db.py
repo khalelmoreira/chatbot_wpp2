@@ -72,9 +72,14 @@ def init_db():
            
             CHECK (
                 (cpf IS NOT NULL AND cnpj IS NULL) OR
-                (cpf IS NULL AND cnpj IS NOT NULL)      
+                (cpf IS NULL AND cnpj IS NOT NULL)
             )
         )
+    """)
+
+    db.exe("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_tomador_prestador_cnpj
+        ON tomador(prestador_id, cnpj)
     """)
 
     db.exe("""
@@ -195,6 +200,32 @@ def init_db():
             expire_at     TEXT NOT NULL,
             used         INTEGER NOT NULL DEFAULT 0
         )
+    """)
+
+    # ISS_RATES
+    # codigo_municipio fica como coluna de verdade (não hardcoded em nome de tabela/query)
+    # para que suporte multi-município seja aditivo depois — MVP só popula RJ (3304557).
+
+    db.exe("""
+        CREATE TABLE IF NOT EXISTS iss_rates (
+            id                          INTEGER PRIMARY KEY AUTOINCREMENT,
+            codigo_municipio            TEXT NOT NULL,
+            codigo_tributacao_nacional  TEXT NOT NULL,
+            aliquota                    REAL NOT NULL,
+            vigencia_inicio             TEXT NOT NULL,  -- ISO date
+            vigencia_fim                TEXT,           -- NULL = vigência em aberto
+            updated_at                  TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+
+    db.exe("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_iss_rates_vigencia
+        ON iss_rates(codigo_municipio, codigo_tributacao_nacional, vigencia_inicio)
+    """)
+
+    db.exe("""
+        CREATE INDEX IF NOT EXISTS idx_iss_rates_lookup
+            ON iss_rates(codigo_municipio, codigo_tributacao_nacional)
     """)
 
     db.exe("""

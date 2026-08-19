@@ -3,7 +3,9 @@ from dataclasses import replace
 from enum import StrEnum
 from typing import Generic, TypeVar
 
+from src.models.national_service_codes import UNCLASSIFIED, is_known_code
 from src.models.prompts import (
+    ISS_SERVICE_CODE_CLASS,
     ONBOARD_HISTORY_RESP,
     ONBOARD_INFO_RESP,
     ONBOARD_REF_PAST_CLASS,
@@ -33,6 +35,7 @@ from src.types import (
     ExtractionConfig,
     IntentType,
     IntentUserType,
+    IssClassKey,
     PrestadorData,
     PrestClassKey,
     PrestExtractKey,
@@ -103,6 +106,14 @@ PREST_ADDRESS_SCHEMA = {
     ],
     "additionalProperties": False,
 }
+
+ISS_SERVICE_CODE_SCHEMA = _value_schema({"type": "string"})
+
+def _parse_service_code(value: object) -> str:
+    codigo = str(value)
+    if codigo != UNCLASSIFIED and not is_known_code(codigo):
+        raise ValueError(f"código fora da lista conhecida: {codigo}")
+    return codigo
 
 TOM_NF_SCHEMA = {
     "type": "object",
@@ -198,6 +209,20 @@ class AIService:
                 PrestRespKey.INCOMPLETE: ResponseConfig(PREST_INCOMPLETE_RESP),
                 PrestRespKey.INVALID: ResponseConfig(PREST_INVALID_RESP),
             },
+        )
+
+        self.iss = AIOperations(
+            client,
+            extract_conf={},
+            classify_conf={
+                IssClassKey.SERVICE_CODE: ClassificationConfig(
+                    prompt=ISS_SERVICE_CODE_CLASS,
+                    schema=ISS_SERVICE_CODE_SCHEMA,
+                    parser=_parse_service_code,
+                    fallback=UNCLASSIFIED,
+                ),
+            },
+            respond_conf={},
         )
 
         self.tom = AIOperations(

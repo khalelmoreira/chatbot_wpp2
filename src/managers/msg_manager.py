@@ -7,7 +7,13 @@ class MsgManager:
         self.db  = DB()
         self.ctx = ctx
         self.id = ctx.user.id
-        self.cid = ctx.conv_id
+
+    @property
+    def cid(self) -> int | None:
+        """Lido de ctx.conv_id a cada acesso — mesmo motivo do ConvManager.cid:
+        um MsgManager pode ser construído antes de ctx.conv_id ser atribuído
+        (ex.: IntentService o cria no __init__, antes de criar a conversa)."""
+        return self.ctx.conv_id
 
     def get_msg_history(self, limite: int = 10) -> list[MsgConvType]:
         rows = self.db.select(
