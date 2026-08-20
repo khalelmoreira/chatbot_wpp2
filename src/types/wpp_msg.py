@@ -38,9 +38,6 @@ class IncomingMessage:
     text:      str
     button_id: str | None = None
 
-    def is_duplicate(self, processed_ids: set[str]) -> bool:
-        return self.msg_id in processed_ids
-    
 @dataclass
 class BotaoResponse:
     id: str

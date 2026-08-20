@@ -182,6 +182,13 @@ def init_db():
     """)
 
     db.exe("""
+        CREATE TABLE IF NOT EXISTS wpp_mensagens_processadas (
+            msg_id      TEXT PRIMARY KEY,  -- id da mensagem do WhatsApp; chave de idempotência do webhook
+            recebido_em TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+
+    db.exe("""
         CREATE TABLE IF NOT EXISTS ntaas_deliveries (
             delivery_id TEXT PRIMARY KEY,  -- X-Notaas-Delivery; chave de idempotência
             event       TEXT,              -- nfse.issued | nfse.error | nfse.cancelled | nfse.documents_ready | batch.completed | webhook.test

@@ -76,6 +76,11 @@ class TomadorManager:
                 descricao_servico = excluded.descricao_servico,
                 valor_total       = excluded.valor_total,
                 aliquota_iss      = excluded.aliquota_iss,
+                status            = 'QUEUED',
+                tentativas        = 0,
+                erro_msg          = NULL,
+                erro_code         = NULL,
+                invoice_id        = NULL,
                 updated_at        = CURRENT_TIMESTAMP
             RETURNING id
         """, (

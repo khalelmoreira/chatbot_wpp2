@@ -38,6 +38,9 @@ from src.types.exceptions import (
     IssResolutionError,
     LimitePlanoAtingidoError,
     NfNotFoundError,
+    NotaasEmissaoError,
+    NotaasEmissaoPermanenteError,
+    NotaasEmissaoTransitoriaError,
     NtaasCertificadoError,
     NtassOrgError,
 )
@@ -145,6 +148,9 @@ __all__ = [
     "LimitePlanoAtingidoError",
     "DadosInvalidosError",
     "IssResolutionError",
+    "NotaasEmissaoError",
+    "NotaasEmissaoPermanenteError",
+    "NotaasEmissaoTransitoriaError",
     "IssRateSyncError",
     # handler result
     "HandlerResult",

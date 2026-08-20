@@ -19,6 +19,10 @@ class EmissaoWorker:
         while not self._stop_event.is_set():
 
             try:
+                # roda a cada iteração, não só quando ha um job QUEUED — senão um
+                # restart com tudo travado em PROCESSING nunca destrava, porque
+                # reserva_job() só olha para jobs QUEUED.
+                NfsWorkerManager.resetar_jobs_travados()
                 manager = NfsWorkerManager.reserva_job()
             except Exception:
                 logger.exception("erro ao reservar job")

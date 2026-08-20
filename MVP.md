@@ -57,14 +57,16 @@
 
 ## Week 5 — User-facing errors + edge cases (emission flow)
 
-- [ ] Clear messages for: AI didn't understand, Notaas rejected the payload, city is down, AI provider timeout
-- [ ] Verify that `CONFIRMING` actually surfaces extraction errors before emission
-- [ ] Deliberate manual tests:
-- [ ] Intentionally invalid CPF/CNPJ
-- [ ] Two simultaneous messages (SQLite concurrency)
-- [ ] Duplicate WhatsApp webhook
-- [ ] City not supported by Notaas
-- [ ] Restart the server with a conversation in `QUEUED`/`PROCESSING`
+- [✓] Clear messages for: AI didn't understand, Notaas rejected the payload, city is down, AI provider timeout — `src/services/errors/error_notifier.py` is a new central error boundary in `wpp_handler._process`: any exception that escapes flow dispatch (AI fallback exhausted, Notaas errors, anything else) now gets mapped to a PT-BR user message and saved/sent instead of crashing silently in the debounce thread or 500ing the webhook. Notaas emission errors are now typed (`NotaasEmissaoPermanenteError` for 4xx payload rejections incl. unsupported city, `NotaasEmissaoTransitoriaError` for network/5xx) so the worker can tell "will never work, stop retrying" apart from "try again later"
+- [✓] Verify that `CONFIRMING` actually surfaces extraction errors before emission — confirmed by design: `ValidationService.valido_e_completo` (collecting) already blocks the COLLECTING→CONFIRMING transition unless the draft is complete, valid, and has a resolved ISS rate; `ConfirmingService` only acts on an already-validated draft
+- [✓] Deliberate tests (automated, standing in for the manual pass — see note below):
+- [✓] Intentionally invalid CPF/CNPJ — `test_validador_tomador.py` (tomador flow only validates CNPJ; no CPF field is collected for tomadores yet, so CPF isn't in scope here)
+- [✓] Two simultaneous messages (SQLite concurrency) — `test_user_lock_service.py` covers the lock; added `PRAGMA busy_timeout` so genuinely concurrent writers (e.g. webhook + `EmissaoWorker`) wait instead of erroring
+- [✓] Duplicate WhatsApp webhook — `test_wpp_handler_edge_cases.py`; new `wpp_mensagens_processadas` table + `ja_processado()`, same idempotency pattern already used for Notaas deliveries
+- [✓] City not supported by Notaas — covered by the permanent/transient split above (`test_emission_service_errors.py`); exact Notaas error code for this case still needs confirming against the real API
+- [✓] Restart the server with a conversation in `QUEUED`/`PROCESSING` — found and fixed a real bug: `resetar_jobs_travados()` only ran *after* a `QUEUED` job was found, so an all-`PROCESSING` restart with no `QUEUED` jobs left could never self-heal. Now runs every worker tick regardless (`test_nf_worker_manager.py`). Also fixed: correcting and reconfirming a `nfs` row stuck in `ERROR` didn't reset `status`/`tentativas`, so it silently never got picked up again (`test_tomador_manager.py`)
+
+**Note:** the "Deliberate manual tests" above were implemented as automated tests instead of run by hand against live WhatsApp/Notaas, since that requires interactive access this session doesn't have. Worth an actual manual pass against the Notaas sandbox before Week 7's dress rehearsal, especially to confirm the real error codes Notaas returns for an unsupported city vs. other 4xx payload issues.
 
 ---
 

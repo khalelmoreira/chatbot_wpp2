@@ -84,6 +84,16 @@ class NfsWorkerManager:
             where={"id": self.jid}
         )
 
+    def marcar_erro_permanente(self, erro: str) -> None:
+        """Notaas rejeitou o payload (4xx) — repetir sem o usuário corrigir os
+        dados só reproduziria o mesmo erro, então encerra o job direto em ERROR
+        em vez de deixar `marcar_erro` reenfileirar até `MAX_TENTATIVAS`."""
+        self.db.update(
+            "nfs",
+            data={"status": "ERROR", "erro_msg": erro, "updated_at": "CURRENT_TIMESTAMP"},
+            where={"id": self.jid}
+        )
+
     def save_invoice_id(self, invoice_id: str) -> None:
         self.db.update(
             "nfs",
@@ -91,8 +101,20 @@ class NfsWorkerManager:
             where={"id": self.jid}
         )
 
-    def resetar_jobs_travados(self) -> None:
-        self.db.exe("""
+    def get_prestador_id_e_phone(self) -> dict[str, "int | str"] | None:
+        row = self.db.fetchone("""
+            SELECT p.id AS prestador_id, p.phone AS phone
+            FROM conversations c
+            JOIN prestador p ON p.id = c.prestador_id
+            WHERE c.id = ?
+        """, (self.cid,))
+        if row is None:
+            return None
+        return dict(row)
+
+    @staticmethod
+    def resetar_jobs_travados() -> None:
+        DB().exe("""
             UPDATE nfs SET
                 status     = 'QUEUED',
                 updated_at = CURRENT_TIMESTAMP
