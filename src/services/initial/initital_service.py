@@ -46,7 +46,7 @@ class UserResolv:
                     "Para começar, me informe:\n"
                     "- Razão social\n- CNPJ\n- E-mail\n- Regime tributário\n- CEP\n- Inscrição municipal")
         #self.wpp.send_msg_text(self.self.msg.phone, self.msg)
-        print(f"{msg}\n")
+        print(msg)
 
 class DispatchUser:
     def __init__(self, user: User, msg: IncomingMessage):

@@ -13,14 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def wpp_handler(payload_raw) -> None:
-    print("\n\n----------------TESTE PROCESSAMENTO PAYLOAD WHATSAPP----------------\n\n")
-
     parser = WppParser(payload_raw)
 
     msg = parser.parse()
     if msg is None:
         return
-    print(f"msg: {msg}\n")
+    logger.debug("wpp_handler: msg=%s", msg)
 
     if ja_processado(msg.msg_id):
         logger.info("mensagem duplicada ignorada: msg_id=%s phone=%s", msg.msg_id, msg.phone)

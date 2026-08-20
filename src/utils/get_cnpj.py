@@ -1,4 +1,8 @@
+import logging
+
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 def get_cnpj_info(cnpj: str) -> dict | None:
@@ -7,7 +11,7 @@ def get_cnpj_info(cnpj: str) -> dict | None:
 
     try:
         response = requests.get(url, timeout=5)
-        print(f"BRASILAPI CNPJ RESPONSE: {response}\n")
+        logger.debug("brasilapi cnpj response=%s", response)
 
     except requests.RequestException:
         return None
@@ -16,6 +20,6 @@ def get_cnpj_info(cnpj: str) -> dict | None:
         return None
 
     data = response.json()
-    print(f"RESPONSE.JSON: {data}\n")
+    logger.debug("brasilapi cnpj response.json=%s", data)
 
     return data

@@ -1,3 +1,4 @@
+import logging
 import os
 
 import requests
@@ -6,6 +7,7 @@ from dotenv import load_dotenv
 from src.types import NotaasEmissaoPermanenteError, NotaasEmissaoTransitoriaError
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 API_KEY = os.getenv("NOTAAS_API_KEY")
 
 TIMEOUT_SEGUNDOS = 15
@@ -18,8 +20,7 @@ def emitir_nf(dados):
     NotaasEmissaoTransitoriaError: podem ser uma instabilidade passageira (ex.:
     prefeitura fora do ar) e seguem elegíveis para retry com backoff."""
 
-    print("\n\n----------------TESTE EMITIR NF----------------\n\n")
-    print(f"PAYLOAD ENVIADO: {dict(dados)}")
+    logger.debug("emitir_nf: payload=%s", dict(dados))
 
     url = "https://platform.notaas.com.br/api/v1/emitir"
 
@@ -33,7 +34,7 @@ def emitir_nf(dados):
     except requests.RequestException as e:
         raise NotaasEmissaoTransitoriaError(f"Falha de rede ao emitir NF-e: {e}") from e
 
-    print(f"RESPONSE: {response}\n")
+    logger.debug("emitir_nf: response=%s", response)
 
     if response.status_code in (200, 201, 202):
         return response.json()

@@ -8,6 +8,6 @@ logger = logging.getLogger(__name__)
 
 def cerfiticate_flow(ctx: ContextPrestador):
 
-    print("\n\n----------------CERTIFICATE FLOW----------------\n\n")
+    logger.debug("certificate_flow: user_id=%s", ctx.user.id)
 
     CertificateService(PrestadorManager(ctx)).certificate()

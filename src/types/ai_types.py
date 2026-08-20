@@ -84,10 +84,9 @@ class AIExtractor(Generic[TExtracted]):
                 user_msg=text,
                 schema=self.schema,
             )
-            print(f"RESPONSE: {response_json}\n")
+            logger.debug("extract response=%s", response_json)
             return self.output_type.from_dict(response_json)
         except Exception as e:
-            print(f"Erro ao extrair {self.output_type.__name__}: {e}")
             logger.info(f"Erro ao extrair {self.output_type.__name__}: {e}")
             return None
 

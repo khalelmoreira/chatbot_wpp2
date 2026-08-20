@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def project_flow(ctx: ContextPrestador):
 
-    print("\n\n----------------PROJECT FLOW----------------\n\n")
+    logger.debug("project_flow: user_id=%s", ctx.user.id)
 
     prestador = PrestadorManager(ctx)
 

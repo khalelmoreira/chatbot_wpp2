@@ -10,6 +10,7 @@ Uso manual: python -m src.workers.iss_rate_sync
 import logging
 import sys
 
+from src.logging_config import setup_logging
 from src.managers.iss.iss_rate_manager import IssRateManager
 from src.models.municipios import RJ_CODIGO_MUNICIPIO
 from src.models.national_service_codes import NATIONAL_SERVICE_CODES
@@ -42,7 +43,7 @@ def run_sync(codigo_municipio: str = RJ_CODIGO_MUNICIPIO) -> int:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    setup_logging()
     total = run_sync()
     print(f"Sincronizados {total}/{len(NATIONAL_SERVICE_CODES)} códigos.")
     sys.exit(0 if total > 0 else 1)

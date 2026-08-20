@@ -1,6 +1,9 @@
+import logging
+
 from src.services.ntaas.nfse_service import NfseService
 from src.types import EventsNotaas, PayloadNotaas
 
+logger = logging.getLogger(__name__)
 
 class NtaasWebhook:
     def __init__(self, payload: dict):
@@ -23,7 +26,7 @@ class NtaasWebhook:
         
     def dispatch(self, payload: PayloadNotaas):
         if payload.event == EventsNotaas.WEBHOOK_TEST:
-            print("OK, 200\n")
+            logger.debug("webhook notaas: WEBHOOK_TEST recebido")
             return None
 
         service = NfseService(payload.data)
