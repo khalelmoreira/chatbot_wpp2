@@ -72,7 +72,9 @@
 
 ## Week 6 — Observability + LGPD/liability
 
-- [ ] Structured logging for remote debugging, without full CPF/CNPJ/amounts in logs
+- [✓] Structured logging for remote debugging, without full CPF/CNPJ/amounts in logs
+
+**Note:** the current `logger.debug()` calls added for this step are mostly a direct swap from the old `print()` debug traces — lots of them (`"dados novos=%s"`, `"merge=%s"`, banner-style flow-entry logs, etc.) are noisy/low-value as structured logs. Worth a pass to prune or consolidate before relying on these for real remote debugging. Not done now — flagged for later.
 - [ ] Simple alert if `EmissaoWorker` dies or a job gets stuck in `PROCESSING`
 - [ ] LGPD legal basis documented (contract performance) and minimum retention policy
 - [ ] Written alignment with partners on liability for emission errors

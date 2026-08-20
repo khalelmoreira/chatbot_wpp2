@@ -1,3 +1,5 @@
+import logging
+
 from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
 from src.services.ai import ai_client_factory
@@ -15,6 +17,7 @@ from src.types import (
 from src.utils.get_cnpj import get_cnpj_info
 from src.utils.get_endereco import get_endereco_by_cep
 
+logger = logging.getLogger(__name__)
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -31,17 +34,17 @@ class ExtractionService:
 
         if new_data is not None:
             self.ctx.new_data = new_data                                 #type: ignore
-        print(f"DADOS NOVOS: {self.ctx.new_data}\n")
+        logger.debug("dados novos=%s", self.ctx.new_data)
 
         draft = self.prestador.get_db_data()
-        print(f"DRAFT: {draft}\n")
+        logger.debug("draft=%s", draft)
 
-        if draft is not None: 
+        if draft is not None:
             self.ctx.db_data = PrestadorData.from_prestador(draft)
-        print(f"DADOS DARFT: {self.ctx.db_data}\n")
+        logger.debug("dados draft=%s", self.ctx.db_data)
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
-        print(f"MERGE: {self.ctx.merged}\n")
+        logger.debug("merge=%s", self.ctx.merged)
 
 class ValidationService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
@@ -56,7 +59,7 @@ class ValidationService:
         result = self.validador.validar(self.ctx.merged)
         self.ctx.valid = result.valid
         self.ctx.validation = result.result
-        print(f"VALIDATION: {self.ctx.validation}\n")
+        logger.debug("validation=%s", self.ctx.validation)
 
         if not self.ctx.validation.is_valid:
             if self.ctx.valid != PrestadorData():
@@ -105,13 +108,13 @@ class AddressService:
 
     def address(self):
         cep = self.ctx.valid.cep
-        print(f"CEP: {cep}\n")
+        logger.debug("cep=%s", cep)
 
         if cep is None:
             return
 
         endereco = get_endereco_by_cep(cep)
-        print(f"ENDERECO: {endereco}\n")
+        logger.debug("endereco=%s", endereco)
 
         if not endereco:
             notf_user(f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?\n")
@@ -138,13 +141,13 @@ class CnpjService:
 
     def verificar(self) -> bool:
         cnpj = extrair_digitos(self.ctx.valid.cnpj)
-        print(f"CNPJ: {cnpj}\n")
+        logger.debug("cnpj=%s", cnpj)
 
         if cnpj is None:
             return True
 
         info = get_cnpj_info(cnpj)
-        print(f"CNPJ INFO: {info}\n")
+        logger.debug("cnpj info=%s", info)
 
         if info is None:
             notf_user(

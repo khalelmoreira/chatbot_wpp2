@@ -1,6 +1,10 @@
+import logging
+
 import requests
 
 from src.types import Address
+
+logger = logging.getLogger(__name__)
 
 
 def get_endereco_by_cep(cep: str) -> Address | None:
@@ -9,16 +13,16 @@ def get_endereco_by_cep(cep: str) -> Address | None:
 
     try:
         response = requests.get(url, timeout=5)
-        print(f"VIA CEP RESPONSE: {response}\n")
+        logger.debug("via cep response=%s", response)
 
     except requests.RequestException:
         return None
-    
+
     if response.status_code != 200:
         return None
-    
+
     data = response.json()
-    print(f"RESPONSE.JSON: {data}\n")
+    logger.debug("via cep response.json=%s", data)
 
     if data.get("erro"):
         return None

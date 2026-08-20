@@ -1,3 +1,4 @@
+import logging
 from typing import cast
 
 from src.flows.user_flows.collecting_user_flow import collecting_flow
@@ -14,6 +15,7 @@ from src.types import (
     UserStatus,
 )
 
+logger = logging.getLogger(__name__)
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -48,7 +50,7 @@ class IntentUserService:
         intencao = cast(
             IntentUserType,
             self.ai.prest.classify(PrestClassKey.HAS_INTENT, self.ctx.text))
-        print(f"INTENCAO: {intencao}\n")
+        logger.debug("intencao=%s", intencao)
         return intencao
     
     def _general_ask(self):

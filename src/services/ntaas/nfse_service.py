@@ -1,6 +1,9 @@
+import logging
+
 from src.managers.nfs.nf_manager import NfsManager
 from src.services.wpp.msg_service import WhatsAppService
 
+logger = logging.getLogger(__name__)
 
 class NfseService:
     def __init__(self, data: dict):
@@ -18,7 +21,7 @@ class NfseService:
 
     def issued(self):
 
-        print("\n\n----------------NF ISSUED----------------\n\n")
+        logger.info("nf issued: conv_id/job processado")
 
         self.manager.update_nf_done()
         self.manager.reset_conv(novo_status="COLLECTING")
@@ -35,7 +38,7 @@ class NfseService:
 
     def error(self):
 
-        print("\n\n----------------NF ERROR----------------\n\n")
+        logger.info("nf error: webhook de erro recebido")
 
         error_msg = self.data.get("errorMessage", "Erro desconhecido")
         errors    = self.data.get("errors", [])
@@ -60,7 +63,7 @@ class NfseService:
 
     def cancelled(self):
 
-        print("\n\n----------------NF CANCELLED----------------\n\n")
+        logger.info("nf cancelled: webhook de cancelamento recebido")
         
         self.manager.update_nf_cancelled()
         self.manager.reset_conv(novo_status="COLLECTING") 
@@ -70,7 +73,7 @@ class NfseService:
 
     def docs_ready(self):
 
-        print("\n\n----------------NF DOCS READY----------------\n\n")
+        logger.info("nf docs ready: webhook recebido")
 
         document_status = self.data.get("documentStatus")   # "partial" | "complete"
         pdf_url         = self.data.get("pdfUrl")

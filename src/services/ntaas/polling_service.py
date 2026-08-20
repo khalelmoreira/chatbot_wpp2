@@ -20,9 +20,8 @@ def match_jobs_processing() -> None:
 
     for manager in jobs:
         try:
-            print("\n\n----------------TESTE POLLING----------------\n\n")
             result = req_status_notaas(manager.job["invoice_id"], os.getenv("NOTAAS_API_KEY"))
-            print(f"RESULTADO CONSULTA: {result}")
+            logger.debug("resultado consulta job %s: %s", manager.job_id, result)
 
         except Exception:
             logger.exception("erro ao consultar status do job %s", manager.job_id)

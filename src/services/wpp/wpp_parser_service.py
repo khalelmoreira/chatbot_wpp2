@@ -1,6 +1,9 @@
+import logging
+
 from src.services.ai.audio_service import transcrever_audio_wpp
 from src.types import IncomingMessage, MsgType
 
+logger = logging.getLogger(__name__)
 
 class WppParser:
     def __init__(self, payload):
@@ -71,11 +74,11 @@ class WppParser:
                     button_id=button_reply["id"]
                 )
             
-            print(f"subtipo interativo nao tratado: {subtipo}")
+            logger.warning("subtipo interativo nao tratado: %s", subtipo)
             return None
 
         else:
-            print(f"tipo não tratado: {tipo_raw}")
+            logger.warning("tipo nao tratado: %s", tipo_raw)
             #enviar_mensagem(message["from"], "text", "não entendi a mensagem.")
             return None
     

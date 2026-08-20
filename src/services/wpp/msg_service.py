@@ -1,3 +1,4 @@
+import logging
 import os
 from collections.abc import Sequence
 
@@ -7,6 +8,7 @@ from dotenv import load_dotenv
 from src.types import Address, BotaoResponse
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 class WhatsAppService:
 
@@ -27,16 +29,16 @@ class WhatsAppService:
             response = requests.post(url, headers=headers, json=payload, timeout=10)
 
             if response.status_code in (200, 201):
-                print("mensagem enviada com sucesso\n")
+                logger.debug("mensagem enviada com sucesso")
 
                 return response.json()
-            
-            print(f"erro ao enviar mensagem: {response.status_code} - {response.text}")
+
+            logger.error("erro ao enviar mensagem: %s - %s", response.status_code, response.text)
 
             return None
-        
-        except requests.RequestException as e:
-            print(f"erro no request: {e}")
+
+        except requests.RequestException:
+            logger.exception("erro no request ao enviar mensagem")
 
             return None
 

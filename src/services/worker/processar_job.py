@@ -29,7 +29,7 @@ def processar_job(manager: NfsWorkerManager) -> float | None:
     job_id = manager.jid
     job    = manager.job
 
-    print(f"JOB: {job}\n")
+    logger.debug("job=%s", job)
 
     payload  = {
         "tomador": {"nome": job.nome, "cnpj": job.cnpj},

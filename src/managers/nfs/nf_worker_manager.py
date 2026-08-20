@@ -2,7 +2,7 @@ from config import MAX_TENTATIVAS
 from src.database.db import DB
 from src.database.get_connection import get_connection
 from src.types import NfseStatus, NfsJob
-from src.utils.debug import print_table
+from src.utils.debug import log_table
 
 
 class NfsWorkerManager:
@@ -59,7 +59,7 @@ class NfsWorkerManager:
                     processado_em = CURRENT_TIMESTAMP
                 WHERE id = ?
             """, (self.jid,))
-            print_table(table_name="nfs", columns=["status", "processado_em"], where="id = ?", params=(self.jid,))
+            log_table(table_name="nfs", columns=["status", "processado_em"], where="id = ?", params=(self.jid,))
 
             conn.execute("""
                 UPDATE conversations
@@ -67,7 +67,7 @@ class NfsWorkerManager:
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             """, (self.cid,))
-            print_table(
+            log_table(
                 table_name="conversations",
                 columns=["status", "updated_at"],
                 where="id = ?",

@@ -1,3 +1,4 @@
+import logging
 from typing import cast
 
 from src.flows.active_flows.collecting_flow import collecting_flow
@@ -8,6 +9,7 @@ from src.services.ai.ai_service import AIService
 from src.services.onboarding.resumo import ResumoBuilder
 from src.types import ContextTomador, IntentType, Role, TomClassKey, TomRespKey
 
+logger = logging.getLogger(__name__)
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -43,7 +45,7 @@ class IntentService:
         intencao = cast(
             IntentType,
             self.ai.tom.classify(TomClassKey.HAS_INTENT, self.ctx.text))
-        print(f"INTENCAO: {intencao}\n")
+        logger.debug("intencao=%s", intencao)
         return intencao
     
     def _consulta(self):

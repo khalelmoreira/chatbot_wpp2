@@ -1,11 +1,13 @@
 import hashlib
 import json
+import logging
 from dataclasses import asdict
 
 from src.database.db import DB
 from src.models.aliquota_iss_constant import ALIQUOTA_ISS
 from src.types import ContextTomador, TomadorData
 
+logger = logging.getLogger(__name__)
 
 class TomadorManager:
     def __init__(self, ctx: ContextTomador):
@@ -51,7 +53,7 @@ class TomadorManager:
             RETURNING id
         """, (prestador_id, nome, cnpj),)
 
-        print(f"ROW[ID]: {row['id']}\n")
+        logger.debug("tomador upsert id=%s", row['id'])
         return row["id"]
     
     def _upsert_nf(
@@ -91,5 +93,5 @@ class TomadorManager:
         )
         if row is None:
             return None
-        print(f"ROW[ID]: {row["id"]}\n")
+        logger.debug("nf upsert id=%s", row["id"])
         return row["id"]

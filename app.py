@@ -5,10 +5,12 @@ from dotenv import load_dotenv
 from flask import Flask
 
 from src.database.tables_db import init_db
+from src.logging_config import setup_logging
 from src.routes import ntaas_bp, wpp_bp
 from src.workers import EmissaoWorker
 
 load_dotenv()
+setup_logging()
 logger = logging.getLogger(__name__)
 emissao_worker = EmissaoWorker(intervalo_poll=2.0)
 

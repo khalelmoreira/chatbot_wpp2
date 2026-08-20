@@ -1,11 +1,14 @@
+import logging
+
 from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
 from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
 from src.services.validators.validador_prestador import ValidatorAddress
 from src.types import Address, ContextPrestador, PrestExtractKey, PrestRespKey, Role
-from src.utils.debug import print_table
+from src.utils.debug import log_table
 
+logger = logging.getLogger(__name__)
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -22,17 +25,17 @@ class ExtractionService:
 
         if new_data is not None:
             self.ctx.new_data = new_data                       #type: ignore
-        print(f"DADOS NOVOS: {self.ctx.new_data}\n")
+        logger.debug("dados novos=%s", self.ctx.new_data)
 
         draft = self.prestador.get_address()
-        print(f"DARFT: {self.ctx.db_data}\n")
+        logger.debug("draft=%s", self.ctx.db_data)
 
         if draft is not None:
             self.ctx.db_data = draft
-        print(f"DADOS DARFT: {self.ctx.db_data}\n")
+        logger.debug("dados draft=%s", self.ctx.db_data)
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
-        print(f"MERGE: {self.ctx.merged}\n")
+        logger.debug("merge=%s", self.ctx.merged)
 
 class ValidationService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
@@ -47,7 +50,7 @@ class ValidationService:
         result = self.validador.validar(self.ctx.merged)
         self.ctx.valid = result.valid
         self.ctx.validation = result.result
-        print(f"VALIDATION: {self.ctx.validation}\n")
+        logger.debug("validation=%s", self.ctx.validation)
 
         if not self.ctx.validation.is_valid:
             if self.ctx.valid != Address():
@@ -122,8 +125,7 @@ class ValidationService:
             f"CEP: {cep}\n\n"
             f"Esses dados estão corretos?\n"
         )
-        print("DADOS SALVOS NO DB:")
-        print_table(
+        log_table(
             table_name="prestador",
             columns=[
                 "status",

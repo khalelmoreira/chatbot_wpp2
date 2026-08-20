@@ -1,3 +1,5 @@
+import logging
+
 from src.managers.user_manager import PrestadorManager
 from src.services.sign_up.collecting_user_service import (
     AddressService,
@@ -7,11 +9,11 @@ from src.services.sign_up.collecting_user_service import (
 )
 from src.types import ContextPrestador
 
+logger = logging.getLogger(__name__)
 
 def collecting_flow(ctx: ContextPrestador) -> None:
 
-    print("\n\n----------------TESTE FLUXO PREST COLLECTING----------------\n\n")
-    print(f"CTX: {ctx}\n")
+    logger.debug("collecting_user_flow: user_id=%s", ctx.user.id)
 
     prestador = PrestadorManager(ctx)
     validation = ValidationService(ctx, prestador)

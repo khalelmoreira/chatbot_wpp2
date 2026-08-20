@@ -1,3 +1,5 @@
+import logging
+
 from src.flows.active_flows.collecting_flow import collecting_flow
 from src.flows.active_flows.confirming_flow import confirming_flow
 from src.flows.active_flows.idle_flow import idle_flow
@@ -6,8 +8,9 @@ from src.managers.conversations import ConvManager
 from src.managers.msg_manager import MsgManager
 from src.types import ContextTomador, ConvStatus, Role
 from src.types.conversation import Conversation
-from src.utils.debug import print_table
+from src.utils.debug import log_table
 
+logger = logging.getLogger(__name__)
 
 class ConvActiveService:
     def __init__(self, ctx: ContextTomador):
@@ -27,20 +30,20 @@ class ConvActiveService:
     def _save_msg(self):
         msg = MsgManager(self.ctx)
         msg.save_msg(role=Role.USER, content=self.ctx.text)
-        print_table(table_name="messages", where="phone = ?", params=(self.ctx.user.phone,))
+        log_table(table_name="messages", where="phone = ?", params=(self.ctx.user.phone,))
 
     def _get_conv(self):
         conversa = self.conversation.get_ativa()
-        print(f"CONVERSA: {conversa}\n")
+        logger.debug("conversa ativa: %s", conversa)
         return conversa
 
 class DispatchActiveService:
     def __init__(self, ctx: ContextTomador):
         self.ctx = ctx
         self.conversation = ConvManager(ctx)
-        
+
     def dispatch(self, conversa: Conversation):
-        print("\n\n----------------TESTE FLUXO ATIVO_DISPATCHER----------------\n\n")
+        logger.debug("active_dispatcher: conversa=%s", conversa)
 
         if not conversa:
             return idle_flow(self.ctx, self.conversation)
@@ -54,7 +57,7 @@ class DispatchActiveService:
         }
 
         dispatcher = dispatchers.get(self.ctx.conv_status)
-        print(dispatcher)
+        logger.debug("active_dispatcher: dispatcher=%s", dispatcher)
         if dispatcher is None:
             return idle_flow(self.ctx, self.conversation)
         return dispatcher()

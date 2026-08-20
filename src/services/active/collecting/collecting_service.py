@@ -1,3 +1,4 @@
+import logging
 from dataclasses import asdict
 
 from src.managers.conversations.conv_manager import ConvManager
@@ -18,8 +19,9 @@ from src.types import (
     TomExtractKey,
     TomRespKey,
 )
-from src.utils.debug import print_table
+from src.utils.debug import log_table
 
+logger = logging.getLogger(__name__)
 
 def notf_user(msg: str) -> None:
     #self.wpp.send_msg_text(self.msg.phone, msg)
@@ -36,15 +38,15 @@ class ExtractionService:
         new_data = self.ai.tom.extract(TomExtractKey.NF, self.ctx.text)
         if new_data is not None:
             self.ctx.new_data = new_data
-        print(f"DADOS NOVOS: {self.ctx.new_data}\n")
+        logger.debug("dados novos=%s", self.ctx.new_data)
 
         draft = self.conversation.get_draft()
         if draft is not None:
             self.ctx.db_data = TomadorData.from_dict(draft)
-        print(f"DADOS DRAFT:{self.ctx.db_data}\n")
+        logger.debug("dados draft=%s", self.ctx.db_data)
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
-        print(f"MERGE: {self.ctx.merged}\n")
+        logger.debug("merge=%s", self.ctx.merged)
 
 
 class ValidationService:
@@ -125,7 +127,7 @@ class ValidationService:
     def _update_draft(self):
         draft_dict = asdict(self.ctx.valid)
         self.conversation.update_draft(draft_dict)
-        print(f"VALIDACAO: {self.ctx.validation}\n")
+        logger.debug("validacao=%s", self.ctx.validation)
     
     def _update_state(self):
         self.conversation.update_state(ConvStatus.CONFIRMING)
@@ -169,7 +171,7 @@ class ValidationService:
             f"{self.ctx.merged.valores.total}\n"
             f"Esses dados estão corretos?"
         )
-        print_table(table_name="conversations", where=self.ctx.user.phone)
+        log_table(table_name="conversations", where=self.ctx.user.phone)
 
     def _incompleto(self):
         valid_missing_list = self.ctx.validation.missing
