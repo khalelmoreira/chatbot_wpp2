@@ -103,7 +103,7 @@ def test_process_upload_delegates_to_handler(client, monkeypatch):
         lambda token, arq, pasw: HandlerResult(200, {"success": True}),
     )
 
-    resp = client.post("/upload-certificate/tok123", data={"pasw": "1234"})
+    resp = client.post("/upload-certificate/tok123", data={"senha": "1234"})
 
     assert resp.status_code == 200
     assert resp.get_json() == {"success": True}

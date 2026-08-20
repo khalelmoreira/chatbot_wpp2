@@ -27,7 +27,7 @@ def form_upload(token: str):
 def process_upload(token: str):
 
     arq = request.files.get("certificado")
-    pasw = request.form.get("pasw")
+    pasw = request.form.get("senha")
 
     result = certificate_upload_handler(token, arq, pasw)
     return jsonify(result.body), result.status
