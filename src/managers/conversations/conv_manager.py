@@ -11,7 +11,14 @@ class ConvManager:
         self.ctx = ctx
         self.id = ctx.user.id
         self.phone = ctx.user.phone
-        self.cid = ctx.conv_id
+
+    @property
+    def cid(self) -> int | None:
+        """Lido de ctx.conv_id a cada acesso, não capturado no __init__ — um
+        ConvManager pode ser construído antes de uma conversa nova existir
+        (ex.: IntentService cria a conversa e reusa a mesma instância para
+        collecting_flow); um snapshot em __init__ ficaria travado em None."""
+        return self.ctx.conv_id
 
 
     def get_all(self) -> Conversation | None:
@@ -58,7 +65,7 @@ class ConvManager:
             },
             returning="id"
         )
-        return row["id"]
+        return row
     
     def update_state(self, novo_status: str) -> None:
         self.db.update(

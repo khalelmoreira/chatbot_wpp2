@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 emissao_worker = EmissaoWorker(intervalo_poll=2.0)
 
 def create_app() -> Flask:
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="src/models")
     app.register_blueprint(wpp_bp)
     app.register_blueprint(ntaas_bp)
     return app

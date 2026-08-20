@@ -22,21 +22,21 @@ class NtaasWebhook:
         return PayloadNotaas(event=event, data=data)
         
     def dispatch(self, payload: PayloadNotaas):
+        if payload.event == EventsNotaas.WEBHOOK_TEST:
+            print("OK, 200\n")
+            return None
+
         service = NfseService(payload.data)
 
         match payload.event:
             case EventsNotaas.NFSE_ISSUED:
                 return service.issued()
-            
+
             case EventsNotaas.NFSE_ERROR:
                 return service.error()
-            
+
             case EventsNotaas.NFSE_CANCELLED:
                 return service.cancelled()
-            
+
             case EventsNotaas.NFSE_DOCS_READY:
                 return service.docs_ready()
-            
-            case EventsNotaas.WEBHOOK_TEST:
-                print("OK, 200\n")
-                return None

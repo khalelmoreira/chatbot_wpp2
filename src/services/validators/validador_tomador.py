@@ -2,7 +2,7 @@ from operator import attrgetter
 from typing import Any, Callable
 
 from src.services.validators.validador_prestador import val_cnpj
-from src.types import ContextTomador, ValidationResult
+from src.types import ContextTomador, TomadorData, ValidationResult
 
 
 def validar_nome(nome: str | None) -> bool:
@@ -41,23 +41,25 @@ class ValidadorTomador:
 
         dados = ctx.merged
 
-        validos: dict[str, Any] = {}
+        valid = TomadorData()
         invalidos: list[str] = []
         faltantes: list[str] = []
 
         for campo, fn_validar in _VALIDACOES_TOMADOR.items():
 
+            secao, attr = campo.split(".")
             valor = attrgetter(campo)(dados)
 
             if valor is None:
                 faltantes.append(campo)
-            
+
             elif not fn_validar(valor):
                 invalidos.append(campo)
-            
-            else:
-                validos[campo] = valor
 
+            else:
+                setattr(getattr(valid, secao), attr, valor)
+
+        ctx.valid = valid
         ctx.validation = ValidationResult(
             invalid=invalidos,
             missing=faltantes,

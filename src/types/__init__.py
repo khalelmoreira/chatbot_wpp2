@@ -8,6 +8,7 @@ from src.types.ai_types import (
     AIPrompt,
     ClassificationConfig,
     ExtractionConfig,
+    IssClassKey,
     PrestClassKey,
     PrestExtractKey,
     PrestRespKey,
@@ -33,13 +34,22 @@ from src.types.exceptions import (
     CnpjJaCadastradoError,
     DadosInvalidosError,
     InvalidTransactionError,
+    IssRateSyncError,
+    IssResolutionError,
     LimitePlanoAtingidoError,
     NfNotFoundError,
+    NotaasEmissaoError,
+    NotaasEmissaoPermanenteError,
+    NotaasEmissaoTransitoriaError,
     NtaasCertificadoError,
     NtassOrgError,
 )
 from src.types.handler_result import (
     HandlerResult,
+)
+from src.types.iss import (
+    IssRate,
+    IssResolution,
 )
 from src.types.mixins import (
     FromDictMixin,
@@ -137,8 +147,16 @@ __all__ = [
     "CnpjJaCadastradoError",
     "LimitePlanoAtingidoError",
     "DadosInvalidosError",
+    "IssResolutionError",
+    "NotaasEmissaoError",
+    "NotaasEmissaoPermanenteError",
+    "NotaasEmissaoTransitoriaError",
+    "IssRateSyncError",
     # handler result
     "HandlerResult",
+    # iss
+    "IssRate",
+    "IssResolution",
     # resumo_types
     "StatusResumo",
     "HistoryResumo",
@@ -160,6 +178,7 @@ __all__ = [
     "TomRespKey",
     "TomClassKey",
     "TomExtractKey",
+    "IssClassKey",
     # context
     "ContextPrestador",
     "ContextTomador",

@@ -56,6 +56,5 @@ A second, unrelated Unix user, `nfse-agent`, runs a separate Claude Code instanc
 ## Commands
 
 - Run: `python app.py` — loads `.env`, starts Flask on port 5000, and starts the `EmissaoWorker`/`PollingWorker` background workers.
-- Test: `pytest`
-  - Heads up: `pytest.ini` sets `testpaths = app/tests`, but tests actually live in `src/tests/`. Worth confirming pytest is actually discovering them, or fixing the path.
+- Test: `pytest` — `pytest.ini` sets `testpaths = src/tests`, split into `unit/` (flat) and `integration/` (subfoldered by layer: `routes/`, `services/`, `flow/`).
 - Lint/format: nothing configured in `pyproject.toml` yet — add a command here once you pick a tool.

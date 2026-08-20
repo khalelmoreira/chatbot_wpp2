@@ -9,6 +9,9 @@ from src.models.prompts.nfse_prompts import (
     TOM_NF_EXTRACT,
     TOM_NO_DATA_RESP,
 )
+from src.models.prompts.iss_prompts import (
+    ISS_SERVICE_CODE_CLASS,
+)
 from src.models.prompts.onboard_prompts import (
     ONBOARD_HISTORY_RESP,
     ONBOARD_INFO_RESP,
@@ -26,6 +29,8 @@ from src.models.prompts.prestador_prompts import (
 )
 
 __all__ = [
+    # iss_prompts
+    "ISS_SERVICE_CODE_CLASS",
     # nfse_prmpts
     "TOM_NF_EXTRACT",
     "TOM_INCOMPLETE_RESP",
