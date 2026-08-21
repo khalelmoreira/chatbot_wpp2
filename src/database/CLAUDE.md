@@ -1,7 +1,8 @@
-<!-- Verified against the actual repo on 2026-08-04. Loads only when Claude Code reads files in src/database/. -->
+<!-- Verified against the actual repo on 2026-08-21. Loads only when Claude Code reads files in src/database/. -->
 
 # DB layer conventions (src/database/)
 
+- The runtime SQLite file itself lives at `data/whatsapp.db` (repo root, sibling to `src/`), not in this directory — moved out of `src/database/` so app data isn't mixed into the code tree, and untracked from git (`.gitignore`) since it holds real prestador/conversation data. `config.DB_PATH` is the source of truth for the path and creates the parent dir if it doesn't exist yet.
 - `DB` (`db.py`) wraps sqlite3. Generic helpers: `select`, `select_one`, `insert`, `update`, `update_guarded`. Prefer these over hand-written SQL.
 - `insert(table, data, returning=None)` returns `lastrowid` by default; pass `returning="col"` to get a DB-generated value back instead (e.g. a non-autoincrement key, or a default like a timestamp).
 - `update(table, data, where)` is unconditional — no previous-state check, no returned row. Use it when the transition doesn't depend on the current status.
