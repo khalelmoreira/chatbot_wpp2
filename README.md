@@ -60,4 +60,5 @@ ruff format .
 
 Deployed on a Hostinger VPS as systemd services `nfse-app` (gunicorn) and
 `nfse-emissao-worker`. See `MVP.md` for deployment history and the
-`nfse-agent` sandboxing setup.
+`nfse-agent` sandboxing setup, and [`NFSE_AGENT.md`](NFSE_AGENT.md) for the
+practical rundown of what `nfse-agent` can access and known VPS quirks.

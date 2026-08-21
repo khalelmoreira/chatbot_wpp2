@@ -52,6 +52,7 @@
 - [✓] Automated SQLite backups (daily systemd timer, `.backup` snapshot + 14-day rotation)
 - [✓] Claude Code running on the VPS as `nfse-agent`: real shell + home dir (`usermod`), own git checkout at `~/chatbot_wpp2` (separate from `nfse-app`'s deployment checkout, no `.env`), Node via user-space `nvm` (no `sudo` ever needed), Claude Code via `npm install -g`, own independent login — verified it cannot read `/opt/nfse-app/.env`
 - [✓] Restrict `nfse-agent`'s outbound network egress: `iptables`/UFW rule (`/etc/ufw/before.rules`, `owner --uid-owner`) allows only 443/80/53, drops everything else for that UID — verified `khalel` unaffected, `nfse-agent` reaches HTTPS/DNS, blocked port (22) silently times out
+- [✓] (2026-08-21) Zero read access turned out too strict to debug production issues from `nfse-agent` — granted scoped **read-only** POSIX ACLs on `/opt/nfse-app`'s code (`src/`, `tools/`, an allowlist of top-level files), while keeping `.env`, `certs/`, `backups/`, and `data/` (live `whatsapp.db`) unreadable. Write access was never granted and stays out of scope. See `NFSE_AGENT.md` for the exact commands and gotchas hit setting this up (missing `acl` package, `sudo` needing a real TTY, paste-reflow mangling long commands over SSH)
 
 ---
 
