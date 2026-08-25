@@ -55,9 +55,39 @@ instead, none of this applies.
 - `nfse-agent`'s own scratchpad directory
   (`/tmp/claude-*/…/scratchpad/`) is `700`, owned by `nfse-agent` — other
   users, including `khalel`, cannot `cat`/`cp` a file from it even via
-  `sudo -u nfse-agent` in some configurations. When the user needs to run
-  something themselves, paste the script contents inline rather than
-  handing them a path into that directory.
+  `sudo -u nfse-agent` in some configurations. Don't hand the user a path
+  into that directory — use the `~/handoff/` mechanism below instead.
+
+## Handing commands to the user for execution
+
+`nfse-agent` has no sudo and often needs a command run that only `khalel`
+can execute (service restarts, `journalctl` on units khalel isn't in the
+right group for, anything under `/opt/nfse-app`). Dictating multi-line
+commands in chat for khalel to copy-paste over SSH is unreliable — long or
+multi-line pastes get silently reflowed/truncated by the terminal (see
+"VPS shell quirks" above), which previously forced a slow paste-into-nano
+workaround.
+
+Instead, `khalel` has granted `nfse-agent` write-only POSIX ACL access to
+`~khalel/handoff/` (khalel's own directory, `chmod 750`, otherwise
+inaccessible to `nfse-agent`). The workflow:
+
+1. `nfse-agent` writes the command(s) as a script to `~khalel/handoff/`
+   (e.g. `~khalel/handoff/check-worker.sh`) instead of printing them in
+   chat for khalel to retype.
+2. **`nfse-agent` always explains the script in chat before/alongside
+   writing it** — what each command does and why it's needed for the task
+   at hand — so khalel isn't reviewing opaque shell against a `chmod 750`
+   directory blind. Never write a handoff script without this explanation
+   in the same turn.
+3. khalel reviews it (`less ~/handoff/check-worker.sh`) and runs it
+   themselves, typically `sudo bash ~/handoff/check-worker.sh` — one short,
+   fixed command instead of a multi-line paste, so nothing reflows.
+
+This keeps the write/secrets boundary intact: `nfse-agent` can *propose* a
+script but still cannot execute anything itself or read `~khalel`'s other
+files — khalel remains the only one who runs it, as themselves, after
+reading it.
 
 ## Git push access
 
