@@ -62,3 +62,9 @@ Deployed on a Hostinger VPS as systemd services `nfse-app` (gunicorn) and
 `nfse-emissao-worker`. See `MVP.md` for deployment history and the
 `nfse-agent` sandboxing setup, and [`NFSE_AGENT.md`](NFSE_AGENT.md) for the
 practical rundown of what `nfse-agent` can access and known VPS quirks.
+
+## Writing docs in this repo
+
+State the rule or fact, not the reasoning that led to it. Skip "because,"
+"so that," "this is why" — one line per point, no rationale trail. If a
+decision truly needs justifying, one clause max, not a paragraph.

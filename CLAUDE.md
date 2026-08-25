@@ -37,7 +37,7 @@ Before adding code to a layer, ask: *does this function need to know what an HTT
 ## Conventions
 
 - `StrEnum` for every status and AI-facing key; values are UPPERCASE and match the member name (`QUEUED = "QUEUED"`). Enums live next to the dataclasses they describe (e.g. `UserStatus` in `user.py`) — there's no separate `enums.py`.
-- `Protocol` (not `ABC`) for structural typing — `Mergeable`, `FromDictable`, `IsDataclass` in `src/types/protocols.py`, `@runtime_checkable` where used with `isinstance()`. `ABC` still shows up for genuinely external interfaces like `AIClient` — that's a real boundary (concrete interface vs. structural type), not an inconsistency to "fix."
+- `Protocol` (not `ABC`) for structural typing — `Mergeable`, `FromDictable`, `IsDataclass` in `src/types/protocols.py`, `@runtime_checkable` where used with `isinstance()`. `ABC` still shows up for external interfaces like `AIClient` — a real boundary, not an inconsistency to fix.
 - `protocols.py` imports nothing from domain modules — keep it that way if you add a protocol there.
 - Deeper, directory-scoped conventions live in nested `CLAUDE.md` files (`src/types/`, `src/database/`, `src/services/ai/`) — Claude Code loads those automatically when it reads files there, so they aren't repeated here.
 
@@ -51,7 +51,7 @@ Before adding code to a layer, ask: *does this function need to know what an HTT
 
 The app runs on a Hostinger VPS as `nfse-app` (systemd services `nfse-app` and `nfse-emissao-worker`, gunicorn in front of Flask). `PollingWorker` exists in code but is intentionally not run — the webhook covers that role.
 
-A second, unrelated Unix user, `nfse-agent`, runs a separate Claude Code instance directly on the VPS for coding tasks there. It has its own git checkout (`~/chatbot_wpp2`, no `.env`) and its own independent Claude Code login — deliberately not shared with `nfse-app` or with any devcontainer identity. `nfse-agent` has no sudo, no group overlap with `nfse-app`, and no write access to `/opt/nfse-app` at all. It does have scoped **read-only** access to `/opt/nfse-app`'s code (via POSIX ACLs on specific paths, not group membership), so it can debug production issues directly — but `.env`, `certs/`, `backups/`, and the live `data/whatsapp.db` are explicitly excluded and stay unreadable, enforced at the OS level rather than by agent-side config, so it holds regardless of what runs inside that session. Don't "fix" this by merging the two users, granting write access, or sharing credentials — the boundary that matters is *write* and *secrets*, not *read*. See [`NFSE_AGENT.md`](NFSE_AGENT.md) for the exact ACL scope, how to extend it, and VPS-session quirks worth knowing; see `MVP.md` Week 4 for how the original isolation was set up.
+A second, unrelated Unix user, `nfse-agent`, runs a separate Claude Code instance directly on the VPS for coding tasks there. Own git checkout (`~/chatbot_wpp2`, no `.env`), own independent Claude Code login, not shared with `nfse-app` or any devcontainer identity. No sudo, no group overlap with `nfse-app`, no write access to `/opt/nfse-app`. Scoped **read-only** access to `/opt/nfse-app`'s code via POSIX ACLs on specific paths; `.env`, `certs/`, `backups/`, and live `data/whatsapp.db` stay unreadable, enforced at the OS level. Don't merge the two users, grant write access, or share credentials — the boundary is *write* and *secrets*, not *read*. See [`NFSE_AGENT.md`](NFSE_AGENT.md) for ACL scope and VPS-session quirks; `MVP.md` Week 4 for setup history.
 
 ## Commands
 
