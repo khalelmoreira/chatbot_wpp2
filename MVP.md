@@ -38,7 +38,7 @@
 
 - [✓] Provision a VPS (Hostinger)
 
-**Secrets/agent isolation (decided before touching the VPS):** production credentials (root password, SSH private key, prod `.env`) must never enter the devcontainer this AI agent runs in — an agent with file-read + internet access is an exfiltration path (e.g. via prompt injection) that a `settings.json` deny-list doesn't reliably close. All credential-bearing steps below run from the author's own laptop terminal, outside Claude Code. On the VPS itself, isolation is enforced at the OS level (separate Unix users + file permissions), not by agent-side config, so it holds even if an AI agent is later run on the VPS for coding.
+**Secrets/agent isolation (decided before touching the VPS):** production credentials (root password, SSH private key, prod `.env`) never enter the devcontainer. Credential-bearing steps below run from the author's own laptop terminal, outside Claude Code. On the VPS, isolation is enforced at the OS level (separate Unix users + file permissions), not agent-side config.
 
 - [✓] Generate SSH key pair on own laptop (not devcontainer); first login to VPS as root using the one-time Hostinger password
 - [✓] Create personal sudo admin user (`khalel`), install SSH pubkey, confirm key-based login works
@@ -52,21 +52,23 @@
 - [✓] Automated SQLite backups (daily systemd timer, `.backup` snapshot + 14-day rotation)
 - [✓] Claude Code running on the VPS as `nfse-agent`: real shell + home dir (`usermod`), own git checkout at `~/chatbot_wpp2` (separate from `nfse-app`'s deployment checkout, no `.env`), Node via user-space `nvm` (no `sudo` ever needed), Claude Code via `npm install -g`, own independent login — verified it cannot read `/opt/nfse-app/.env`
 - [✓] Restrict `nfse-agent`'s outbound network egress: `iptables`/UFW rule (`/etc/ufw/before.rules`, `owner --uid-owner`) allows only 443/80/53, drops everything else for that UID — verified `khalel` unaffected, `nfse-agent` reaches HTTPS/DNS, blocked port (22) silently times out
+- [✓] (2026-08-21) Granted `nfse-agent` scoped **read-only** POSIX ACLs on `/opt/nfse-app`'s code (`src/`, `tools/`, an allowlist of top-level files); `.env`, `certs/`, `backups/`, `data/` (live `whatsapp.db`) stay unreadable, no write access. See `NFSE_AGENT.md` for setup commands and gotchas.
+- [✓] (2026-08-25) Added `~khalel/handoff/` (write-only ACL for `nfse-agent`) so debugging commands are handed to khalel as a reviewable script instead of pasted in chat — see `NFSE_AGENT.md`.
 
 ---
 
 ## Week 5 — User-facing errors + edge cases (emission flow)
 
-- [✓] Clear messages for: AI didn't understand, Notaas rejected the payload, city is down, AI provider timeout — `src/services/errors/error_notifier.py` is a new central error boundary in `wpp_handler._process`: any exception that escapes flow dispatch (AI fallback exhausted, Notaas errors, anything else) now gets mapped to a PT-BR user message and saved/sent instead of crashing silently in the debounce thread or 500ing the webhook. Notaas emission errors are now typed (`NotaasEmissaoPermanenteError` for 4xx payload rejections incl. unsupported city, `NotaasEmissaoTransitoriaError` for network/5xx) so the worker can tell "will never work, stop retrying" apart from "try again later"
-- [✓] Verify that `CONFIRMING` actually surfaces extraction errors before emission — confirmed by design: `ValidationService.valido_e_completo` (collecting) already blocks the COLLECTING→CONFIRMING transition unless the draft is complete, valid, and has a resolved ISS rate; `ConfirmingService` only acts on an already-validated draft
-- [✓] Deliberate tests (automated, standing in for the manual pass — see note below):
-- [✓] Intentionally invalid CPF/CNPJ — `test_validador_tomador.py` (tomador flow only validates CNPJ; no CPF field is collected for tomadores yet, so CPF isn't in scope here)
-- [✓] Two simultaneous messages (SQLite concurrency) — `test_user_lock_service.py` covers the lock; added `PRAGMA busy_timeout` so genuinely concurrent writers (e.g. webhook + `EmissaoWorker`) wait instead of erroring
-- [✓] Duplicate WhatsApp webhook — `test_wpp_handler_edge_cases.py`; new `wpp_mensagens_processadas` table + `ja_processado()`, same idempotency pattern already used for Notaas deliveries
-- [✓] City not supported by Notaas — covered by the permanent/transient split above (`test_emission_service_errors.py`); exact Notaas error code for this case still needs confirming against the real API
-- [✓] Restart the server with a conversation in `QUEUED`/`PROCESSING` — found and fixed a real bug: `resetar_jobs_travados()` only ran *after* a `QUEUED` job was found, so an all-`PROCESSING` restart with no `QUEUED` jobs left could never self-heal. Now runs every worker tick regardless (`test_nf_worker_manager.py`). Also fixed: correcting and reconfirming a `nfs` row stuck in `ERROR` didn't reset `status`/`tentativas`, so it silently never got picked up again (`test_tomador_manager.py`)
+- [✓] Clear messages for: AI didn't understand, Notaas rejected the payload, city is down, AI provider timeout — `src/services/errors/error_notifier.py`, central error boundary in `wpp_handler._process`. Notaas emission errors typed: `NotaasEmissaoPermanenteError` (4xx, incl. unsupported city, stop retrying), `NotaasEmissaoTransitoriaError` (network/5xx, retry)
+- [✓] `CONFIRMING` surfaces extraction errors before emission — `ValidationService.valido_e_completo` blocks COLLECTING→CONFIRMING unless the draft is complete/valid/has a resolved ISS rate; `ConfirmingService` only acts on an already-validated draft
+- [✓] Deliberate tests (automated, standing in for manual pass — see note below):
+- [✓] Intentionally invalid CPF/CNPJ — `test_validador_tomador.py` (tomador flow validates CNPJ only, no CPF field collected)
+- [✓] Two simultaneous messages — `test_user_lock_service.py`; added `PRAGMA busy_timeout` so concurrent writers wait instead of erroring
+- [✓] Duplicate WhatsApp webhook — `test_wpp_handler_edge_cases.py`; `wpp_mensagens_processadas` table + `ja_processado()`
+- [✓] City not supported by Notaas — `test_emission_service_errors.py`; exact Notaas error code still needs confirming against the real API
+- [✓] Restart the server with a conversation in `QUEUED`/`PROCESSING` — fixed: `resetar_jobs_travados()` now runs every worker tick, not only after finding a `QUEUED` job (`test_nf_worker_manager.py`). Also fixed: reconfirming an `ERROR`-stuck `nfs` row now resets `status`/`tentativas` (`test_tomador_manager.py`)
 
-**Note:** the "Deliberate manual tests" above were implemented as automated tests instead of run by hand against live WhatsApp/Notaas, since that requires interactive access this session doesn't have. Worth an actual manual pass against the Notaas sandbox before Week 7's dress rehearsal, especially to confirm the real error codes Notaas returns for an unsupported city vs. other 4xx payload issues.
+**Note:** tests above stand in for a manual pass against live WhatsApp/Notaas — do that before Week 7, especially to confirm real Notaas error codes for unsupported city vs. other 4xx.
 
 ---
 
@@ -74,7 +76,7 @@
 
 - [✓] Structured logging for remote debugging, without full CPF/CNPJ/amounts in logs
 
-**Note:** the current `logger.debug()` calls added for this step are mostly a direct swap from the old `print()` debug traces — lots of them (`"dados novos=%s"`, `"merge=%s"`, banner-style flow-entry logs, etc.) are noisy/low-value as structured logs. Worth a pass to prune or consolidate before relying on these for real remote debugging. Not done now — flagged for later.
+**Note:** current `logger.debug()` calls are mostly a direct swap from old `print()` traces (`"dados novos=%s"`, `"merge=%s"`, banner-style flow-entry logs) — noisy/low-value. Needs a prune/consolidate pass before relying on these for remote debugging. Not done yet.
 - [ ] Simple alert if `EmissaoWorker` dies or a job gets stuck in `PROCESSING`
 - [ ] LGPD legal basis documented (contract performance) and minimum retention policy
 - [ ] Written alignment with partners on liability for emission errors
