@@ -22,17 +22,12 @@ class ExtractionService:
 
         if new_data is not None:
             self.ctx.new_data = new_data                       #type: ignore
-        logger.debug("dados novos=%s", self.ctx.new_data)
 
         draft = self.prestador.get_address()
-        logger.debug("draft=%s", self.ctx.db_data)
-
         if draft is not None:
             self.ctx.db_data = draft
-        logger.debug("dados draft=%s", self.ctx.db_data)
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
-        logger.debug("merge=%s", self.ctx.merged)
 
 class ValidationService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):

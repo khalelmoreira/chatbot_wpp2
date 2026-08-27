@@ -34,15 +34,12 @@ class ExtractionService:
         new_data = self.ai.tom.extract(TomExtractKey.NF, self.ctx.text)
         if new_data is not None:
             self.ctx.new_data = new_data
-        logger.debug("dados novos=%s", self.ctx.new_data)
 
         draft = self.conversation.get_draft()
         if draft is not None:
             self.ctx.db_data = TomadorData.from_dict(draft)
-        logger.debug("dados draft=%s", self.ctx.db_data)
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
-        logger.debug("merge=%s", self.ctx.merged)
 
 
 class ValidationService:

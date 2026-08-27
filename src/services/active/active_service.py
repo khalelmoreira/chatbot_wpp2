@@ -34,7 +34,8 @@ class ConvActiveService:
 
     def _get_conv(self):
         conversa = self.conversation.get_ativa()
-        logger.debug("conversa ativa: %s", conversa)
+        if conversa is not None:
+            logger.debug("conversa ativa: id=%s status=%s", conversa.id, conversa.status)
         return conversa
 
 class DispatchActiveService:
@@ -43,11 +44,10 @@ class DispatchActiveService:
         self.conversation = ConvManager(ctx)
 
     def dispatch(self, conversa: Conversation):
-        logger.debug("active_dispatcher: conversa=%s", conversa)
 
         if not conversa:
             return idle_flow(self.ctx, self.conversation)
-        
+
         self.ctx.conv_status = conversa.status
 
         dispatchers = {
@@ -57,7 +57,7 @@ class DispatchActiveService:
         }
 
         dispatcher = dispatchers.get(self.ctx.conv_status)
-        logger.debug("active_dispatcher: dispatcher=%s", dispatcher)
+        logger.debug("active_dispatcher: conv_id=%s status=%s", conversa.id, self.ctx.conv_status)
         if dispatcher is None:
             return idle_flow(self.ctx, self.conversation)
         return dispatcher()

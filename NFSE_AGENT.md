@@ -51,11 +51,32 @@ under `/opt/nfse-app`):
    of dictating them in chat for khalel to paste.
 2. Always explain the script in the same turn: what it does, why it's
    needed. Never write one silently.
-3. khalel reviews (`less ~/handoff/<name>.sh`) and runs it, typically
-   `sudo bash ~/handoff/<name>.sh`.
+3. khalel reviews (`less ~/handoff/<name>.sh`) and runs it — see below for
+   which identity.
 
 `nfse-agent` still can't execute anything itself or read khalel's other
 files.
+
+### Match the identity in the script to the identity that should own the result
+
+Don't default a handoff script to `sudo bash ...` (runs as root) just
+because it needs elevated access. Anything that writes inside
+`/opt/nfse-app` — `git pull`, `pip install`, file edits — must run as the
+`nfse-app` user (`sudo -u nfse-app bash -c '...'` or a `sudo -u nfse-app
+bash <<'EOF' ... EOF` heredoc inside the script), not as root, or the
+files it touches end up owned by `root:root` instead of `nfse-app:nfse-app`
+— breaking the *next* deploy once it's run correctly as `nfse-app`, since
+that user then lacks write access to its own tree. Only steps that
+actually require root (`systemctl restart`, `setfacl`, `apt-get install`)
+should use plain `sudo`. A script mixing both needs both: elevate each
+step to the minimum identity it needs, don't wrap the whole thing in one
+`sudo bash`.
+
+Got this wrong twice in a row (2026-08-27) — two deploy scripts run via
+`sudo bash` left `/opt/nfse-app`'s git-tracked files root-owned, caught
+only when a subsequent script needed to `cd`/write as khalel/nfse-app and
+hit `Permission denied`. Fixed with a one-time `chown -R nfse-app:nfse-app
+/opt/nfse-app`, run via a handoff script.
 
 ## Git push access
 

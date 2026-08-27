@@ -11,7 +11,6 @@ def get_cnpj_info(cnpj: str) -> dict | None:
 
     try:
         response = requests.get(url, timeout=5)
-        logger.debug("brasilapi cnpj response=%s", response)
 
     except requests.RequestException:
         return None

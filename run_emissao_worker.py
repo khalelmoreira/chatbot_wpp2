@@ -5,9 +5,11 @@ import threading
 from dotenv import load_dotenv
 
 from src.database.tables_db import init_db
+from src.logging_config import setup_logging
 from src.workers import EmissaoWorker
 
 load_dotenv()
+setup_logging()
 logger = logging.getLogger(__name__)
 
 

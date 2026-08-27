@@ -31,17 +31,12 @@ class ExtractionService:
 
         if new_data is not None:
             self.ctx.new_data = new_data                                 #type: ignore
-        logger.debug("dados novos=%s", self.ctx.new_data)
 
         draft = self.prestador.get_db_data()
-        logger.debug("draft=%s", draft)
-
         if draft is not None:
             self.ctx.db_data = PrestadorData.from_prestador(draft)
-        logger.debug("dados draft=%s", self.ctx.db_data)
 
         self.ctx.merged = self.ctx.db_data.merge(self.ctx.new_data)
-        logger.debug("merge=%s", self.ctx.merged)
 
 class ValidationService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
@@ -119,7 +114,7 @@ class AddressService:
             return
 
         endereco = get_endereco_by_cep(cep)
-        logger.debug("endereco=%s", endereco)
+        logger.debug("endereco encontrado=%s", endereco is not None)
 
         if not endereco:
             self.notf_user(f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?\n")
@@ -156,7 +151,7 @@ class CnpjService:
             return True
 
         info = get_cnpj_info(cnpj)
-        logger.debug("cnpj info=%s", info)
+        logger.debug("cnpj info encontrado=%s", info is not None)
 
         if info is None:
             self.notf_user(

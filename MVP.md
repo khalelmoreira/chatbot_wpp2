@@ -46,7 +46,7 @@
 - [✓] Create `nfse-agent` user (nologin/restricted shell, no sudo, no group overlap with `nfse-app`) reserved for running an AI coding agent on the VPS later, with no read access to `nfse-app`'s secrets or env files
 - [✓] Basic firewall (UFW): allow SSH, HTTP, HTTPS only
 - [✓] Disable root SSH login and password auth in `sshd_config` (via `00-hardening.conf` drop-in, wins over cloud-init's conflicting defaults), key-based auth only, verified via fresh session before closing root access
-- [ ] Domain + real HTTPS (Let's Encrypt/Certbot), replacing ngrok
+- [✓] Domain + real HTTPS (Let's Encrypt/Certbot), replacing ngrok
 - [✓] Deploy Flask with gunicorn under `systemd` (as `nfse-app`), not an open terminal session
 - [✓] `EmissaoWorker` as its own systemd service with automatic restart (`PollingWorker` kept in code, unused — webhook covers that role now)
 - [✓] Automated SQLite backups (daily systemd timer, `.backup` snapshot + 14-day rotation)
@@ -76,7 +76,10 @@
 
 - [✓] Structured logging for remote debugging, without full CPF/CNPJ/amounts in logs
 
-**Note:** current `logger.debug()` calls are mostly a direct swap from old `print()` traces (`"dados novos=%s"`, `"merge=%s"`, banner-style flow-entry logs) — noisy/low-value. Needs a prune/consolidate pass before relying on these for remote debugging. Not done yet.
+**Note (resolved):** pruned the `logger.debug()` calls that dumped whole objects (extracted/merged draft data, ViaCEP/CNPJ lookups) — replaced with either nothing (redundant with the AI extraction log already at the source) or a structural summary (booleans, ids, field names), never raw PII. Flow-entry banners and field-name-list traces (`ValidationResult.invalid`/`.missing`) were already low-noise and left as-is. `run_emissao_worker.py` was missing `setup_logging()` entirely — its logs bypassed redaction and JSON formatting; fixed.
+
+Also added a second log destination: a rotating file under `logs/` (via `config.LOGS_DIR`), capped at INFO regardless of the app's configured level — this is the copy `nfse-agent` gets read access to (POSIX ACL, done manually on the VPS), separate from `journalctl` which `nfse-agent` can't read. The INFO cap means a DEBUG troubleshooting session only widens the journald stream, never the file `nfse-agent` sees.
+- [ ] Review sender calls + check WhatsApp caller service state
 - [ ] Simple alert if `EmissaoWorker` dies or a job gets stuck in `PROCESSING`
 - [ ] LGPD legal basis documented (contract performance) and minimum retention policy
 - [ ] Written alignment with partners on liability for emission errors

@@ -13,7 +13,6 @@ def get_endereco_by_cep(cep: str) -> Address | None:
 
     try:
         response = requests.get(url, timeout=5)
-        logger.debug("via cep response=%s", response)
 
     except requests.RequestException:
         return None
