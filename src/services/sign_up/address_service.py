@@ -4,15 +4,12 @@ from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
 from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
+from src.services.sender import get_sender
 from src.services.validators.validador_prestador import ValidatorAddress
-from src.types import Address, ContextPrestador, PrestExtractKey, PrestRespKey, Role
+from src.types import Address, BotaoId, BotaoResponse, ContextPrestador, PrestExtractKey, PrestRespKey, Role
 from src.utils.debug import log_table
 
 logger = logging.getLogger(__name__)
-
-def notf_user(msg: str) -> None:
-    #self.wpp.send_msg_text(self.msg.phone, msg)
-    print(f"{msg}\n")
 
 class ExtractionService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
@@ -44,7 +41,11 @@ class ValidationService:
         self.msg = MsgManager(ctx)
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidatorAddress()
-        
+        self.wpp = get_sender(ctx.user.channel)
+
+    def notf_user(self, msg: str) -> None:
+        self.wpp.send_msg_text(self.ctx.user.phone, msg)
+
     def valido(self) -> bool:
 
         result = self.validador.validar(self.ctx.merged)
@@ -74,7 +75,7 @@ class ValidationService:
     def _no_data(self):
         response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self.notf_user(response)
     
     def _incompleto(self):
         valid_missing_list = self.ctx.validation.missing
@@ -82,12 +83,12 @@ class ValidationService:
 
         response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self.notf_user(response)
     
     def _invalidos(self):
         response = self.ai.prest.respond(PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self.notf_user(response)
     
     def _update_draft(self):
         self.prestador.update_address()
@@ -101,30 +102,21 @@ class ValidationService:
         db_data = self.prestador.get_db_data()
         cep = db_data.cep if db_data is not None else None
 
-        # wpp.send_msg_botao(
-        #     phone=ctx.user.phone,
-        #     text=(
-        #         f"📍 *Endereço encontrado:*\n\n"
-        #         f"{address.logradouro}\n"
-        #         f"{address.bairro} — {address.cidade}/{address.uf}\n"
-        #         f"CEP: {address.cep}\n\n"
-        #         f"Esse é o endereço correto?"
-        #     ),
-        #     botoes=[
-        #         BotaoResponse(id=,"prestador_confirmado", title="✅ Confirmar"),
-        #         BotaoResponse(id="prestador_corrigir", title="✏️ Corrigir"),
-        #     ],
-        # )
-
-        print(
-            f"Seu Endereço:*\n\n"
-            f"Logradouro: {logradouro}\n"
-            f"bairro: {bairro}\n"
-            f"cidade: {cidade}\n"
-            f"uf: {uf}\n"
-            f"CEP: {cep}\n\n"
-            f"Esses dados estão corretos?\n"
+        self.wpp.send_msg_botao(
+            phone=self.ctx.user.phone,
+            text=(
+                f"📍 *Endereço encontrado:*\n\n"
+                f"{logradouro}\n"
+                f"{bairro} — {cidade}/{uf}\n"
+                f"CEP: {cep}\n\n"
+                f"Esse é o endereço correto?"
+            ),
+            botoes=[
+                BotaoResponse(id=BotaoId.PRESTADOR_CONFIRMADO, title="✅ Confirmar"),
+                BotaoResponse(id=BotaoId.PRESTADOR_CORRIGIR, title="✏️ Corrigir"),
+            ],
         )
+
         log_table(
             table_name="prestador",
             columns=[

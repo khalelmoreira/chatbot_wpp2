@@ -6,7 +6,7 @@ from src.flows.user_flows.confirming_user_flow import confirming_flow
 from src.flows.user_flows.idle_user_flow import idle_user_flow
 from src.flows.user_flows.project_flow import project_flow
 from src.managers.user_manager import UserManager
-from src.services.wpp.msg_service import WhatsAppService
+from src.services.sender import get_sender
 from src.types import (
     Address,
     ContextPrestador,
@@ -23,6 +23,7 @@ from src.utils.build_ctx import build_ctx
 class UserResolv:
     def __init__(self, msg: IncomingMessage) -> None:
         self.msg = msg
+        self.sender = get_sender(self.msg.channel)
 
     def resolv(self) -> tuple[User, bool]:
 
@@ -35,7 +36,8 @@ class UserResolv:
             user = User(
                 id=user_id,
                 phone=self.msg.phone,
-                name=self.msg.name
+                name=self.msg.name,
+                channel=self.msg.channel,
             )
             return user, True
 
@@ -45,14 +47,13 @@ class UserResolv:
         msg = ("Olá! Seja bem-vindo à automação de notas fiscais.\n\n"
                     "Para começar, me informe:\n"
                     "- Razão social\n- CNPJ\n- E-mail\n- Regime tributário\n- CEP\n- Inscrição municipal")
-        #self.wpp.send_msg_text(self.self.msg.phone, self.msg)
-        print(msg)
+        self.sender.send_msg_text(self.msg.phone, msg)
 
 class DispatchUser:
     def __init__(self, user: User, msg: IncomingMessage):
         self.user = user
         self.msg = msg
-        self.wpp = WhatsAppService()
+        self.wpp = get_sender(self.user.channel)
 
     def dispatch(self):
 

@@ -1,7 +1,7 @@
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
 from src.managers.tomador_manager import TomadorManager
-from src.services.wpp.msg_service import WhatsAppService
+from src.services.sender import get_sender
 from src.types import BotaoId, ContextTomador, ConvStatus, MsgType, Role
 
 
@@ -10,7 +10,7 @@ class ConfirmingService:
         self.ctx = ctx
         self.conversation = conversation
         self.tomador = TomadorManager(ctx)
-        self.wpp = WhatsAppService()
+        self.wpp = get_sender(ctx.user.channel)
         
     def dispatch(self):
 
@@ -46,5 +46,4 @@ class ConfirmingService:
 
     def _notf_user(self, msg: str) -> None:
         MsgManager(self.ctx).save_msg(Role.AI, msg)
-        #self.wpp.send_msg_text(self.msg.phone, msg)
-        print(f"{msg}\n")
+        self.wpp.send_msg_text(self.ctx.user.phone, msg)

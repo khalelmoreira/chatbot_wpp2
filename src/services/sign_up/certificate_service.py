@@ -6,19 +6,20 @@ import httpx
 from src.managers.user_manager import PrestadorManager
 from src.models.urls import NOTAAS_BASE_URL
 from src.services.ntaas.upload_certificate import gen_upload_token
+from src.services.sender import get_sender
 from src.types import InvalidTransactionError, NtaasCertificadoError, UserStatus
 from src.utils.crypto import fernet_encrypt
 
 logger = logging.getLogger(__name__)
 
-def _notf_user(msg: str) -> None:
-    #self.wpp.send_msg_text(self.msg.phone, msg)
-    print(f"{msg}\n")
-
 class CertificateService:
     def __init__(self, prestador: PrestadorManager):
         self.prestador = prestador
         self.org_token = os.environ["NTAAS_ORG_TOKEN"]
+
+    def _notf_user(self, msg: str) -> None:
+        user = self.prestador.ctx.user
+        get_sender(user.channel).send_msg_text(user.phone, msg)
 
     def certificate(self) -> None:
         project_id = self.prestador.get_project_id()
@@ -27,8 +28,8 @@ class CertificateService:
 
         token = gen_upload_token(self.prestador.id, project_id)
         url = f"{os.environ['APP_DOMAIN']}/upload-certificate/{token}"
-        _notf_user(f"Envie seu certificado digital (.pfx) neste link abaixo: {url}\n")
-        _notf_user("O link expira em 15 minutos.")
+        self._notf_user(f"Envie seu certificado digital (.pfx) neste link abaixo: {url}\n")
+        self._notf_user("O link expira em 15 minutos.")
 
     def send_e_persist_certificate(self, certificado_bytes: bytes, senha: str) -> dict:
         project_id = self.prestador.get_project_id()

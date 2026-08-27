@@ -37,6 +37,7 @@ class IncomingMessage:
     timestamp: int
     text:      str
     button_id: str | None = None
+    channel:   str = "WHATSAPP"
 
 @dataclass
 class BotaoResponse:

@@ -32,3 +32,22 @@ def transcrever_audio_wpp(audio_id):
         file=("audio.ogg", audio_bytes)
     )
     return transcription.text
+
+def transcrever_audio_telegram(file_id: str) -> str:
+
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+
+    res = requests.get(f"https://api.telegram.org/bot{token}/getFile", params={"file_id": file_id})
+    file_path = res.json().get("result", {}).get("file_path")
+
+    if not file_path:
+        raise Exception("Erro ao obter caminho do arquivo de audio no Telegram")
+
+    audio_res = requests.get(f"https://api.telegram.org/file/bot{token}/{file_path}")
+    audio_bytes = BytesIO(audio_res.content)
+
+    transcription = client.audio.transcriptions.create(
+        model="gpt-4o-transcribe",
+        file=("audio.ogg", audio_bytes)
+    )
+    return transcription.text

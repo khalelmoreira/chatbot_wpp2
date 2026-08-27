@@ -4,6 +4,7 @@ from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
 from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
+from src.services.sender import get_sender
 from src.services.validators.validador_prestador import ValidatorPrestador, extrair_digitos
 from src.types import (
     Address,
@@ -18,10 +19,6 @@ from src.utils.get_cnpj import get_cnpj_info
 from src.utils.get_endereco import get_endereco_by_cep
 
 logger = logging.getLogger(__name__)
-
-def notf_user(msg: str) -> None:
-    #self.wpp.send_msg_text(self.msg.phone, msg)
-    print(f"{msg}\n")
 
 class ExtractionService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
@@ -53,7 +50,11 @@ class ValidationService:
         self.msg = MsgManager(ctx)
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidatorPrestador()
-        
+        self.wpp = get_sender(ctx.user.channel)
+
+    def notf_user(self, msg: str) -> None:
+        self.wpp.send_msg_text(self.ctx.user.phone, msg)
+
     def valido(self) -> bool:
 
         result = self.validador.validar(self.ctx.merged)
@@ -83,7 +84,7 @@ class ValidationService:
     def _no_data(self):
         response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self.notf_user(response)
 
     def _incompleto(self):
         valid_missing_list = self.ctx.validation.missing
@@ -91,12 +92,12 @@ class ValidationService:
 
         response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self.notf_user(response)
 
     def _invalidos(self):
         response = self.ai.prest.respond(PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self.notf_user(response)
 
     def _update_draft(self):
         self.prestador.update_valid()
@@ -105,6 +106,10 @@ class AddressService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
+        self.wpp = get_sender(ctx.user.channel)
+
+    def notf_user(self, msg: str) -> None:
+        self.wpp.send_msg_text(self.ctx.user.phone, msg)
 
     def address(self):
         cep = self.ctx.valid.cep
@@ -117,7 +122,7 @@ class AddressService:
         logger.debug("endereco=%s", endereco)
 
         if not endereco:
-            notf_user(f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?\n")
+            self.notf_user(f"Não consegui encontrar o endereço para o CEP {cep}.\nPode verificar e enviar novamente?\n")
             self.prestador.update_state(UserStatus.ADDRESS)
             return
 
@@ -127,7 +132,7 @@ class AddressService:
         self._msg_falta_numero(endereco)
 
     def _msg_falta_numero(self, endereco: Address):
-        notf_user(
+        self.notf_user(
             f"📍 Encontrei seu endereço:\n\n"
             f"{endereco.logradouro}\n"
             f"{endereco.bairro} — {endereco.cidade}/{endereco.uf}\n\n"
@@ -138,6 +143,10 @@ class CnpjService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
+        self.wpp = get_sender(ctx.user.channel)
+
+    def notf_user(self, msg: str) -> None:
+        self.wpp.send_msg_text(self.ctx.user.phone, msg)
 
     def verificar(self) -> bool:
         cnpj = extrair_digitos(self.ctx.valid.cnpj)
@@ -150,7 +159,7 @@ class CnpjService:
         logger.debug("cnpj info=%s", info)
 
         if info is None:
-            notf_user(
+            self.notf_user(
                 f"Não consegui confirmar o CNPJ {cnpj} na Receita Federal.\n"
                 f"Pode conferir e enviar novamente?\n"
             )
@@ -158,7 +167,7 @@ class CnpjService:
 
         situacao = info.get("descricao_situacao_cadastral")
         if situacao and situacao.upper() != "ATIVA":
-            notf_user(
+            self.notf_user(
                 f"O CNPJ {cnpj} está com situação cadastral \"{situacao}\" na Receita Federal.\n"
                 f"Não é possível emitir notas fiscais para um CNPJ que não está ativo.\n"
             )

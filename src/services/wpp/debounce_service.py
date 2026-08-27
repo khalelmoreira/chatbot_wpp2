@@ -56,4 +56,5 @@ def _merge(messages: list[IncomingMessage]) -> IncomingMessage:
         timestamp=last.timestamp,
         text=combined_text,
         button_id=last.button_id,
+        channel=last.channel,
     )
