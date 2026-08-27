@@ -46,7 +46,7 @@
 - [✓] Create `nfse-agent` user (nologin/restricted shell, no sudo, no group overlap with `nfse-app`) reserved for running an AI coding agent on the VPS later, with no read access to `nfse-app`'s secrets or env files
 - [✓] Basic firewall (UFW): allow SSH, HTTP, HTTPS only
 - [✓] Disable root SSH login and password auth in `sshd_config` (via `00-hardening.conf` drop-in, wins over cloud-init's conflicting defaults), key-based auth only, verified via fresh session before closing root access
-- [ ] Domain + real HTTPS (Let's Encrypt/Certbot), replacing ngrok
+- [✓] Domain + real HTTPS (Let's Encrypt/Certbot), replacing ngrok
 - [✓] Deploy Flask with gunicorn under `systemd` (as `nfse-app`), not an open terminal session
 - [✓] `EmissaoWorker` as its own systemd service with automatic restart (`PollingWorker` kept in code, unused — webhook covers that role now)
 - [✓] Automated SQLite backups (daily systemd timer, `.backup` snapshot + 14-day rotation)
@@ -77,6 +77,7 @@
 - [✓] Structured logging for remote debugging, without full CPF/CNPJ/amounts in logs
 
 **Note:** current `logger.debug()` calls are mostly a direct swap from old `print()` traces (`"dados novos=%s"`, `"merge=%s"`, banner-style flow-entry logs) — noisy/low-value. Needs a prune/consolidate pass before relying on these for remote debugging. Not done yet.
+- [ ] Review sender calls + check WhatsApp caller service state
 - [ ] Simple alert if `EmissaoWorker` dies or a job gets stuck in `PROCESSING`
 - [ ] LGPD legal basis documented (contract performance) and minimum retention policy
 - [ ] Written alignment with partners on liability for emission errors
