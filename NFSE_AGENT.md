@@ -38,6 +38,14 @@ Doesn't apply in a devcontainer or on your own laptop.
 - `nfse-agent`'s scratchpad (`/tmp/claude-*/…/scratchpad/`) is `700`,
   owned by `nfse-agent` — khalel can't read it, even via `sudo -u`. Don't
   hand the user a path into it; use `~/handoff/` instead.
+- The deployed app's virtualenv on the VPS is `/opt/nfse-app/venv/`, **not
+  `.venv/`** — the systemd units run `/opt/nfse-app/venv/bin/python` /
+  `/opt/nfse-app/venv/bin/gunicorn`. (`nfse-agent`'s own checkout at
+  `~/chatbot_wpp2` has both a `.venv/` and a stray `venv/`; only `.venv/`
+  is gitignored.) Any `python -m …` / `pip …` command handed to khalel for
+  `/opt/nfse-app` must use `venv/bin/python`, and `cd /opt/nfse-app` first
+  — `sudo` keeps the caller's cwd, so a relative `venv/bin/python` from
+  `~khalel` resolves to the wrong (nonexistent) path.
 
 ## Handing commands to the user for execution
 
