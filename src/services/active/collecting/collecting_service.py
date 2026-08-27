@@ -7,8 +7,8 @@ from src.models.municipios import RJ_CODIGO_MUNICIPIO
 from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
 from src.services.iss.iss_resolution_service import IssResolutionService
+from src.services.sender import get_sender
 from src.services.validators.validador_tomador import ValidadorTomador
-from src.services.wpp.msg_service import WhatsAppService
 from src.types import (
     BotaoResponse,
     ContextTomador,
@@ -23,10 +23,6 @@ from src.utils.debug import log_table
 
 logger = logging.getLogger(__name__)
 
-def notf_user(msg: str) -> None:
-    #self.wpp.send_msg_text(self.msg.phone, msg)
-    print(f"{msg}\n")
-    
 class ExtractionService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
         self.ctx = ctx
@@ -56,8 +52,11 @@ class ValidationService:
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidadorTomador()
         self.msg = MsgManager(ctx)
-        self.wpp = WhatsAppService()
+        self.wpp = get_sender(ctx.user.channel)
         self.iss_resolution = IssResolutionService(ai=self.ai)
+
+    def _notf_user(self, msg: str) -> None:
+        self.wpp.send_msg_text(self.ctx.user.phone, msg)
 
     def valido_e_completo(self):
 
@@ -114,7 +113,7 @@ class ValidationService:
             "por favor tente novamente mais tarde."
         )
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self._notf_user(response)
 
     def _iss_nao_classificado(self):
         response = (
@@ -122,7 +121,7 @@ class ValidationService:
             "da descrição. Pode detalhar um pouco mais o que foi feito?"
         )
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self._notf_user(response)
     
     def _update_draft(self):
         draft_dict = asdict(self.ctx.valid)
@@ -136,40 +135,21 @@ class ValidationService:
 
         confirmar = BotaoResponse(id="tomador_confirmado", title="✅ Confirmar")
         corrigir = BotaoResponse(id="tomador_corrigir", title="✏️ Corrigir")
-
-        msg_button = self.wpp.format_msg_botao(
-            text=(f"*Dados do tomador:*\n\n"
+        texto = (f"*Dados do tomador:*\n\n"
             f"{self.ctx.merged.tomador.nome}\n"
             f"{self.ctx.merged.tomador.cnpj}\n"
             f"{self.ctx.merged.servico.descricao}\n"
             f"{self.ctx.merged.valores.total}\n"
             f"Esses dados estão corretos?"
-            ),
-            botoes=[confirmar, corrigir],
         )
+
+        msg_button = self.wpp.format_msg_botao(text=texto, botoes=[confirmar, corrigir])
         self.msg.save_msg(Role.AI, msg_button)
 
-        # send_msg_botao(
-        #     phone=self.ctx.user.phone,
-        #     text=(
-        #         f"*Dados do tomador:*\n\n"
-        #         f"{self.ctx.merged.tomador.nome}\n"
-        #         f"{self.ctx.merged.tomador.cnpj}\n"
-        #         f"{self.ctx.merged.servico.descricao}\n"
-        #         f"{self.ctx.merged.valores.total}\n"
-        #         f"Esses dados estão corretos?"
-        #     ),
-        #     botoes=[confirmar, corrigir],
-        # )
-        
-
-        print(
-            f"*Dados do tomador:*\n\n"
-            f"{self.ctx.merged.tomador.nome}\n"
-            f"{self.ctx.merged.tomador.cnpj}\n"
-            f"{self.ctx.merged.servico.descricao}\n"
-            f"{self.ctx.merged.valores.total}\n"
-            f"Esses dados estão corretos?"
+        self.wpp.send_msg_botao(
+            phone=self.ctx.user.phone,
+            text=texto,
+            botoes=[confirmar, corrigir],
         )
         log_table(table_name="conversations", where=self.ctx.user.phone)
 
@@ -179,14 +159,14 @@ class ValidationService:
 
         response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self._notf_user(response)
     
     def _invalidos(self):
         response = self.ai.tom.respond(TomRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self._notf_user(response)
 
     def _no_data(self):
         response = self.ai.tom.respond(TomRespKey.NO_DATA, self.ctx.text)
         self.msg.save_msg(Role.AI, response)
-        notf_user(response)
+        self._notf_user(response)

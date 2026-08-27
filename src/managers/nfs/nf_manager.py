@@ -26,7 +26,7 @@ class NfsManager:
     def get_phone(self) -> dict[str, Any] | None:
 
         row = self.db.fetchone("""
-            SELECT p.phone FROM conversations c
+            SELECT p.phone, p.channel FROM conversations c
             JOIN prestador p ON p.id = c.prestador_id
             WHERE c.id = ?
         """, (self.cid,))

@@ -17,7 +17,7 @@ class UserManager:
         self.db    = DB()
 
     def get_user(self, phone: str) -> User | None:
-        row = self.db.select_one("prestador", columns="id, phone, status", where={"phone": phone})
+        row = self.db.select_one("prestador", columns="id, phone, status, channel", where={"phone": phone})
         if not row:
             return None
         return User.from_dict(dict(row))
@@ -28,6 +28,7 @@ class UserManager:
             data={
                 "phone": msg.phone,
                 "name": msg.name,
+                "channel": msg.channel,
                 "created_at": "datetime('now')",
                 "updated_at": "datetime('now')"
             },

@@ -5,9 +5,10 @@ from src.types import ContextPrestador, MsgType, PrestadorData, User, UserStatus
 
 
 class FakeResp:
-    def __init__(self, status_code: int, json_data: dict):
+    def __init__(self, status_code: int, json_data: dict, text: str = ""):
         self.status_code = status_code
         self._json = json_data
+        self.text = text
 
     def json(self) -> dict:
         return self._json

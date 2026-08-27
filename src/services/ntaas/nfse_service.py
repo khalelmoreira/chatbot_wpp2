@@ -1,7 +1,7 @@
 import logging
 
 from src.managers.nfs.nf_manager import NfsManager
-from src.services.wpp.msg_service import WhatsAppService
+from src.services.sender import get_sender
 
 logger = logging.getLogger(__name__)
 
@@ -9,14 +9,12 @@ class NfseService:
     def __init__(self, data: dict):
         self.data    = data
         self.manager = NfsManager(data)
-        self.wpp     = WhatsAppService()
-    
+
     def _notf_prestador(self, msg: str) -> None:
         row = self.manager.get_phone()
         if row is None:
             raise LookupError("phone/prestador_id não encontrado para user")
-        #self.wpp.send_msg_text(row["phone"], msg)
-        print(msg)
+        get_sender(row["channel"]).send_msg_text(row["phone"], msg)
 
 
     def issued(self):

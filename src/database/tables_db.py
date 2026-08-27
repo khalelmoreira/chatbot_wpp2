@@ -1,4 +1,18 @@
+import sqlite3
+
 from src.database.db import DB
+
+
+def _add_column_if_missing(db: DB, table: str, column_def: str) -> None:
+    """`CREATE TABLE IF NOT EXISTS` doesn't retrofit columns onto a db file
+    that already has the table. No migration framework exists yet, so new
+    columns on existing tables get an idempotent ALTER TABLE here."""
+
+    try:
+        db.exe(f"ALTER TABLE {table} ADD COLUMN {column_def}")
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" not in str(e):
+            raise
 
 
 def init_db():
@@ -11,6 +25,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS prestador (
             id                   INTEGER PRIMARY KEY AUTOINCREMENT,
             phone                TEXT UNIQUE NOT NULL,
+            channel              TEXT NOT NULL DEFAULT 'WHATSAPP',
             status               TEXT,
             name                 TEXT,
             email                TEXT,
@@ -244,3 +259,5 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_prestador_phone
             ON prestador(phone)
     """)
+
+    _add_column_if_missing(db, "prestador", "channel TEXT NOT NULL DEFAULT 'WHATSAPP'")

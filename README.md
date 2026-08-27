@@ -6,7 +6,8 @@ extracts/classifies the content, deterministic Python decides what happens
 next, and the result is pushed to the Notaas fiscal API.
 
 Integrations: **Notaas** (NFS-e platform), **Meta WhatsApp Business API**,
-**ViaCEP** (address lookup by CEP).
+**Telegram Bot API** (bridge channel while the WhatsApp account is under
+Meta verification), **ViaCEP** (address lookup by CEP).
 
 See [`CLAUDE.md`](CLAUDE.md) for the domain glossary, state machines, and
 layering conventions, and [`MVP.md`](MVP.md) for project status/roadmap.
@@ -30,8 +31,10 @@ cp .env.example .env   # fill in real credentials, never commit this file
 
 Required environment variables (see `.env.example`): WhatsApp Business API
 credentials (`ACCESS_TOKEN`, `APP_SECRET`, `VERIFY_TOKEN`,
-`API_META_VERSION`, `PHONE_NUMBER_ID_TEST_META`), `NOTAAS_API_KEY`, and an AI
-provider key (`ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY`).
+`API_META_VERSION`, `PHONE_NUMBER_ID_TEST_META`), Telegram Bot API
+credentials (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`),
+`NOTAAS_API_KEY`, and an AI provider key (`ANTHROPIC_API_KEY` and/or
+`OPENAI_API_KEY`).
 
 ## Running
 

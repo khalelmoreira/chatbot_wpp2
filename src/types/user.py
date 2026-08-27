@@ -33,10 +33,11 @@ class Address(MergeableMixin, FromDictMixin, TextMixin):
 
 @dataclass(kw_only=True)
 class User:
-    id:     int
-    phone:  str
-    name:   str | None = None
-    status: UserStatus | None = None
+    id:      int
+    phone:   str
+    name:    str | None = None
+    status:  UserStatus | None = None
+    channel: str | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "User | None":
@@ -46,7 +47,8 @@ class User:
             id=data["id"],
             phone=data["phone"],
             name=data.get("name"),
-            status=UserStatus(data["status"]) if data.get("status") else None
+            status=UserStatus(data["status"]) if data.get("status") else None,
+            channel=data.get("channel"),
         )
 
 @dataclass(kw_only=True)
@@ -132,5 +134,6 @@ class Prestador(PrestadorData, User):
             id=self.id,
             phone=self.phone,
             name=self.name,
-            status=self.status
+            status=self.status,
+            channel=self.channel,
         )

@@ -7,7 +7,7 @@ conv_id) a partir do que o chamador já tem à mão."""
 import logging
 
 from src.database.db import DB
-from src.services.wpp.msg_service import WhatsAppService
+from src.services.sender import get_sender
 from src.types import AIClientError, NtassOrgError, Role
 
 logger = logging.getLogger(__name__)
@@ -73,7 +73,8 @@ def notificar_erro_generico(prestador_id: int, phone: str, msg: str) -> None:
 
 
 def _salvar_e_enviar(prestador_id: int, phone: str, msg: str) -> None:
-    DB().insert(
+    db = DB()
+    db.insert(
         "messages",
         data={
             "prestador_id": prestador_id,
@@ -82,6 +83,6 @@ def _salvar_e_enviar(prestador_id: int, phone: str, msg: str) -> None:
             "content": msg,
         },
     )
-    wpp = WhatsAppService()
-    # wpp.send_msg_text(phone, msg)
-    print(f"{msg}\n")
+    row = db.select_one("prestador", where={"id": prestador_id}, columns="channel")
+    channel = row["channel"] if row is not None else None
+    get_sender(channel).send_msg_text(phone, msg)

@@ -7,13 +7,10 @@ from src.managers.msg_manager import MsgManager
 from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
 from src.services.onboarding.resumo import ResumoBuilder
+from src.services.sender import get_sender
 from src.types import ContextTomador, IntentType, Role, TomClassKey, TomRespKey
 
 logger = logging.getLogger(__name__)
-
-def notf_user(msg: str) -> None:
-    #self.wpp.send_msg_text(self.msg.phone, msg)
-    print(f"{msg}\n")
 
 class IntentService:
     def __init__(self, ctx: ContextTomador, conversation: ConvManager):
@@ -22,6 +19,10 @@ class IntentService:
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.resumo = ResumoBuilder(ctx, ctx.conv_status)
         self.msg = MsgManager(ctx)
+        self.wpp = get_sender(ctx.user.channel)
+
+    def notf_user(self, msg: str) -> None:
+        self.wpp.send_msg_text(self.ctx.user.phone, msg)
 
     def dispatch_intent(self, intencao: IntentType):
 
@@ -54,7 +55,7 @@ class IntentService:
 
         response = self.ai.tom.respond(TomRespKey.ONBOARD_INFO, self.ctx.text, [resumo_str])
         self.msg.save_msg(role=Role.AI, content=response)
-        notf_user(response)
+        self.notf_user(response)
     
     def _ref_past(self):
         nfs = self.resumo.resumo_nfs_history()
@@ -65,9 +66,9 @@ class IntentService:
 
         response = self.ai.tom.respond(TomRespKey.ONBOARD_HISTORY, self.ctx.text, [nfs_str, msgs_str])
         self.msg.save_msg(role=Role.AI, content=response)
-        notf_user(response)
+        self.notf_user(response)
 
     def _nenhum(self):
         response = self.ai.tom.respond(TomRespKey.NO_INTENT, self.ctx.text)
         self.msg.save_msg(role=Role.AI, content=response)
-        notf_user(response)
+        self.notf_user(response)
