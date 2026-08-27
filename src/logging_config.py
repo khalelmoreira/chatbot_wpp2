@@ -1,7 +1,16 @@
 """Central logging setup — MVP Week 6 step 1: structured logs for remote
-debugging (VPS has no APM, so `journalctl -u nfse-app` / `-u
-nfse-emissao-worker` is the only place logs are read), without full
-CPF/CNPJ/amounts ending up in them.
+debugging (VPS has no APM; `journalctl -u nfse-app` / `-u
+nfse-emissao-worker` reads the stdout copy), without full CPF/CNPJ/amounts
+ending up in them.
+
+A second copy goes to a rotating file under `config.LOGS_DIR`, capped at
+INFO regardless of the level passed to `setup_logging()` — this is the copy
+`nfse-agent` gets read access to (via a POSIX ACL grant on LOGS_DIR, done
+manually on the VPS, not by this code). The cap means bumping `level` to
+DEBUG for a troubleshooting session only widens the journald/stdout stream;
+it never lands in the file `nfse-agent` can see unless that cap is changed
+here too — a deliberate, explicit step, not a side effect of raising the
+app's log level.
 
 This is separate from *messages to the user* — those go through `print()`
 (stand-in for `WhatsAppService.send_msg_text`, see `src/services/wpp/`) and
@@ -24,6 +33,9 @@ import logging
 import re
 import sys
 from datetime import UTC, datetime
+from logging.handlers import RotatingFileHandler
+
+from config import LOGS_DIR
 
 _CNPJ_FORMATTED = re.compile(r"\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}")
 _CNPJ_DIGITS = re.compile(r"(?<!\d)\d{14}(?!\d)")
@@ -80,7 +92,15 @@ def setup_logging(level: int = logging.INFO) -> None:
     root.setLevel(level)
     root.handlers.clear()
 
-    handler = logging.StreamHandler(stream=sys.stdout)
-    handler.setFormatter(JsonFormatter())
-    handler.addFilter(RedactSensitiveFilter())
-    root.addHandler(handler)
+    stdout_handler = logging.StreamHandler(stream=sys.stdout)
+    stdout_handler.setFormatter(JsonFormatter())
+    stdout_handler.addFilter(RedactSensitiveFilter())
+    root.addHandler(stdout_handler)
+
+    file_handler = RotatingFileHandler(
+        LOGS_DIR / "app.log", maxBytes=5_000_000, backupCount=5, encoding="utf-8"
+    )
+    file_handler.setLevel(logging.INFO)  # capped independently of `level` — see module docstring
+    file_handler.setFormatter(JsonFormatter())
+    file_handler.addFilter(RedactSensitiveFilter())
+    root.addHandler(file_handler)

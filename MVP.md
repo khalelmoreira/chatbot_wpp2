@@ -76,7 +76,9 @@
 
 - [✓] Structured logging for remote debugging, without full CPF/CNPJ/amounts in logs
 
-**Note:** current `logger.debug()` calls are mostly a direct swap from old `print()` traces (`"dados novos=%s"`, `"merge=%s"`, banner-style flow-entry logs) — noisy/low-value. Needs a prune/consolidate pass before relying on these for remote debugging. Not done yet.
+**Note (resolved):** pruned the `logger.debug()` calls that dumped whole objects (extracted/merged draft data, ViaCEP/CNPJ lookups) — replaced with either nothing (redundant with the AI extraction log already at the source) or a structural summary (booleans, ids, field names), never raw PII. Flow-entry banners and field-name-list traces (`ValidationResult.invalid`/`.missing`) were already low-noise and left as-is. `run_emissao_worker.py` was missing `setup_logging()` entirely — its logs bypassed redaction and JSON formatting; fixed.
+
+Also added a second log destination: a rotating file under `logs/` (via `config.LOGS_DIR`), capped at INFO regardless of the app's configured level — this is the copy `nfse-agent` gets read access to (POSIX ACL, done manually on the VPS), separate from `journalctl` which `nfse-agent` can't read. The INFO cap means a DEBUG troubleshooting session only widens the journald stream, never the file `nfse-agent` sees.
 - [ ] Review sender calls + check WhatsApp caller service state
 - [ ] Simple alert if `EmissaoWorker` dies or a job gets stuck in `PROCESSING`
 - [ ] LGPD legal basis documented (contract performance) and minimum retention policy
