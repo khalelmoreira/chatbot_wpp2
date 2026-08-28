@@ -63,7 +63,7 @@ def notificar_falha_emissao(manager, msg: str) -> None:
 
     DB().update(
         "conversations",
-        data={"status": "ERROR", "updated_at": "CURRENT_TIMESTAMP"},
+        data={"status": "ERROR"},
         where={"id": manager.cid},
     )
 
