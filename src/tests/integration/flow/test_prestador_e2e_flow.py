@@ -134,6 +134,7 @@ def test_prestador_registration_end_to_end_from_scratch_to_active(db, monkeypatc
 
     row = db.select_one("prestador", where={"id": prestador_id})
     assert row["status"] == "ACTIVE"
+    assert row["certificado_enviado"] == 1
     assert row["ntaas_api_key"] is not None
     assert row["ntaas_api_key"] != "raw_notaas_key_123"  # stored encrypted, never plaintext
     assert Fernet(fernet_key.encode()).decrypt(row["ntaas_api_key"].encode()).decode() == "raw_notaas_key_123"
