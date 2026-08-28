@@ -61,7 +61,6 @@ class ConvManager:
                 "prestador_id": self.id,
                 "status": "COLLECTING",
                 "draft_json": "{}",
-                "created_at": "datetime('now')"
             },
             returning="id"
         )
@@ -70,7 +69,7 @@ class ConvManager:
     def update_state(self, novo_status: str) -> None:
         self.db.update(
             "conversations",
-            data={"status": novo_status, "updated_at": "CURRENT_TIMESTAMP"},
+            data={"status": novo_status},
             where={"id": self.cid}
         )
 
@@ -87,6 +86,6 @@ class ConvManager:
     def update_draft(self, draft: dict[str, Any]) -> None:
         self.db.update(
             "conversations",
-            data={"draft_json": json.dumps(draft), "updated_at": "CURRENT_TIMESTAMP"},
+            data={"draft_json": json.dumps(draft)},
             where={"id": self.cid}
         )

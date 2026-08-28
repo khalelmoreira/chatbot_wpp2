@@ -37,7 +37,7 @@ class NfsManager:
     def reset_conv(self, novo_status: str) -> None:
         self.db.update(
             "conversations",
-            data={"status": novo_status, "draft_json": "{}", "updated_at": "CURRENT_TIMESTAMP"},
+            data={"status": novo_status, "draft_json": "{}"},
             where={"id": self.cid}
         )
 
@@ -49,7 +49,6 @@ class NfsManager:
                 "ch_nfse": self.data.get("chNFSe"),
                 "n_nfse": self.data.get("numeroNfe"),
                 "emitido_em": self.data.get("emittedAt"),
-                "updated_at": "CURRENT_TIMESTAMP"
             },
             where={"id": self.nfi}
         )
@@ -61,7 +60,6 @@ class NfsManager:
                 "status": "ERROR",
                 "erro_code": self.data.get("errorCode"),
                 "erro_msg": self.data.get("errorMessage", "Erro desconhecido"),
-                "updated_at": "CURRENT_TIMESTAMP"
             },
             where={"id": self.nfi}
         )
@@ -72,7 +70,6 @@ class NfsManager:
             data={
                 "status": "CANCELLED",
                 "cancelled_at": self.data.get("cancelledAt"),
-                "updated_at": "CURRENT_TIMESTAMP"
             },
             where={"id": self.nf["id"]}
         )

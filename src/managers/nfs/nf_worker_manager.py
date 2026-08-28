@@ -80,7 +80,7 @@ class NfsWorkerManager:
         novo_status = 'ERROR' if tentativas >= MAX_TENTATIVAS else 'QUEUED'
         self.db.update(
             "nfs",
-            data={"status": novo_status, "erro_msg": erro, "updated_at": "CURRENT_TIMESTAMP"},
+            data={"status": novo_status, "erro_msg": erro},
             where={"id": self.jid}
         )
 
@@ -90,14 +90,14 @@ class NfsWorkerManager:
         em vez de deixar `marcar_erro` reenfileirar até `MAX_TENTATIVAS`."""
         self.db.update(
             "nfs",
-            data={"status": "ERROR", "erro_msg": erro, "updated_at": "CURRENT_TIMESTAMP"},
+            data={"status": "ERROR", "erro_msg": erro},
             where={"id": self.jid}
         )
 
     def save_invoice_id(self, invoice_id: str) -> None:
         self.db.update(
             "nfs",
-            data={"invoice_id": invoice_id, "status": "EMITTING", "updated_at": "CURRENT_TIMESTAMP"},
+            data={"invoice_id": invoice_id, "status": "EMITTING"},
             where={"id": self.jid}
         )
 

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "RUFF=.venv/bin/ruff; [ -x \"$RUFF\" ] || RUFF=$(command -v ruff) || exit 0; for f in $CLAUDE_FILE_PATHS; do case \"$f\" in *.py) \"$RUFF\" check \"$f\" || exit 1 ;; esac; done"
+          }
+        ]
+      }
+    ]
+  }
+}

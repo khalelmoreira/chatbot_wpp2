@@ -94,9 +94,14 @@ class DB:
         UPDATE incondicional. Não verifica estado anterior nem retorna a linha afetada.
         Usado quando não há necessidade de confirmar transição de estado (ex.: atualizar
         um campo de cadastro que não depende do valor atual).
+
+        `updated_at = CURRENT_TIMESTAMP` é sempre incluído no SET (igual ao
+        update_guarded) — não passe `updated_at` no `data`. Assume, portanto, que
+        `table` tem essa coluna; todas as tabelas atualizadas por aqui têm.
         """
 
         set_clause = ", ".join(f"{k} = ?" for k in data)
+        set_clause += ", updated_at = CURRENT_TIMESTAMP"
         where_clause = " AND ".join(f"{k} = ?" for k in where)
 
         query = f"""

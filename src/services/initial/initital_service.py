@@ -23,7 +23,6 @@ from src.utils.build_ctx import build_ctx
 class UserResolv:
     def __init__(self, msg: IncomingMessage) -> None:
         self.msg = msg
-        self.sender = get_sender(self.msg.channel)
 
     def resolv(self) -> tuple[User, bool]:
 
@@ -42,12 +41,6 @@ class UserResolv:
             return user, True
 
         return user, False
-    
-    def welcome_msg(self) -> None:
-        msg = ("Olá! Seja bem-vindo à automação de notas fiscais.\n\n"
-                    "Para começar, me informe:\n"
-                    "- Razão social\n- CNPJ\n- E-mail\n- Regime tributário\n- CEP\n- Inscrição municipal")
-        self.sender.send_msg_text(self.msg.phone, msg)
 
 class DispatchUser:
     def __init__(self, user: User, msg: IncomingMessage):

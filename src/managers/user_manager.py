@@ -29,8 +29,6 @@ class UserManager:
                 "phone": msg.phone,
                 "name": msg.name,
                 "channel": msg.channel,
-                "created_at": "datetime('now')",
-                "updated_at": "datetime('now')"
             },
             returning="id"
         )
@@ -104,14 +102,14 @@ class PrestadorManager:
     def update_state(self, novo_status: str) -> None:
         self.db.update(
             "prestador",
-            data={"status": novo_status, "updated_at": "CURRENT_TIMESTAMP"},
+            data={"status": novo_status},
             where={"id": self.id}
         )
 
     def update_error(self, novo_status: str, error_msg: str) -> None:
         self.db.update(
             "prestador",
-            data={"status": novo_status, "error_msg": error_msg, "updated_at": "CURRENT_TIMESTAMP"},
+            data={"status": novo_status, "error_msg": error_msg},
             where={"id": self.id}
         )
 
