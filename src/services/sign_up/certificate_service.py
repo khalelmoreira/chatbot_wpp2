@@ -67,6 +67,13 @@ class CertificateService:
                 f"prestador_id={self.prestador.id} não está mais em CERTIFICATE; api-key não persistida."
             )
 
+        # Este fluxo roda no handler HTTP do upload (sem ContextPrestador), então
+        # a confirmação de volta ao WhatsApp usa o contato retornado pelo UPDATE.
+        get_sender(row["channel"]).send_msg_text(
+            row["phone"],
+            "✅ Certificado recebido e cadastro concluído! Você já pode emitir notas fiscais por aqui.",
+        )
+
         return cert_result
 
     def _send_certificado_ntaas(self, project_id: str, certificado_bytes: bytes, senha: str) -> dict:

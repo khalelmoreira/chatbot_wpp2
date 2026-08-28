@@ -193,8 +193,9 @@ class PrestadorManager:
     def update_api_key(self, api_key, novo_status: str) -> dict[str, Any] | None:
         row = self.db.update_guarded(
             "prestador",
-            data={"ntaas_api_key": api_key, "status": novo_status},
-            where={"id": self.id, "status": "CERTIFICATE"}
+            data={"ntaas_api_key": api_key, "status": novo_status, "certificado_enviado": 1},
+            where={"id": self.id, "status": "CERTIFICATE"},
+            returning="id, phone, channel",
         )
         if row is None:
             return None
