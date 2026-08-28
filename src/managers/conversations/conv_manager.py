@@ -61,7 +61,6 @@ class ConvManager:
                 "prestador_id": self.id,
                 "status": "COLLECTING",
                 "draft_json": "{}",
-                "created_at": "datetime('now')"
             },
             returning="id"
         )

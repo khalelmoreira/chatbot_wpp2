@@ -29,8 +29,6 @@ class UserManager:
                 "phone": msg.phone,
                 "name": msg.name,
                 "channel": msg.channel,
-                "created_at": "datetime('now')",
-                "updated_at": "datetime('now')"
             },
             returning="id"
         )

@@ -9,8 +9,6 @@ def initial_handler(msg: IncomingMessage):
 
     logger.debug("initial_handler: phone=%s", msg.phone)
 
-    user, is_new = UserResolv(msg).resolv()
-    if is_new:
-        UserResolv(msg).welcome_msg()
+    user, _ = UserResolv(msg).resolv()
 
     DispatchUser(user, msg).dispatch()
