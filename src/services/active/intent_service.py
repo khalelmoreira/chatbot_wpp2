@@ -53,7 +53,7 @@ class IntentService:
         resumo_data = self.resumo.resumo_status()
         resumo_str = resumo_data.to_str()
 
-        response = self.ai.tom.respond(TomRespKey.ONBOARD_INFO, self.ctx.text, [resumo_str])
+        response = self.ai.tom.respond(TomRespKey.CONSULTA_INFO, self.ctx.text, [resumo_str])
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)
     
@@ -64,7 +64,7 @@ class IntentService:
         msgs = self.resumo.resumo_msg_history()
         msgs_str = "\n".join(msg.to_str() for msg in msgs) or "Nenhum historico de conversa."
 
-        response = self.ai.tom.respond(TomRespKey.ONBOARD_HISTORY, self.ctx.text, [nfs_str, msgs_str])
+        response = self.ai.tom.respond(TomRespKey.CONSULTA_HISTORY, self.ctx.text, [nfs_str, msgs_str])
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)
 

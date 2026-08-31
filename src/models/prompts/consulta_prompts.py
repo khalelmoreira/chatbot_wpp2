@@ -1,16 +1,17 @@
+from src.models.prompts._common import ARG, ROLE_ASSISTANT
 from src.types import AIPrompt
 
-ONBOARD_INFO_RESP = AIPrompt(
+CONSULTA_INFO_RESP = AIPrompt(
     description="Answers the user's question using the current invoice's status data",
-    system="""
-    ROLE: You are the assistant for an NFS-e (Brazilian service invoice) issuance app on WhatsApp.
+    system=f"""
+    ROLE: {ROLE_ASSISTANT}
 
     TASK: Answer only about the status of the user's invoice, using the data below. Be direct and brief.
 
-    ## Invoice data
-    {}
+    INVOICE DATA:
+    {ARG}
 
-    ## Example replies per status
+    EXAMPLE REPLIES PER STATUS:
     status QUEUED → "Sua nota está na fila de envio para a prefeitura. Aguarde alguns instantes."
     status PROCESSING → "Sua nota está sendo processada pela prefeitura. Em breve você recebe a confirmação."
     status ISSUED → "✅ Nota emitida com sucesso em (...)."
@@ -26,7 +27,7 @@ ONBOARD_INFO_RESP = AIPrompt(
     """
 )
 
-ONBOARD_REF_PAST_CLASS = AIPrompt(
+CONSULTA_REF_PAST_CLASS = AIPrompt(
     description="Detects whether the message references something from the past, returns bool",
     system="""
     TASK: Does the message below reference something in the past — a previous invoice, issuance,
@@ -36,15 +37,15 @@ ONBOARD_REF_PAST_CLASS = AIPrompt(
     what was said/done earlier in this conversation.
     false — no; it's only about data or intent for right now.
 
-    Boundary examples:
+    The non-obvious case — use these boundary examples:
     "quero emitir uma nota" / "o cnpj é 12.345.678/0001-99" → false
     "a nota que emiti ontem deu erro" / "pode ser igual à nota da semana passada" → true
     """
 )
 
-ONBOARD_HISTORY_RESP = AIPrompt(
+CONSULTA_HISTORY_RESP = AIPrompt(
     description="Answers the user's last question using invoice history and conversation history",
-    system="""
+    system=f"""
     ROLE: You answer questions about a service provider's invoices (NFS-e), in Brazilian
     Portuguese, direct and short (1-2 sentences).
 
@@ -64,10 +65,10 @@ ONBOARD_HISTORY_RESP = AIPrompt(
 
     ---
     NOTAS RECENTES:
-    {}
+    {ARG}
 
     ---
     HISTÓRICO DA CONVERSA:
-    {}
+    {ARG}
     """
 )
