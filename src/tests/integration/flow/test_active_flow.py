@@ -5,6 +5,7 @@ from src.flows.active_flows.collecting_flow import collecting_flow
 from src.flows.active_flows.confirming_flow import confirming_flow
 from src.managers.conversations.conv_manager import ConvManager
 from src.models.municipios import RJ_CODIGO_MUNICIPIO
+from src.services.active.collecting import collecting_service
 from src.services.ai import ai_client_factory
 from src.tests.fixtures.fake_ai_client import FakeAIClient
 from src.types import BotaoId, ContextTomador, MsgType, TomadorData, User, UserStatus
@@ -112,6 +113,10 @@ def test_collecting_flow_moves_to_confirming_when_data_is_complete(db, monkeypat
         {"value": "010601"},  # classificação do código nacional (checkpoint de ISS)
     ])
     monkeypatch.setattr(ai_client_factory, "build_ai_client", lambda: fake_client)
+    monkeypatch.setattr(
+        collecting_service, "get_cnpj_info",
+        lambda cnpj: {"descricao_situacao_cadastral": "ATIVA"},
+    )
 
     ctx = _ctx(prestador_id, phone, text="Cliente LTDA cnpj 11222333000181 consultoria 1500", conv_id=conv_id)
     collecting_flow(ctx, ConvManager(ctx))

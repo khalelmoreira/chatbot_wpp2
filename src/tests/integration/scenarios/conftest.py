@@ -14,6 +14,7 @@ from flask import Flask
 
 from src.handlers import wpp_handler as wpp_handler_module
 from src.routes.wpp import wpp_bp
+from src.services.active.collecting import collecting_service
 from src.services.ai import ai_client_factory
 from src.tests.fixtures.fake_ai_client import FakeAIClient
 from src.tests.generators.build_payload import build_button_reply_message, build_text_message
@@ -48,3 +49,16 @@ def scenario(db, monkeypatch) -> Scenario:
     app.testing = True
 
     return Scenario(app.test_client(), ai_client)
+
+
+@pytest.fixture(autouse=True)
+def fake_tomador_cnpj_lookup(monkeypatch):
+    """The tomador flow now confirms the tomador CNPJ on Receita Federal
+    (collecting_service._cnpj_ok). Default it to an ACTIVE CNPJ with no name on
+    file, which fails open on the name check. A scenario exercising the name
+    match re-patches with an explicit `razao_social`.
+    """
+    monkeypatch.setattr(
+        collecting_service, "get_cnpj_info",
+        lambda cnpj: {"descricao_situacao_cadastral": "ATIVA"},
+    )
