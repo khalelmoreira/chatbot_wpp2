@@ -2,6 +2,7 @@ import logging
 
 from src.managers.nfs.nf_manager import NfsManager
 from src.services.sender import get_sender
+from src.types import ConvStatus
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class NfseService:
         logger.info("nf issued: conv_id/job processado")
 
         self.manager.update_nf_done()
-        self.manager.reset_conv(novo_status="COLLECTING")
+        self.manager.finalizar_conv(novo_status=ConvStatus.DONE)
 
         self._notf_prestador(
             msg=(
@@ -48,7 +49,7 @@ class NfseService:
         )
 
         self.manager.update_nf_error()
-        self.manager.reset_conv(novo_status="COLLECTING")
+        self.manager.finalizar_conv(novo_status=ConvStatus.ERROR)
 
         self._notf_prestador(
             msg=(
@@ -65,7 +66,7 @@ class NfseService:
         logger.info("nf cancelled: webhook de cancelamento recebido")
         
         self.manager.update_nf_cancelled()
-        self.manager.reset_conv(novo_status="COLLECTING") 
+        self.manager.finalizar_conv(novo_status=ConvStatus.CANCELLED)
         self._notf_prestador(msg="🚫 Nota fiscal cancelada.")
 
         return {"success": True}
