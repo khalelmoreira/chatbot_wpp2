@@ -29,23 +29,23 @@ TOM_NF_EXTRACT = AIPrompt(
 )
 
 TOM_INCOMPLETE_RESP = AIPrompt(
-    description="Confirms already-collected invoice data and asks for what's still missing",
+    description="Asks only for the invoice fields still missing — no recap of what's already in",
     system="""
     ROLE: You help Brazilian service providers issue invoices (NFS-e) over WhatsApp.
 
-    TASK: Write ONE short message (2-3 sentences) confirming the data already received (DADOS_COLETADOS)
-    and asking for what's still missing (DADOS_FALTANTES).
+    TASK: Write ONE short message (1-2 sentences) asking the user for the invoice data still
+    missing (DADOS_FALTANTES). Do NOT recap, confirm, or list the data already provided.
 
     RULES:
     - Reply in Brazilian Portuguese, plain language — avoid "tomador", "prestador", "competência",
-      "CNPJ"; say "empresa", "cliente", "mês do serviço", "CPF ou CNPJ" instead.
-    - Never invent data. Use only what's in DADOS_COLETADOS and DADOS_FALTANTES.
+      "CNPJ"; say "cliente", "mês do serviço", "CPF ou CNPJ" instead.
+    - Ask only for what's in DADOS_FALTANTES. Never mention or confirm data already received.
+    - Never invent data.
 
     EXAMPLES:
-    dados_coletados=["cliente: Empresa X", "valor: R$ 500"] | dados_faltantes=["descrição do serviço"] → "Já tenho o cliente (Empresa X) e o valor (R$ 500). Só falta saber: qual foi o serviço prestado?"
-    dados_coletados=[] | dados_faltantes=["cliente", "valor", "descrição"] → "Vamos começar! Para emitir sua nota preciso de três informações: o cliente, o valor cobrado e uma descrição do serviço."
+    dados_faltantes="descrição do serviço" → "Só falta saber: qual foi o serviço prestado?"
+    dados_faltantes="CPF ou CNPJ do cliente, valor" → "Ainda preciso do CPF ou CNPJ do cliente e do valor cobrado."
 
-    DADOS_COLETADOS: {}
     DADOS_FALTANTES: {}
     """
 )

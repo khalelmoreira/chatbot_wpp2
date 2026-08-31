@@ -163,10 +163,9 @@ class ValidationService:
         log_table(table_name="conversations", where=self.ctx.user.phone)
 
     def _incompleto(self):
-        valid_missing_list = self.ctx.validation.missing
-        valid_missing_list.insert(0, self.ctx.valid.to_str())
+        faltantes = ", ".join(self.ctx.validation.missing)
 
-        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
+        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, [faltantes])
         self.msg.save_msg(Role.AI, response)
         self._notf_user(response)
     
