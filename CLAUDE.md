@@ -64,6 +64,7 @@ A second, unrelated Unix user, `nfse-agent`, runs a separate Claude Code instanc
 - The deployed virtualenv is `/opt/nfse-app/venv/`, **never `.venv/`**. Any `python -m …` / `pip …` for `/opt/nfse-app` must `cd /opt/nfse-app` first and use `venv/bin/python`.
 - `nfse-agent` has no sudo and no write access to `/opt/nfse-app`. Privileged or write steps are handed to khalel as a reviewed script in `~khalel/handoff/` (see the `/handoff` skill), never pasted in chat.
 - Steps writing under `/opt/nfse-app` (`git pull`, `pip install`) run as `sudo -u nfse-app`; only true root steps (`systemctl restart`, `setfacl`, `apt-get`) use plain `sudo`. Never wrap a whole handoff script in `sudo bash` — it leaves files root-owned and breaks the next deploy.
+- `gh` is installed user-local at `~/.local/bin/gh` (not on the non-login-shell PATH — call it by full path). It has no auth of its own; pass the PAT from git's store: `export GH_TOKEN=$(printf 'protocol=https\nhost=github.com\n\n' | git credential fill | sed -n 's/^password=//p')`. Used by `/deploy` to open the PR — Claude opens it, the user reviews and merges.
 
 ### Before touching production
 
