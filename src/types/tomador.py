@@ -84,6 +84,10 @@ class Tomador(MergeableMixin, FromDictMixin):
 @dataclass
 class Servico(MergeableMixin, FromDictMixin):
     descricao: str | None = None
+    # cTribNac resolvido por IssResolutionService no checkpoint pré-emissão —
+    # nunca vem da extração da IA (TOM_NF_SCHEMA não expõe este campo). Fica no
+    # draft_json para TomadorManager ler na confirmação.
+    codigo: str | None = None
 
     OBRIGATORIOS: ClassVar[set[str]] = {"descricao"}
 

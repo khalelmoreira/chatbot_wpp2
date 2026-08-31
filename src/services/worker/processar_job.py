@@ -31,9 +31,13 @@ def processar_job(manager: NfsWorkerManager) -> float | None:
 
     logger.debug("job=%s", job)
 
+    servico = {"descricao": job.descricao_servico}
+    if job.codigo_servico:
+        servico["codigo"] = job.codigo_servico
+
     payload  = {
         "tomador": {"nome": job.nome, "cnpj": job.cnpj},
-        "servico": {"descricao": job.descricao_servico},
+        "servico": servico,
         "valores": {"total": job.valor_total, "aliquotaIss": job.aliquota_iss},
     }
 

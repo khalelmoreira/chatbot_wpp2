@@ -66,8 +66,6 @@ class ValidationService:
                 self._incompleto()
                 return
 
-            # TODO: TomadorManager ainda usa a constante ALIQUOTA_ISS fixa ao montar
-            # o payload da NF-e — resolved.aliquota ainda não é propagado até lá.
             if not self._iss_ok():
                 return
 
@@ -87,7 +85,11 @@ class ValidationService:
         """Checkpoint pré-emissão: bloqueia a transição para CONFIRMING se a
         descrição não classificar em um código nacional conhecido, ou se o código
         classificado não tiver alíquota vigente na tabela local. Nunca deixa a nota
-        avançar com uma alíquota chutada/zero — ver IssResolutionService."""
+        avançar com uma alíquota chutada/zero — ver IssResolutionService.
+
+        Em caso de sucesso, grava o cTribNac e a alíquota resolvidos em `ctx.valid`
+        para o próximo _update_draft() persistir — daí seguem no draft_json até o
+        TomadorManager e o payload da Notaas."""
 
         descricao = self.ctx.merged.servico.descricao
 
@@ -101,6 +103,8 @@ class ValidationService:
             self._iss_nao_classificado()
             return False
 
+        self.ctx.valid.servico.codigo = resolution.codigo_tributacao_nacional
+        self.ctx.valid.valores.aliquotaIss = resolution.aliquota
         return True
 
     def _iss_sem_aliquota(self):
@@ -132,11 +136,18 @@ class ValidationService:
 
         confirmar = BotaoResponse(id="tomador_confirmado", title="✅ Confirmar")
         corrigir = BotaoResponse(id="tomador_corrigir", title="✏️ Corrigir")
-        texto = (f"*Dados do tomador:*\n\n"
-            f"{self.ctx.merged.tomador.nome}\n"
-            f"{self.ctx.merged.tomador.cnpj}\n"
-            f"{self.ctx.merged.servico.descricao}\n"
-            f"{self.ctx.merged.valores.total}\n"
+
+        dados = self.ctx.valid
+        valor = dados.valores.total or 0.0
+        valor_fmt = f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        aliquota_fmt = f"{dados.valores.aliquotaIss:g}%" if dados.valores.aliquotaIss is not None else "—"
+
+        texto = (f"*Dados da nota:*\n\n"
+            f"Nome: {dados.tomador.nome}\n"
+            f"CNPJ: {dados.tomador.cnpj}\n"
+            f"Serviço: {dados.servico.descricao}\n"
+            f"Valor: R$ {valor_fmt}\n"
+            f"Alíquota ISS: {aliquota_fmt}\n\n"
             f"Esses dados estão corretos?"
         )
 

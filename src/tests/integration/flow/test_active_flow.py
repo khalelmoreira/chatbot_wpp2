@@ -119,14 +119,19 @@ def test_collecting_flow_moves_to_confirming_when_data_is_complete(db, monkeypat
     row = db.select_one("conversations", where={"id": conv_id})
     assert row["status"] == "CONFIRMING"
 
+    # _iss_ok() gravou o cTribNac classificado e a alíquota vigente no draft
+    draft = json.loads(row["draft_json"])
+    assert draft["servico"]["codigo"] == "010601"
+    assert draft["valores"]["aliquotaIss"] == 3.0
+
 
 def test_confirming_confirmado_queues_conversation_and_creates_nf(db):
     phone = "5511999990000"
     prestador_id = _novo_prestador(db, phone)
     draft = {
         "tomador": {"nome": "Cliente LTDA", "cnpj": "11222333000181"},
-        "servico": {"descricao": "Consultoria"},
-        "valores": {"total": 1500},
+        "servico": {"descricao": "Consultoria", "codigo": "010601"},
+        "valores": {"total": 1500, "aliquotaIss": 3.0},
     }
     conv_id = _nova_conversa(db, prestador_id, phone, "CONFIRMING", draft=draft)
 
@@ -142,3 +147,5 @@ def test_confirming_confirmado_queues_conversation_and_creates_nf(db):
     nf = db.select_one("nfs", where={"conv_id": conv_id})
     assert nf is not None
     assert nf["cnpj"] == "11222333000181"
+    assert nf["codigo_servico"] == "010601"
+    assert nf["aliquota_iss"] == 3.0
