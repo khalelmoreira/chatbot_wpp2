@@ -15,6 +15,7 @@ class NfseService:
         if row is None:
             raise LookupError("phone/prestador_id não encontrado para user")
         get_sender(row["channel"]).send_msg_text(row["phone"], msg)
+        self.manager.save_ai_msg(row["prestador_id"], row["phone"], msg)
 
 
     def issued(self):

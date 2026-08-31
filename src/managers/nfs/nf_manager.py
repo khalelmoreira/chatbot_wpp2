@@ -26,13 +26,22 @@ class NfsManager:
     def get_phone(self) -> dict[str, Any] | None:
 
         row = self.db.fetchone("""
-            SELECT p.phone, p.channel FROM conversations c
+            SELECT p.id AS prestador_id, p.phone, p.channel FROM conversations c
             JOIN prestador p ON p.id = c.prestador_id
             WHERE c.id = ?
         """, (self.cid,))
         if row is None:
             return None
         return dict(row)
+
+    def save_ai_msg(self, prestador_id: int, phone: str, content: str) -> None:
+        """Persiste no histórico uma notificação enviada ao prestador pelo fluxo de
+        webhook (emissão/erro/cancelamento/PDF) — que roda sem ContextTomador e
+        portanto sem MsgManager."""
+        self.db.insert(
+            "messages",
+            data={"prestador_id": prestador_id, "phone": phone, "role": "AI", "content": content},
+        )
         
     def reset_conv(self, novo_status: str) -> None:
         self.db.update(

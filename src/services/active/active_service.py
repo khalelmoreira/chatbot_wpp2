@@ -29,7 +29,10 @@ class ConvActiveService:
     
     def _save_msg(self):
         msg = MsgManager(self.ctx)
-        msg.save_msg(role=Role.USER, content=self.ctx.text)
+        # Cliques de botão chegam com text vazio — registra o id do botão para o
+        # histórico não ter linhas em branco.
+        content = self.ctx.text or self.ctx.button_id or ""
+        msg.save_msg(role=Role.USER, content=content)
         log_table(table_name="messages", where="phone = ?", params=(self.ctx.user.phone,))
 
     def _get_conv(self):
