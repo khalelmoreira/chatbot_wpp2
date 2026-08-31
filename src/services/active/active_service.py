@@ -6,7 +6,9 @@ from src.flows.active_flows.idle_flow import idle_flow
 from src.flows.active_flows.queued_flow import queued_flow
 from src.managers.conversations import ConvManager
 from src.managers.msg_manager import MsgManager
-from src.types import ContextTomador, ConvStatus, Role
+from src.services.active.exit_command import EXIT_CONFIRMATION_MSG, is_exit_command
+from src.services.sender import get_sender
+from src.types import ContextTomador, ConvStatus, MsgType, Role
 from src.types.conversation import Conversation
 from src.utils.debug import log_table
 
@@ -53,6 +55,9 @@ class DispatchActiveService:
 
         self.ctx.conv_status = conversa.status
 
+        if self._quer_sair():
+            return self._cancelar_conversa()
+
         dispatchers = {
             ConvStatus.COLLECTING: self._collecting_flow,
             ConvStatus.CONFIRMING: self._confirming_flow,
@@ -64,7 +69,21 @@ class DispatchActiveService:
         if dispatcher is None:
             return idle_flow(self.ctx, self.conversation)
         return dispatcher()
-    
+
+    def _quer_sair(self) -> bool:
+        """Palavra de saída digitada durante a coleta ou a confirmação. Só texto —
+        um clique de botão nunca é uma palavra de saída."""
+        return (
+            self.ctx.conv_status in (ConvStatus.COLLECTING, ConvStatus.CONFIRMING)
+            and self.ctx.msg_type == MsgType.TEXT
+            and is_exit_command(self.ctx.text)
+        )
+
+    def _cancelar_conversa(self):
+        self.conversation.update_state(ConvStatus.CANCELLED)
+        MsgManager(self.ctx).save_msg(Role.AI, EXIT_CONFIRMATION_MSG)
+        get_sender(self.ctx.user.channel).send_msg_text(self.ctx.user.phone, EXIT_CONFIRMATION_MSG)
+
     def _collecting_flow(self):
         return collecting_flow(self.ctx, self.conversation)
     
