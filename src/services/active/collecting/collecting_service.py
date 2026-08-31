@@ -58,28 +58,29 @@ class ValidationService:
     def valido_e_completo(self):
 
         self.validador.validar(self.ctx)
+        self._update_draft()
 
-        if self.ctx.valid:
-            self._update_draft()
-
-            if not self.ctx.validation.is_complete:
-                self._incompleto()
-                return
-
-            if not self._iss_ok():
-                return
-
-            self._update_draft()
-            self._update_state()
-            self._msg_confirm()
-            return
-
+        # Um campo rejeitado (ex.: CNPJ com dígito verificador errado) não conta
+        # como "faltante" — is_complete seria True e a nota avançava para
+        # CONFIRMING com o campo em None. Barra aqui, antes de qualquer avanço.
         if self.ctx.validation.invalid:
             self._invalidos()
             return
 
-        self._no_data()
-        return
+        if self.ctx.valid == TomadorData():
+            self._no_data()
+            return
+
+        if not self.ctx.validation.is_complete:
+            self._incompleto()
+            return
+
+        if not self._iss_ok():
+            return
+
+        self._update_draft()
+        self._update_state()
+        self._msg_confirm()
 
     def _iss_ok(self) -> bool:
         """Checkpoint pré-emissão: bloqueia a transição para CONFIRMING se a
@@ -162,10 +163,9 @@ class ValidationService:
         log_table(table_name="conversations", where=self.ctx.user.phone)
 
     def _incompleto(self):
-        valid_missing_list = self.ctx.validation.missing
-        valid_missing_list.insert(0, self.ctx.valid.to_str())
+        faltantes = ", ".join(self.ctx.validation.missing)
 
-        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
+        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, [faltantes])
         self.msg.save_msg(Role.AI, response)
         self._notf_user(response)
     

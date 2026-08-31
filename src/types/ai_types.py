@@ -25,17 +25,17 @@ class PrestExtractKey(StrEnum):
     ADDRESS = "ADDRESS"
 
 class TomRespKey(StrEnum):
-    INCOMPLETE      = "INCOMPLETE"
-    INVALID         = "INVALID"
-    NO_DATA         = "NO_DATA"
-    ONBOARD_INFO    = "ONBOARD_INFO"
-    ONBOARD_HISTORY = "ONBOARD_HISTORY"
-    NO_INTENT       = "NO_INTENT"
+    INCOMPLETE       = "INCOMPLETE"
+    INVALID          = "INVALID"
+    NO_DATA          = "NO_DATA"
+    CONSULTA_INFO    = "CONSULTA_INFO"
+    CONSULTA_HISTORY = "CONSULTA_HISTORY"
+    NO_INTENT        = "NO_INTENT"
 
 class TomClassKey(StrEnum):
-    ONBOARD_REF_PAST = "ONBOARD_REF_PAST"
-    HAS_INTENT       = "HAS_INTENT"
-    LOOKSLIKE_ASK    = "LOOKSLIKE_ASK"
+    CONSULTA_REF_PAST = "CONSULTA_REF_PAST"
+    HAS_INTENT        = "HAS_INTENT"
+    LOOKSLIKE_ASK     = "LOOKSLIKE_ASK"
 
 class TomExtractKey(StrEnum):
     NF = "NF"

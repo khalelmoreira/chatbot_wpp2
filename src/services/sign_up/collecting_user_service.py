@@ -82,10 +82,9 @@ class ValidationService:
         self.notf_user(response)
 
     def _incompleto(self):
-        valid_missing_list = self.ctx.validation.missing
-        valid_missing_list.insert(0, self.ctx.valid.to_str())
+        faltantes = ", ".join(self.ctx.validation.missing)
 
-        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, valid_missing_list)
+        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [faltantes])
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
 

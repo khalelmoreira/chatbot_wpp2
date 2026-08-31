@@ -125,6 +125,30 @@ def test_collecting_flow_moves_to_confirming_when_data_is_complete(db, monkeypat
     assert draft["valores"]["aliquotaIss"] == 3.0
 
 
+def test_collecting_flow_rejects_invalid_cnpj_instead_of_advancing(db, monkeypatch):
+    """A CNPJ com dígito verificador errado é 'inválido', não 'faltante' — a
+    conversa não pode avançar para CONFIRMING com o campo em None."""
+    phone = "5511900001111"
+    prestador_id = _novo_prestador(db, phone)
+    conv_id = _nova_conversa(db, prestador_id, phone, "COLLECTING")
+
+    fake_client = FakeAIClient(extract_json_responses=[
+        {
+            "tomador": {"nome": "Cliente LTDA", "cnpj": "11222333000180"},  # dígito errado
+            "servico": {"descricao": "Consultoria"},
+            "valores": {"total": 1500},
+        },
+    ])
+    monkeypatch.setattr(ai_client_factory, "build_ai_client", lambda: fake_client)
+
+    ctx = _ctx(prestador_id, phone, text="Cliente LTDA cnpj 11222333000180 consultoria 1500", conv_id=conv_id)
+    collecting_flow(ctx, ConvManager(ctx))
+
+    row = db.select_one("conversations", where={"id": conv_id})
+    assert row["status"] == "COLLECTING"
+    assert json.loads(row["draft_json"])["tomador"]["cnpj"] is None
+
+
 def test_confirming_confirmado_queues_conversation_and_creates_nf(db):
     phone = "5511999990000"
     prestador_id = _novo_prestador(db, phone)

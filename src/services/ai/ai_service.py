@@ -5,10 +5,10 @@ from typing import Generic, TypeVar
 
 from src.models.national_service_codes import UNCLASSIFIED, is_known_code
 from src.models.prompts import (
+    CONSULTA_HISTORY_RESP,
+    CONSULTA_INFO_RESP,
+    CONSULTA_REF_PAST_CLASS,
     ISS_SERVICE_CODE_CLASS,
-    ONBOARD_HISTORY_RESP,
-    ONBOARD_INFO_RESP,
-    ONBOARD_REF_PAST_CLASS,
     PREST_ADDRESS_EXTRACT,
     PREST_DATA_EXTRACT,
     PREST_GENERAL_ASK_RESP,
@@ -239,8 +239,8 @@ class AIService:
                     parser=lambda v: IntentType(v),
                     fallback=IntentType.NENHUM,
                 ),
-                TomClassKey.ONBOARD_REF_PAST: ClassificationConfig(
-                    ONBOARD_REF_PAST_CLASS,
+                TomClassKey.CONSULTA_REF_PAST: ClassificationConfig(
+                    CONSULTA_REF_PAST_CLASS,
                     schema=BOOL_VALUE_SCHEMA,
                     parser=lambda v: bool(v),
                     fallback=False,
@@ -254,7 +254,7 @@ class AIService:
                 ),
                 TomRespKey.INCOMPLETE: ResponseConfig(TOM_INCOMPLETE_RESP),
                 TomRespKey.INVALID: ResponseConfig(TOM_INVALID_RESP),
-                TomRespKey.ONBOARD_INFO: ResponseConfig(ONBOARD_INFO_RESP),
-                TomRespKey.ONBOARD_HISTORY: ResponseConfig(ONBOARD_HISTORY_RESP),
+                TomRespKey.CONSULTA_INFO: ResponseConfig(CONSULTA_INFO_RESP),
+                TomRespKey.CONSULTA_HISTORY: ResponseConfig(CONSULTA_HISTORY_RESP),
             },
         )
