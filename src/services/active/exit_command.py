@@ -23,6 +23,9 @@ EXIT_CONFIRMATION_MSG = (
     "Ok, cancelei esta emissão. Quando quiser emitir uma nota, é só me enviar os dados. 👍"
 )
 
+# Linha em itálico anexada à saudação (idle_flow) para o usuário saber da saída.
+EXIT_HINT = '_Durante uma emissão, é só digitar "cancelar" a qualquer momento para desistir._'
+
 
 def _normalizar(texto: str) -> str:
     sem_acento = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()

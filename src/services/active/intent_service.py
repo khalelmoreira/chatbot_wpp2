@@ -4,6 +4,7 @@ from typing import cast
 from src.flows.active_flows.collecting_flow import collecting_flow
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
+from src.services.active.exit_command import EXIT_HINT
 from src.services.ai import ai_client_factory
 from src.services.ai.ai_service import AIService
 from src.services.onboarding.resumo import ResumoBuilder
@@ -70,5 +71,6 @@ class IntentService:
 
     def _nenhum(self):
         response = self.ai.tom.respond(TomRespKey.NO_INTENT, self.ctx.text)
+        response = f"{response}\n\n{EXIT_HINT}"
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)
