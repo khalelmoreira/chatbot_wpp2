@@ -29,25 +29,23 @@ skill produces a reviewed handoff script; it never deploys directly. Read
 
 ## 3. Open the PR (Claude does this) — merge is the user's
 
-There is no `gh` CLI. Claude opens the PR through the GitHub REST API, using the
-PAT in `~/.git-credentials` (created for Claude Code; git already uses it below
-the permission layer). Never read that file directly — let `git credential`
-hand the token to the script:
+Use `gh` (installed user-local at `~/.local/bin/gh`). It has no stored auth of
+its own — feed it the PAT from git's credential store via `GH_TOKEN`, so the
+`~/.git-credentials` file is never read directly:
 
 ```bash
-TOKEN=$(printf 'protocol=https\nhost=github.com\n\n' | git credential fill | sed -n 's/^password=//p')
-curl -sS -X POST \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Accept: application/vnd.github+json" \
-  https://api.github.com/repos/khalelmoreira/chatbot_wpp2/pulls \
-  -d '{"title":"<conventional-commit title>","head":"nfse-agent","base":"main","body":"<what ships + test/lint status>"}'
+export GH_TOKEN=$(printf 'protocol=https\nhost=github.com\n\n' | git credential fill | sed -n 's/^password=//p')
+~/.local/bin/gh pr create --repo khalelmoreira/chatbot_wpp2 \
+  --base main --head nfse-agent \
+  --title "<conventional-commit title>" \
+  --body "<what ships + lint/test status>"
 ```
 
-- If this returns `403` / "Resource not accessible by personal access token",
-  the fine-grained PAT is missing **Pull requests: Read and write** — tell the
-  user to add that scope at github.com/settings/tokens, then retry. Contents:
-  Read/write alone is not enough to open a PR.
-- Post the returned `html_url` to the user.
+- If `gh` errors with `403` / "not accessible by personal access token", the
+  fine-grained PAT is missing **Pull requests: Read and write** — tell the user
+  to add that scope at github.com/settings/tokens and retry. Contents:
+  Read/write alone cannot open a PR.
+- Post the PR URL `gh` prints to the user.
 - **STOP.** Do not merge. Wait for the user to review and merge into `main`
   themselves, then confirm before continuing. Merging to `main` is always the
   user's call.
