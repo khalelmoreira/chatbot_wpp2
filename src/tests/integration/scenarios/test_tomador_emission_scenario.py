@@ -4,6 +4,7 @@ test_prestador_signup_scenario.py) — this scenario starts from an already-ACTI
 since that's the only precondition ConvStatus flows care about.
 """
 from src.models.municipios import RJ_CODIGO_MUNICIPIO
+from src.services.active.collecting import collecting_service
 from src.types import BotaoId
 
 PHONE = "5511900001111"
@@ -55,6 +56,55 @@ def test_tomador_completes_emission_from_collecting_to_queued(scenario, db):
     assert nf is not None
     assert nf["codigo_servico"] == ISS_CODE
     assert nf["aliquota_iss"] == 0.02
+
+
+def test_tomador_name_mismatching_cnpj_stays_in_collecting(scenario, db, monkeypatch):
+    _ativa_prestador(db, PHONE)
+    _seed_iss_rate(db)
+
+    monkeypatch.setattr(
+        collecting_service, "get_cnpj_info",
+        lambda cnpj: {"descricao_situacao_cadastral": "ATIVA", "razao_social": "OUTRA EMPRESA LTDA"},
+    )
+
+    scenario.queue_ai(
+        {"value": "EMITIR"},
+        {
+            "tomador": {"nome": "Cliente LTDA", "cnpj": "11222333000181"},
+            "servico": {"descricao": "Consultoria"},
+            "valores": {"total": 1500},
+        },
+        {"value": ISS_CODE},
+    )
+    scenario.send_text(PHONE, "emitir nota para Cliente LTDA cnpj 11222333000181 consultoria 1500")
+
+    conv = db.select_one("conversations", where={"phone": PHONE})
+    assert conv["status"] == "COLLECTING"
+    assert db.select_one("nfs", where={"conv_id": conv["id"]}) is None
+
+
+def test_tomador_name_matching_cnpj_advances_to_confirming(scenario, db, monkeypatch):
+    _ativa_prestador(db, PHONE)
+    _seed_iss_rate(db)
+
+    monkeypatch.setattr(
+        collecting_service, "get_cnpj_info",
+        lambda cnpj: {"descricao_situacao_cadastral": "ATIVA", "razao_social": "CLIENTE SILVA LTDA"},
+    )
+
+    scenario.queue_ai(
+        {"value": "EMITIR"},
+        {
+            "tomador": {"nome": "Cliente Silva", "cnpj": "11222333000181"},
+            "servico": {"descricao": "Consultoria"},
+            "valores": {"total": 1500},
+        },
+        {"value": ISS_CODE},
+    )
+    scenario.send_text(PHONE, "emitir nota para Cliente Silva cnpj 11222333000181 consultoria 1500")
+
+    conv = db.select_one("conversations", where={"phone": PHONE})
+    assert conv["status"] == "CONFIRMING"
 
 
 def test_tomador_incomplete_data_stays_in_collecting_and_asks_for_more(scenario, db):

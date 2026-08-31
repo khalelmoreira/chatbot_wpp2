@@ -20,6 +20,8 @@ from src.types import (
     TomRespKey,
 )
 from src.utils.debug import log_table
+from src.utils.get_cnpj import get_cnpj_info
+from src.utils.nome_empresa import nome_confere_com_receita
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +80,9 @@ class ValidationService:
         if not self._iss_ok():
             return
 
+        if not self._cnpj_ok():
+            return
+
         self._update_draft()
         self._update_state()
         self._msg_confirm()
@@ -125,6 +130,60 @@ class ValidationService:
         self.msg.save_msg(Role.AI, response)
         self._notf_user(response)
     
+    def _cnpj_ok(self) -> bool:
+        """Checkpoint pré-emissão: confirma o CNPJ do tomador na Receita Federal e
+        checa se o nome informado bate com a razão social / nome fantasia de lá.
+
+        Só roda depois de nome e CNPJ já validados (formato + dígito) e a nota
+        completa — espelha o CnpjService do onboarding do prestador. Tomador por
+        CPF (cnpj None) não passa por aqui: não há serviço público de CPF→nome."""
+
+        cnpj = self.ctx.valid.tomador.cnpj
+        if cnpj is None:
+            return True
+
+        info = get_cnpj_info(cnpj)
+        if info is None:
+            self._cnpj_nao_confirmado(cnpj)
+            return False
+
+        situacao = info.get("descricao_situacao_cadastral")
+        if situacao and situacao.upper() != "ATIVA":
+            self._cnpj_inativo(cnpj, situacao)
+            return False
+
+        nome = self.ctx.valid.tomador.nome
+        if nome and not nome_confere_com_receita(nome, info):
+            self._cnpj_nome_divergente(info)
+            return False
+
+        return True
+
+    def _cnpj_nao_confirmado(self, cnpj: str):
+        response = (
+            f"Não consegui confirmar o CNPJ {cnpj} na Receita Federal. "
+            "Pode conferir e enviar novamente?"
+        )
+        self.msg.save_msg(Role.AI, response)
+        self._notf_user(response)
+
+    def _cnpj_inativo(self, cnpj: str, situacao: str):
+        response = (
+            f"O CNPJ {cnpj} está com situação cadastral \"{situacao}\" na Receita Federal. "
+            "Não é possível emitir uma nota para um CNPJ que não está ativo."
+        )
+        self.msg.save_msg(Role.AI, response)
+        self._notf_user(response)
+
+    def _cnpj_nome_divergente(self, info: dict):
+        razao = info.get("razao_social") or info.get("nome_fantasia") or "outro"
+        response = (
+            "O nome informado não confere com o CNPJ na Receita Federal, que consta como "
+            f"\"{razao}\". Pode enviar o nome correto do cliente (ou o CNPJ certo)?"
+        )
+        self.msg.save_msg(Role.AI, response)
+        self._notf_user(response)
+
     def _update_draft(self):
         draft_dict = asdict(self.ctx.valid)
         self.conversation.update_draft(draft_dict)
