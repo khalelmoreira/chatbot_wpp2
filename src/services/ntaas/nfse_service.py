@@ -28,7 +28,7 @@ class NfseService:
         self._notf_prestador(
             msg=(
                 f"✅ Nota emitida com sucesso!\n"
-                f"Número: {self.data.get('numeroNfe')}\n"
+                f"Número: {self.data.get('nNFSe')}\n"
                 f"Chave: {self.data.get('chNFSe')}"
             )
         )

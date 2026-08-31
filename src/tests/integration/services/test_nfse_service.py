@@ -42,7 +42,7 @@ def _setup_nf(db, invoice_id: str = "inv-123") -> dict:
 def test_issued_marks_nf_done_and_resets_conversation(db):
     ids = _setup_nf(db)
 
-    NfseService({"invoiceId": "inv-123", "chNFSe": "CH-1", "numeroNfe": "1"}).issued()
+    NfseService({"invoiceId": "inv-123", "chNFSe": "CH-1", "nNFSe": "1"}).issued()
 
     nf = db.select_one("nfs", where={"id": ids["nf_id"]})
     assert nf["status"] == "DONE"

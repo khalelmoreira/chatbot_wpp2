@@ -56,7 +56,7 @@ class NfsManager:
             data={
                 "status": "DONE",
                 "ch_nfse": self.data.get("chNFSe"),
-                "n_nfse": self.data.get("numeroNfe"),
+                "n_nfse": self.data.get("nNFSe"),
                 "emitido_em": self.data.get("emittedAt"),
             },
             where={"id": self.nfi}
