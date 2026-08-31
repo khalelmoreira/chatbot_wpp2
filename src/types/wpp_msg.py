@@ -15,6 +15,7 @@ class MsgType(StrEnum):
 class BotaoId(StrEnum):
     TOMADOR_CONFIRMADO   = "tomador_confirmado"
     TOMADOR_CORRIGIR     = "tomador_corrigir"
+    TOMADOR_CANCELAR     = "tomador_cancelar"
 
     ENDERECO_CONFIRMADO  = "endereco_confirmado"
     ENDERECO_CORRIGIR    = "endereco_corrigir"

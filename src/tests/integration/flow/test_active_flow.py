@@ -154,6 +154,43 @@ def test_collecting_flow_rejects_invalid_cnpj_instead_of_advancing(db, monkeypat
     assert json.loads(row["draft_json"])["tomador"]["cnpj"] is None
 
 
+def test_exit_word_during_collecting_cancels_the_conversation(db):
+    phone = "5511900002222"
+    prestador_id = _novo_prestador(db, phone)
+    conv_id = _nova_conversa(db, prestador_id, phone, "COLLECTING")
+
+    active_flow(_ctx(prestador_id, phone, text="cancelar", conv_id=conv_id))
+
+    row = db.select_one("conversations", where={"id": conv_id})
+    assert row["status"] == "CANCELLED"
+
+
+def test_exit_word_during_confirming_cancels_the_conversation(db):
+    phone = "5511900003333"
+    prestador_id = _novo_prestador(db, phone)
+    conv_id = _nova_conversa(db, prestador_id, phone, "CONFIRMING")
+
+    active_flow(_ctx(prestador_id, phone, text="sair", conv_id=conv_id))
+
+    row = db.select_one("conversations", where={"id": conv_id})
+    assert row["status"] == "CANCELLED"
+
+
+def test_cancelar_button_during_confirming_cancels_the_conversation(db):
+    phone = "5511900004444"
+    prestador_id = _novo_prestador(db, phone)
+    conv_id = _nova_conversa(db, prestador_id, phone, "CONFIRMING")
+
+    ctx = _ctx(
+        prestador_id, phone, conv_id=conv_id,
+        msg_type=MsgType.BUTTON, button_id=BotaoId.TOMADOR_CANCELAR,
+    )
+    confirming_flow(ctx, ConvManager(ctx))
+
+    row = db.select_one("conversations", where={"id": conv_id})
+    assert row["status"] == "CANCELLED"
+
+
 def test_confirming_confirmado_queues_conversation_and_creates_nf(db):
     phone = "5511999990000"
     prestador_id = _novo_prestador(db, phone)

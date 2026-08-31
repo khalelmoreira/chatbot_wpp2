@@ -196,6 +196,8 @@ class ValidationService:
 
         confirmar = BotaoResponse(id="tomador_confirmado", title="✅ Confirmar")
         corrigir = BotaoResponse(id="tomador_corrigir", title="✏️ Corrigir")
+        cancelar = BotaoResponse(id="tomador_cancelar", title="❌ Cancelar")
+        botoes = [confirmar, corrigir, cancelar]
 
         dados = self.ctx.valid
         valor = dados.valores.total or 0.0
@@ -211,13 +213,13 @@ class ValidationService:
             f"Esses dados estão corretos?"
         )
 
-        msg_button = self.wpp.format_msg_botao(text=texto, botoes=[confirmar, corrigir])
+        msg_button = self.wpp.format_msg_botao(text=texto, botoes=botoes)
         self.msg.save_msg(Role.AI, msg_button)
 
         self.wpp.send_msg_botao(
             phone=self.ctx.user.phone,
             text=texto,
-            botoes=[confirmar, corrigir],
+            botoes=botoes,
         )
         log_table(table_name="conversations", where=self.ctx.user.phone)
 

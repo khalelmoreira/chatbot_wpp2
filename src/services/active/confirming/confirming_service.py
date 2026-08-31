@@ -1,6 +1,7 @@
 from src.managers.conversations.conv_manager import ConvManager
 from src.managers.msg_manager import MsgManager
 from src.managers.tomador_manager import TomadorManager
+from src.services.active.exit_command import EXIT_CONFIRMATION_MSG
 from src.services.sender import get_sender
 from src.types import BotaoId, ContextTomador, ConvStatus, MsgType, Role
 
@@ -26,7 +27,11 @@ class ConfirmingService:
             case BotaoId.TOMADOR_CORRIGIR:
                 self._tomador_corrigir()
                 return
-            
+
+            case BotaoId.TOMADOR_CANCELAR:
+                self._tomador_cancelar()
+                return
+
             case _:
                 raise ValueError(f"Button ID não encontrado: {self.ctx.button_id}")
 
@@ -43,6 +48,10 @@ class ConfirmingService:
     def _tomador_corrigir(self):
         self.conversation.update_state(ConvStatus.COLLECTING)
         self._notf_user(msg="Por favor, digite os dados do tomador novamente para podermos continuar")
+
+    def _tomador_cancelar(self):
+        self.conversation.update_state(ConvStatus.CANCELLED)
+        self._notf_user(msg=EXIT_CONFIRMATION_MSG)
 
     def _notf_user(self, msg: str) -> None:
         MsgManager(self.ctx).save_msg(Role.AI, msg)
