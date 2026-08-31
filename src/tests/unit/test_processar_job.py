@@ -4,7 +4,7 @@ from src.services.worker.processar_job import processar_job
 from src.types import NotaasEmissaoPermanenteError, NotaasEmissaoTransitoriaError
 
 
-def _setup_job(db, tentativas: int = 0) -> tuple[int, int, int]:
+def _setup_job(db, tentativas: int = 0, codigo_servico: str | None = None) -> tuple[int, int, int]:
     phone = "5521991112222"
     prestador_id = db.insert("prestador", data={"phone": phone, "status": "ACTIVE"}, returning="id")
     conv_id = db.insert(
@@ -21,11 +21,43 @@ def _setup_job(db, tentativas: int = 0) -> tuple[int, int, int]:
             "prestador_id": prestador_id, "tomador_id": tomador_id, "conv_id": conv_id,
             "idempotency_key": f"key-{conv_id}", "status": "QUEUED", "tentativas": tentativas,
             "payload_enviado": "{}", "nome": "ABBa", "cnpj": "44555666000177",
-            "descricao_servico": "marcenaria", "valor_total": 1500.0,
+            "descricao_servico": "marcenaria", "valor_total": 1500.0, "aliquota_iss": 5.0,
+            "codigo_servico": codigo_servico,
         },
         returning="id",
     )
     return prestador_id, conv_id, nfs_id
+
+
+def test_payload_leva_servico_codigo_quando_presente(db, monkeypatch):
+    _setup_job(db, codigo_servico="010601")
+    manager = NfsWorkerManager.reserva_job()
+    assert manager is not None
+
+    capturado = {}
+    monkeypatch.setattr(
+        processar_job_module, "emitir_nf",
+        lambda payload: capturado.setdefault("payload", payload) or {"invoiceId": "x"},
+    )
+    processar_job(manager)
+
+    assert capturado["payload"]["servico"] == {"descricao": "marcenaria", "codigo": "010601"}
+    assert capturado["payload"]["valores"]["aliquotaIss"] == 5.0
+
+
+def test_payload_omite_servico_codigo_quando_ausente(db, monkeypatch):
+    _setup_job(db, codigo_servico=None)
+    manager = NfsWorkerManager.reserva_job()
+    assert manager is not None
+
+    capturado = {}
+    monkeypatch.setattr(
+        processar_job_module, "emitir_nf",
+        lambda payload: capturado.setdefault("payload", payload) or {"invoiceId": "x"},
+    )
+    processar_job(manager)
+
+    assert "codigo" not in capturado["payload"]["servico"]
 
 
 def test_erro_permanente_encerra_job_sem_retry_e_notifica(db, monkeypatch):

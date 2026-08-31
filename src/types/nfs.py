@@ -99,6 +99,7 @@ class NfsJob:
     valor_total:       float
     aliquota_iss:      float
     tentativas:        int
+    codigo_servico:    str | None
 
     @classmethod
     def from_dict(cls, d: dict) -> "NfsJob":

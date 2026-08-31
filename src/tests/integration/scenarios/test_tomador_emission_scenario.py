@@ -53,6 +53,8 @@ def test_tomador_completes_emission_from_collecting_to_queued(scenario, db):
 
     nf = db.select_one("nfs", where={"conv_id": conv["id"]})
     assert nf is not None
+    assert nf["codigo_servico"] == ISS_CODE
+    assert nf["aliquota_iss"] == 0.02
 
 
 def test_tomador_incomplete_data_stays_in_collecting_and_asks_for_more(scenario, db):

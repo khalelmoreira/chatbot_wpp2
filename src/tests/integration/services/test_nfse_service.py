@@ -53,6 +53,9 @@ def test_issued_marks_nf_done_and_resets_conversation(db):
     assert conv["status"] == "COLLECTING"
     assert json.loads(conv["draft_json"]) == {}
 
+    msgs = db.select("messages", where={"prestador_id": ids["prestador_id"]})
+    assert any(m["role"] == "AI" and "emitida com sucesso" in m["content"] for m in msgs)
+
 
 def test_error_marks_nf_error_with_message(db):
     ids = _setup_nf(db)

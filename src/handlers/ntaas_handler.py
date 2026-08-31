@@ -18,10 +18,12 @@ def ntaas_handler(payload_raw: bytes, signature: str | None, delivery_id: str | 
     if not delivery_id:
         return HandlerResult(200, {"success": True})
 
-    if ja_process(delivery_id):
-        return HandlerResult(200, {"success": True})
-
     payload = json.loads(payload_raw)
+    event = payload.get("event")
+    invoice_id = (payload.get("data") or {}).get("invoiceId")
+
+    if ja_process(delivery_id, event=event, invoice_id=invoice_id, payload_raw=payload_raw):
+        return HandlerResult(200, {"success": True})
 
     try:
         nt = NtaasWebhook(payload)

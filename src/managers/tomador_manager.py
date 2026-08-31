@@ -4,8 +4,7 @@ import logging
 from dataclasses import asdict
 
 from src.database.db import DB
-from src.models.aliquota_iss_constant import ALIQUOTA_ISS
-from src.types import ContextTomador, TomadorData
+from src.types import ContextTomador, InvalidTransactionError, TomadorData
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +20,21 @@ class TomadorManager:
 
         data = TomadorData.from_dict(draft)
 
-        nome         = data.tomador.nome
-        cnpj         = data.tomador.cnpj
-        descricao    = data.servico.descricao
-        valor_total  = data.valores.total
-        aliquota_iss = ALIQUOTA_ISS
+        nome          = data.tomador.nome
+        cnpj          = data.tomador.cnpj
+        descricao     = data.servico.descricao
+        valor_total   = data.valores.total
+        codigo_servico = data.servico.codigo
+        aliquota_iss  = data.valores.aliquotaIss
+
+        # _iss_ok() (checkpoint pré-emissão) só deixa a conversa chegar a CONFIRMING
+        # depois de resolver alíquota e cTribNac no draft. Se faltam aqui, o draft
+        # foi montado por fora do fluxo — falha explícita, não um default silencioso.
+        if aliquota_iss is None or codigo_servico is None:
+            raise InvalidTransactionError(
+                f"draft sem ISS resolvido (aliquota={aliquota_iss}, codigo={codigo_servico}) "
+                f"na emissão da conv {conv_id}"
+            )
 
         tomador_id = self._upsert_tomador(prestador_id, nome, cnpj) # type: ignore
 
@@ -39,7 +48,7 @@ class TomadorManager:
         return self._upsert_nf(
             prestador_id, tomador_id, conv_id,
             idempotency_key, payload_enviado,
-            nome, cnpj, descricao, valor_total, aliquota_iss,
+            nome, cnpj, descricao, valor_total, aliquota_iss, codigo_servico,
         )
     
     def _upsert_tomador(self, prestador_id: int, nome: str, cnpj: str) -> int:
@@ -59,16 +68,16 @@ class TomadorManager:
     def _upsert_nf(
             self, prestador_id, tomador_id, conv_id,
             idempotency_key, payload_enviado,
-            nome, cnpj, descricao, valor_total, aliquota_iss
+            nome, cnpj, descricao, valor_total, aliquota_iss, codigo_servico
     ) -> int | None:
-        
+
         row = self.db.fetchone_exe("""
             INSERT INTO nfs (
                 prestador_id, tomador_id, conv_id,
                 idempotency_key, payload_enviado, nome,
-                cnpj, descricao_servico, valor_total, aliquota_iss
+                cnpj, descricao_servico, valor_total, aliquota_iss, codigo_servico
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (conv_id) DO UPDATE SET
                 tomador_id        = excluded.tomador_id,
                 idempotency_key   = excluded.idempotency_key,
@@ -78,6 +87,7 @@ class TomadorManager:
                 descricao_servico = excluded.descricao_servico,
                 valor_total       = excluded.valor_total,
                 aliquota_iss      = excluded.aliquota_iss,
+                codigo_servico    = excluded.codigo_servico,
                 status            = 'QUEUED',
                 tentativas        = 0,
                 erro_msg          = NULL,
@@ -88,7 +98,7 @@ class TomadorManager:
         """, (
             prestador_id, tomador_id, conv_id,
             idempotency_key, payload_enviado,nome,
-            cnpj, descricao, valor_total, aliquota_iss
+            cnpj, descricao, valor_total, aliquota_iss, codigo_servico
             ),
         )
         if row is None:

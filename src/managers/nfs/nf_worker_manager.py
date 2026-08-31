@@ -42,7 +42,8 @@ class NfsWorkerManager:
                 descricao_servico,
                 valor_total,
                 aliquota_iss,
-                tentativas
+                tentativas,
+                codigo_servico
         """, (MAX_TENTATIVAS,))
         if row is None:
             return None

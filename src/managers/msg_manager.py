@@ -1,5 +1,5 @@
 from src.database.db import DB
-from src.types import ContextPrestador, ContextTomador, MsgConvType, Role
+from src.types import ContextPrestador, ContextTomador, Role
 
 
 class MsgManager:
@@ -8,23 +8,17 @@ class MsgManager:
         self.ctx = ctx
         self.id = ctx.user.id
 
-    @property
-    def cid(self) -> int | None:
-        """Lido de ctx.conv_id a cada acesso — mesmo motivo do ConvManager.cid:
-        um MsgManager pode ser construído antes de ctx.conv_id ser atribuído
-        (ex.: IntentService o cria no __init__, antes de criar a conversa)."""
-        return self.ctx.conv_id
-
-    def get_msg_history(self, limite: int = 10) -> list[MsgConvType]:
+    def get_msg_history(self, limite: int = 10) -> list[dict[str, str]]:
+        # `messages` é indexada por prestador, não por conversa (não há coluna
+        # conv_id). Mesmo padrão de OnboardingManager.get_msg_history.
         rows = self.db.select(
             "messages",
             columns="role, content",
-            where={"conv_id": self.cid},
+            where={"prestador_id": self.id},
             order_by="id ASC",
             limit=limite
         )
-        mensagens = [MsgConvType(**row) for row in rows]
-        return list(mensagens)
+        return [dict(row) for row in rows]
 
     def save_msg(self, role: Role, content: str) -> None:
         self.db.insert(

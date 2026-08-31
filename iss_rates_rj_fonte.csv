@@ -1,0 +1,198 @@
+lc116,codigo,descricao,aliquota,base_legal
+01.01,101,Análise e desenvolvimento de sistemas.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+01.02,102,Programação.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+01.03,103,Processamento de dados e congêneres.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+01.04,104,"Elaboração de programas de computadores, inclusive de jogos eletrônicos.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+38.01,380101,Serviços de museologia.,5%,Portaria F/SUBTF/CIS N° 256/2018
+39.01,390101,Serviços de ourivesaria e lapidação (quando o material for fornecido pelo tomador do serviço).,5%,Portaria F/SUBTF/CIS N° 256/2018
+40.01,400101,Obras de arte sob encomenda.,5%,Portaria F/SUBTF/CIS N° 256/2018
+01.05,105,Licenciamento ou cessão de direito de uso de programas de computação.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+01.06,106,Assessoria e consultoria em informática.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+01.07,107,"Suporte técnico em informática, inclusive instalação, configuração e manutenção de programas de computação e bancos de dados.",5%,DECRETO Nº 10514/1991 - DECRETO Nº23753/2003
+01.08,108,"Planejamento, confecção, manutenção e atualização de páginas eletrônicas.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+01.09,10902,"Disponibilização, sem cessão definitiva, de conteúdos de áudio, vídeo, imagem e texto por meio da internet, respeitada a imunidade de livros, jornais e periódicos (exceto a distribuição de conteúdos pelas prestadoras de Serviço de Acesso Condicionado, de que trata a Lei no 12.485, de 12 de setembro de 2011, sujeita ao ICMS).  (Incluído pela Lei Complementar nº 157, de 2016)",2%,Portaria F/SUBTF/CIS N° 256/2018
+02.01,201,Serviços de pesquisas e desenvolvimento de qualquer natureza.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+03.02,302,Cessão de direito de uso de marcas e de sinais de propaganda.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+03.03,303,"Exploração de salões de festas, centro de convenções, escritórios virtuais, stands, quadras esportivas, estádios, ginásios, auditórios, casas de espetáculos, parques de diversões, canchas e congêneres, para realização de eventos ou negócios de qualquer natureza.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+03.04,304,"Locação, sub-locação, arrendamento, direito de passagem ou permissão de uso, compartilhado ou não, de ferrovia, rodovia, postes, cabos, dutos e condutos de qualquer natureza.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+03.05,30503,"Cessão de andaimes, palcos, coberturas e outras estruturas de uso temporário",3%,Portaria F/SUBTF/CIS N° 256/2018
+04.01,401,Medicina e biomedicina.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.02,402,"Análises clínicas, patologia, eletricidade médica, radioterapia, quimioterapia, ultra-sonografia, ressonância magnética, radiologia, tomografia e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.03,403,"Hospitais, clínicas, laboratórios, sanatórios, manicômios, casas de saúde, prontos-socorros, ambulatórios e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.04,404,Instrumentação cirúrgica.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.05,405,Acupuntura.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.06,406,"Enfermagem, inclusive serviços auxiliares.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.07,407,Serviços farmacêuticos.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.08,408,"Terapia ocupacional, fisioterapia e fonoaudiologia.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.09,409,"Terapias de qualquer espécie destinadas ao tratamento físico, orgânico e mental.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.10,410,Nutrição.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.11,411,Obstetrícia.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.12,412,Odontologia.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.13,413,Ortóptica.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.14,414,Próteses sob encomenda.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.15,415,Psicanálise.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.16,416,Psicologia.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.17,417,"Casas de repouso e de recuperação, creches, asilos e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.19,419,"Bancos de sangue, leite, pele, olhos, óvulos, sêmen e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.20,420,"Coleta de sangue, leite, tecidos, sêmen, órgãos e materiais biológicos de qualquer natureza.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.22,422,"Planos de medicina de grupo ou individual e convênios para prestação de assistência médica, hospitalar, odontológica e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+04.23,423,"Outros planos de saúde que se cumpram através de serviços de terceiros contratados, credenciados, cooperados ou apenas pagos pelo operador do plano mediante indicação do benefício.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.01,501,Medicina veterinária e zootecnia.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.02,502,"Hospitais, clínicas, ambulatórios, prontos-socorros e congêneres, na área veterinária.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.03,503,Laboratórios de análise na área veterinária.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.04,504,"Inseminação artificial, fertilização in vitro e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.05,505,Bancos de sangue e de órgãos e congêneres.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.06,506,"Coleta de sangue, leite, tecidos, sêmen, órgãos e materiais biológicos de qualquer espécie.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.07,507,"Unidade de atendimento, assistência ou tratamento móvel e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.08,508,"Guarda, tratamento, amestramento, embelezamento, alojamento e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+05.09,509,Planos de atendimento e assistência médico-veterinária.,2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+06.01,601,"Barbearia, cabeleireiros, manicuros, pedicuros e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+06.02,602,"Esteticistas, tratamento de pele, depilação e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+06.03,603,"Banhos, duchas, sauna, massagens e congêneres.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+06.04,604,"Ginástica, dança, esportes, natação, artes marciais e demais atividades físicas.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+06.05,605,"Centros de Emagrecimento, spa e congêneres",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+06.06,60601,"Aplicação de tatuagens, piercings e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+07.01,701,"Engenharia, agronomia, agrimensura, arquitetura, geologia, urbanismo, paisagismo e congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+14.10,141003,Tinturaria e lavanderia.,5%,Portaria F/SUBTF/CIS N° 256/2018
+16.02,160204,Outros serviços de transporte de natureza municipal.,5%,Portaria F/SUBTF/CIS N° 256/2018
+25.04,250401,Manutenção e conservação de jazigos e cemitérios.,5%,Portaria F/SUBTF/CIS N° 256/2018
+07.02,702,"Execução, por administração, empreitada ou subempreitada, de obras de construção civil, hidráulica ou elétrica e de outras obras semelhantes, inclusive sondagem, perfuração de poços, escavação, drenagem e irrigação, terraplanagem, pavimentação, concretagem e a instalação e montagem de produtos, peças e equipamentos (exceto o fornecimento de mercadorias produzidas pelo prestador de serviços fora do local da prestação dos serviços, que fica sujeito ao ICMS).",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.03,703,"Elaboração de planos diretores, estudos de viabilidade, estudos organizacionais e outros, relacionados com obras e serviços de engenharia; elaboração de anteprojetos, projetos básicos e projetos executivos para trabalhos de engenharia.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.04,704,Demolição.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.05,705,"Reparação, conservação e reforma de edifícios, estradas, pontes, portos e congêneres (exceto o fornecimento de mercadorias produzidas pelo prestador dos serviços, fora do local da prestação dos serviços, que fica sujeito ao ICMS).",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.06,706,"Colocação e instalação de tapetes, carpetes, assoalhos, cortinas, revestimentos de parede, vidros, divisórias, placas de gesso e congêneres, com material fornecido pelo tomador do serviço.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.07,707,"Recuperação, raspagem, polimento e lustração de pisos e congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.08,708,Calafetação.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.09,709,"Varrição, coleta, remoção, incineração, tratamento, reciclagem, separação e destinação final de lixo, rejeitos e outros resíduos quaisquer.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.10,710,"Limpeza, manutenção e conservação de vias e logradouros públicos, imóveis, chaminés, piscinas, parques, jardins e congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.11,711,"Decoração e jardinagem, inclusive corte e poda de árvores.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.12,712,"Controle e tratamento de efluentes de qualquer natureza e de agentes físicos, químicos e biológicos.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.13,713,"Dedetização, desinfecção, desinsetização, imunização, higienização, desratização, pulverização e congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.16,716,"Florestamento, reflorestamento, semeadura, adubação, reparação de solo, plantio, silagem, colheita, corte e descascamento de árvores, silvicultura, exploração florestal e dos serviços congêneres indissociáveis da formação, manutenção e colheita de florestas, para quaisquer fins e por quaisquer meios.",3%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.17,717,"Escoramento, contenção de encostas e serviços congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+12.08,120801,"Feiras, exposições, congressos e congêneres.",2%,Portaria F/SUBTF/CIS N° 256/2018
+07.18,718,"Limpeza e dragagem de rios, portos, canais, baías, lagos, lagoas, represas, açudes e congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.19,719,"Acompanhamento e fiscalização da execução de obras de engenharia, arquitetura e urbanismo.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.20,720,"Aerofotogrametria (inclusive interpretação), cartografia, mapeamento, levantamentos topográficos, batimétricos, geográficos, geodésicos, geológicos, geofísicos e congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+07.21,72105,"Pesquisa, perfuração, cimentação, mergulho, perfilagem, concretação, testemunhagem, pescaria, estimulação e outros serviços relacionados com a exploração e explotação de petróleo, gás natural e de outros recursos minerais.",2%,Portaria F/SUBTF/CIS N° 256/2018
+07.22,72201,Nucleação e bombardeamento de nuvens e congêneres.,2%,Portaria F/SUBTF/CIS N° 256/2018
+08.01,801,"Ensino regular pré-escolar, fundamental, médio e superior.",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+08.02,802,"Instrução, treinamento, orientação pedagógica e educacional, avaliação de conhecimentos de qualquer natureza.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+09.01,901,"Hospedagem de qualquer natureza em hotéis, apart-service condominiais, flat, apart-hotéis, hotéis residência, residence-service, suite service, hotelaria marítima, motéis, pensões e congêneres; ocupação por temporada com fornecimento de serviço (o valor da alimentação e gorjeta, quando incluído no preço da diária, fica sujeito ao Imposto Sobre Serviços).",2%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+09.02,902,"Agenciamento, organização, promoção, intermediação e execução de programas de turismo, passeios, viagens, excursões, hospedagens e congêneres.",5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+09.03,903,Guias de turismo.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+10.01,100107,"Agenciamento, corretagem ou intermediação de câmbio, de seguros, de cartões de crédito, de planos de saúde e de planos de previdência privada.",2%,Portaria F/SUBTF/CIS N° 256/2018
+10.02,100205,"Agenciamento, corretagem ou intermediação de títulos em geral, valores mobiliários e contratos quaisquer.",2%,Portaria F/SUBTF/CIS N° 256/2018
+10.03,100303,"Agenciamento, corretagem ou intermediação de direitos de propriedade industrial, artística ou literária.",2%,Portaria F/SUBTF/CIS N° 256/2018
+10.04,100403,"Agenciamento, corretagem ou intermediação de contratos de arrendamento mercantil (leasing), de franquia (franchising) e de faturização (factoring).",2%,Portaria F/SUBTF/CIS N° 256/2018
+10.05,100508,"Agenciamento, corretagem ou intermediação de bens móveis ou imóveis, não abrangidos em outros itens ou subitens, inclusive aqueles realizados no âmbito de Bolsas de Mercadorias e Futuros, por quaisquer meios.",2%,Portaria F/SUBTF/CIS N° 256/2018
+10.06,100601,Agenciamento marítimo.,5%,Portaria F/SUBTF/CIS N° 256/2018
+10.07,100701,Agenciamento de notícias.,5%,Portaria F/SUBTF/CIS N° 256/2018
+10.08,100802,"Agenciamento de publicidade e propaganda, inclusive o agenciamento de veiculação por quaisquer meios.",5%,Portaria F/SUBTF/CIS N° 256/2018
+10.09,100904,"Representação de qualquer natureza, inclusive comercial.",2%,Portaria F/SUBTF/CIS N° 256/2018
+10.10,101003,Distribuição de bens de terceiros.,5%,Portaria F/SUBTF/CIS N° 256/2018
+11.01,110103,"Guarda e estacionamento de veículos terrestres automotores, de aeronaves e de embarcações.",5%,Portaria F/SUBTF/CIS N° 256/2018
+11.02,110203,"Vigilância, segurança ou monitoramento de bens, pessoas e semoventes.",5%,Portaria F/SUBTF/CIS N° 256/2018
+11.03,110301,"Escolta, inclusive de veículos e cargas.",5%,Portaria F/SUBTF/CIS N° 256/2018
+11.04,110403,"Armazenamento, depósito, carga, descarga, arrumação e guarda de bens de qualquer espécie.",5%,Portaria F/SUBTF/CIS N° 256/2018
+12.01,120101,Espetáculos teatrais.,2%,Portaria F/SUBTF/CIS N° 256/2018
+12.02,120201,Exibições cinematográficas.,2%,Portaria F/SUBTF/CIS N° 256/2018
+12.03,120301,Espetáculos circenses.,5%,Portaria F/SUBTF/CIS N° 256/2018
+12.04,120401,Programas de auditório.,5%,Portaria F/SUBTF/CIS N° 256/2018
+12.05,120502,"Parques de diversões, centros de lazer e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+12.06,120604,"Boates, taxi-dancing e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.11,141102,Tapeçaria e reforma de estofamentos em geral.,5%,Portaria F/SUBTF/CIS N° 256/2018
+12.07,120709,"Shows, ballet, danças, desfiles, bailes, óperas, concertos, recitais, festivais e congêneres.",2%,Portaria F/SUBTF/CIS N° 256/2018
+12.09,120903,"Bilhares, boliches e diversões eletrônicas ou não.",2%,Portaria F/SUBTF/CIS N° 256/2018
+12.10,121001,Corridas e competições de animais.,5%,Portaria F/SUBTF/CIS N° 256/2018
+12.11,121101,"Competições esportivas ou de destreza física ou intelectual, com ou sem a participação do espectador.",2%,Portaria F/SUBTF/CIS N° 256/2018
+12.12,121201,Execução de música.,5%,Portaria F/SUBTF/CIS N° 256/2018
+12.13,121312,"Produção, mediante ou sem encomenda prévia, de eventos, espetáculos, entrevistas, shows, ballet, desfiles, bailes, teatros, óperas, concertos, recitais, festivais e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+12.14,121401,"Fornecimento de música para ambientes fechados ou não, mediante transmissão por qualquer processo.",5%,Portaria F/SUBTF/CIS N° 256/2018
+12.15,121502,"Desfiles de blocos carnavalescos ou folclóricos, trios elétricos e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+12.16,121615,"Exibição de filmes, entrevistas, musicais, espetáculos, shows, concertos, desfiles, óperas, competições esportivas, de destreza intelectual ou congêneres.",3%,Portaria F/SUBTF/CIS N° 256/2018
+12.17,121704,"Recreação e animação, inclusive em festas e eventos de qualquer natureza.",5%,Portaria F/SUBTF/CIS N° 256/2018
+13.02,130208,"Fonografia ou gravação de sons, inclusive trucagem, dublagem, mixagem e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+13.03,130310,"Fotografia e cinematografia, inclusive revelação, ampliação, cópia, reprodução, trucagem e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+13.04,130404,"Reprografia, microfilmagem e digitalização.",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.12,141201,Funilaria e lanternagem.,5%,Portaria F/SUBTF/CIS N° 256/2018
+13.05,130515,"Composição gráfica, inclusive confecção de impressos gráficos, fotocomposição, clicheria, zincografia, litografia e fotolitografia, exceto se destinados a posterior operação de comercialização ou industrialização, ainda que incorporados, de qualquer forma, a outra mercadoria que deva ser objeto de posterior circulação, tais como bulas, rótulos, etiquetas, caixas, cartuchos, embalagens e manuais técnicos e de instrução, quando ficarão sujeitos ao ICMS.  (Redação dada pela Lei Complementar nº 157, de 2016)",2%,Portaria F/SUBTF/CIS N° 256/2018
+14.01,140166,"Lubrificação, limpeza, lustração, revisão, carga e recarga, conserto, restauração, blindagem, manutenção e conservação de máquinas, veículos, aparelhos, equipamentos, motores, elevadores ou de qualquer objeto (exceto peças e partes empregadas, que ficam sujeitas ao ICMS).",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.02,140202,Assistência Técnica.,5%,Portaria F/SUBTF/CIS N° 256/2018
+14.03,140301,"Recondicionamento de motores (exceto peças e partes empregadas, que ficam sujeitas ao ICMS).",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.04,140403,Recauchutagem ou regeneração de pneus.,5%,Portaria F/SUBTF/CIS N° 256/2018
+25.05,250501,Cessão de uso de espaços em cemitérios para sepultamento,5%,Portaria F/SUBTF/CIS N° 256/2018
+14.05,140531,"Restauração, recondicionamento, acondicionamento, pintura, beneficiamento, lavagem, secagem, tingimento, galvanoplastia, anodização, corte, recorte, plastificação, costura, acabamento, polimento e congêneres de objetos quaisquer.",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.06,140615,"Instalação e montagem de aparelhos, máquinas e equipamentos, inclusive montagem industrial, prestados ao usuário final, exclusivamente com material por ele fornecido.",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.07,140701,Colocação de molduras e congêneres.,5%,Portaria F/SUBTF/CIS N° 256/2018
+14.08,140804,"Encadernação, gravação e douração de livros, revistas e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.09,140902,"Alfaiataria e costura, quando o material for fornecido pelo usuário final, exceto aviamento.",5%,Portaria F/SUBTF/CIS N° 256/2018
+14.13,141302,Carpintaria e serralheria.,5%,Portaria F/SUBTF/CIS N° 256/2018
+14.14,141401,"Guincho intramunicipal, guindaste e içamento.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.01,150105,"Administração de fundos quaisquer, de consórcio, de cartão de crédito ou débito e congêneres, de carteira de clientes, de cheques pré-datados e congêneres.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.02,150201,"Abertura de contas em geral, inclusive conta-corrente, conta de investimentos e aplicação e caderneta de poupança, no País e no exterior, bem como a manutenção das referidas contas ativas e inativas.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.03,150302,"Locação e manutenção de cofres particulares, de terminais eletrônicos, de terminais de atendimento e de bens e equipamentos em geral.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.04,150401,"Fornecimento ou emissão de atestados em geral, inclusive atestado de idoneidade, atestado de capacidade financeira e congêneres.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.05,150502,"Cadastro, elaboração de ficha cadastral, renovação cadastral e congêneres, inclusão ou exclusão no Cadastro de Emitentes de Cheques sem FundosCCF ou em quaisquer outros bancos cadastrais.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.06,150609,"Emissão, reemissão e fornecimento de avisos, comprovantes e documentos em geral; abono de firmas; coleta e entrega de documentos, bens e valores; comunicação com outra agência ou com a administração central; licenciamento eletrônico de veículos; transferência de veículos; agenciamento fiduciário ou depositário; devolução de bens em custódia.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.07,150703,"Acesso, movimentação, atendimento e consulta a contas em geral, por qualquer meio ou processo, inclusive por telefone, fac-símile, internet e telex, acesso a terminais de atendimento, inclusive vinte e quatro horas; acesso a outro Banco e a rede compartilhada; fornecimento de saldo, extrato e demais informações relativas a contas em geral, por qualquer meio ou processo.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.08,150811,"Emissão, reemissão, alteração, cessão, substituição, cancelamento e registro de contrato de crédito; estudo, análise e avaliação de operações de crédito; emissão, concessão, alteração ou contratação de aval, fiança, anuência e congêneres; serviços relativos a abertura de crédito, para quaisquer fins.",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.09,150902,"Arrendamento mercantil (leasing) de quaisquer bens, inclusive cessão de direitos e obrigações, substituição de garantia, alteração, cancelamento e registro de contrato, e demais serviços relacionados ao arrendamento mercantil (leasing).",2%,Portaria F/SUBTF/CIS N° 256/2018
+15.10,151003,"Serviços relacionados a cobranças, recebimentos ou pagamentos em geral, de títulos quaisquer, de contas ou carnês, de câmbio, de tributos e por conta de terceiros, inclusive os efetuados por meio eletrônico, automático ou por máquinas de atendimento; fornecimento de posição de cobrança, recebimento ou pagamento; emissão de carnês, fichas de compensação, impressos e documentos em geral.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.11,151106,"Devolução de títulos, protesto de títulos, sustação de protesto, manutenção de títulos, reapresentação de títulos, e demais serviços a eles relacionados.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.12,151204,"Custódia em geral, inclusive de títulos e valores mobiliários.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.13,151307,"Serviços relacionados a operações de câmbio em geral, edição, alteração, prorrogação, cancelamento e baixa de contrato de câmbio; emissão de registro de exportação ou de crédito; cobrança ou depósito no exterior; emissão, fornecimento e cancelamento de cheques de viagem; fornecimento, transferência, cancelamento e demais serviços relativos a carta de crédito de importação, exportação e garantias recebidas; envio e recebimento de mensagens em geral relacionadas a operações de câmbio.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.14,151406,"Fornecimento, emissão, reemissão, renovação e manutenção de cartão magnético, cartão de crédito, cartão de débito, cartão salário e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.15,151503,"Compensação de cheques e títulos quaisquer; serviços relacionados a depósito, inclusive depósito identificado, a saque de contas quaisquer, por qualquer meio ou processo, inclusive em terminais eletrônicos e de atendimento.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.16,151607,"Emissão, reemissão, liquidação, alteração, cancelamento e baixa de ordens de pagamento, ordens de crédito e similares, por qualquer meio ou processo; serviços relacionados à transferência de valores, dados, fundos, pagamentos e similares, inclusive entre contas em geral.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.17,151706,"Emissão, fornecimento, devolução, sustação, cancelamento e oposição de cheques quaisquer, avulso ou por talão.",5%,Portaria F/SUBTF/CIS N° 256/2018
+15.18,151810,"Serviços relacionados a crédito imobiliário, avaliação e vistoria de imóvel ou obra, análise técnica e jurídica, emissão, reemissão, alteração, transferência e renegociação de contrato, emissão e reemissão do termo de quitação e demais serviços relacionados a crédito imobiliário.",5%,Portaria F/SUBTF/CIS N° 256/2018
+16.01,160107,"Serviços de transporte coletivo municipal rodoviário, metroviário, ferroviário e aquaviário de passageiros.",2%,Portaria F/SUBTF/CIS N° 256/2018
+17.01,170102,"Assessoria ou consultoria de qualquer natureza, não contida em outros itens desta lista; análise, exame, pesquisa, coleta, compilação e fornecimento de dados e informações de qualquer natureza, inclusive cadastro e similares.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.02,170211,"Datilografia, digitação, estenografia, expediente, secretaria em geral, resposta audível, redação, edição, interpretação, revisão, tradução, apoio e infraestrutura administrativa e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.03,170312,"Planejamento, coordenação, programação ou organização técnica, financeira ou administrativa.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.04,170403,"Recrutamento, agenciamento, seleção e colocação de mão-de-obra.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.05,170502,"Fornecimento de mão-de-obra, mesmo em caráter temporário, inclusive de empregados ou trabalhadores, avulsos ou temporários, contratados pelo prestador de serviço.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.06,170613,"Propaganda e publicidade, inclusive promoção de vendas, planejamento de campanhas ou sistemas de publicidade, elaboração de desenhos, textos e demais materiais publicitários.",3%,Portaria F/SUBTF/CIS N° 256/2018
+17.08,170801,Franquia (franchising).,5%,Portaria F/SUBTF/CIS N° 256/2018
+17.09,170904,"Perícias, laudos, exames técnicos e análises técnicas.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.10,171009,"Planejamento, organização e administração de feiras, exposições, congressos e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.11,171104,"Organização de festas e recepções; bufê (exceto o fornecimento de alimentação e bebidas, que fica sujeito ao ICMS).",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.12,171207,"Administração em geral, inclusive de bens e negócios de terceiros.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.13,171301,Leilão e congêneres.,5%,Portaria F/SUBTF/CIS N° 256/2018
+17.14,171401,Advocacia.,5%,Portaria F/SUBTF/CIS N° 256/2018
+17.15,171501,"Arbitragem de qualquer espécie, inclusive jurídica.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.16,1716,Auditoria.,5%,DECRETO Nº 10514/1991 - DECRETO Nº 23753/2003
+17.17,229130,Análise de Organização e Métodos.,5%,Portaria CIS/SUBTF Nº 265F/2019
+17.18,171802,Atuária e cálculos técnicos de qualquer natureza.,5%,Portaria F/SUBTF/CIS N° 256/2018
+17.19,171901,"Contabilidade, inclusive serviços técnicos e auxiliares.",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.20,172001,Consultoria e assessoria econômica ou financeira.,5%,Portaria F/SUBTF/CIS N° 256/2018
+17.21,172101,Estatística.,5%,Portaria F/SUBTF/CIS N° 256/2018
+17.22,172201,Cobrança em geral.,5%,Portaria F/SUBTF/CIS N° 256/2018
+17.23,172301,"Assessoria, análise, avaliação, atendimento, consulta, cadastro, seleção, gerenciamento de informações, administração de contas a receber ou a pagar e em geral, relacionados a operações de faturização (factoring).",5%,Portaria F/SUBTF/CIS N° 256/2018
+17.24,172403,"Apresentação de palestras, conferências, seminários e congêneres.",2%,Portaria F/SUBTF/CIS N° 256/2018
+17.25,172503,"Inserção de textos, desenhos e outros materiais de propaganda e publicidade, em qualquer meio (exceto em livros, jornais, periódicos e nas modalidades de serviços de radiodifusão sonora e de sons e imagens de recepção livre e gratuita).",3%,Portaria F/SUBTF/CIS N° 256/2018
+18.01,180105,Serviços de regulação de sinistros vinculados a contratos de seguros; inspeção e avaliação de riscos para cobertura de contratos de seguros; prevenção e gerência de riscos seguráveis e congêneres.,5%,Portaria F/SUBTF/CIS N° 256/2018
+19.01,190102,"Serviços de distribuição e venda de bilhetes e demais produtos de loteria, bingos, cartões, pules ou cupons de apostas, sorteios, prêmios, inclusive os decorrentes de títulos de capitalização e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+20.01,200123,"Serviços portuários, ferroportuários, utilização de porto, movimentação de passageiros, reboque de embarcações, rebocador escoteiro, atracação, desatracação, serviços de praticagem, capatazia, armazenagem de qualquer natureza, serviços acessórios, movimentação de mercadorias, serviços de apoio marítimo, de movimentação ao largo, serviços de armadores, estiva, conferência, logística e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+25.03,250301,Planos ou convênio funerários.,5%,Portaria F/SUBTF/CIS N° 256/2018
+20.02,200207,"Serviços aeroportuários, utilização de aeroporto, movimentação de passageiros, armazenagem de qualquer natureza, capatazia, movimentação de aeronaves, serviços de apoio aeroportuários, serviços acessórios, movimentação de mercadorias, logística e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+20.03,200303,"Serviços de terminais rodoviários, ferroviários, metroviários, movimentação de passageiros, mercadorias, inclusive suas operações, logística e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+21.01,210101,"Serviços de registros públicos, cartorários e notariais.",5%,Portaria F/SUBTF/CIS N° 256/2018
+22.01,220101,"Serviços de exploração de rodovia mediante cobrança de preço ou pedágio dos usuários, envolvendo execução de serviços de conservação, manutenção, melhoramentos para adequação de capacidade e segurança de trânsito, operação, monitoração, assistência aos usuários e outros serviços definidos em contratos, atos de concessão ou de permissão ou em normas oficiais.",5%,Portaria F/SUBTF/CIS N° 256/2018
+23.01,230102,"Serviços de programação e comunicação visual, desenho industrial e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+24.01,240103,"Serviços de chaveiros, confecção de carimbos, placas, sinalização visual, banners, adesivos e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+25.01,250101,"Funerais, inclusive fornecimento de caixão, urna ou esquifes; aluguel de capela; transporte do corpo cadavérico; fornecimento de flores, coroas e outros paramentos; desembaraço de certidão de óbito; fornecimento de véu, essa e outros adornos; embalsamento, embelezamento, conservação ou restauração de cadáveres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+25.02,250202,Translado intramunicipal e cremação de corpos e partes de corpos cadavéricos.,5%,Portaria F/SUBTF/CIS N° 256/2018
+26.01,260102,"Serviços de coleta, remessa ou entrega de correspondências, documentos, objetos, bens ou valores, inclusive pelos correios e suas agências franqueadas; courrier e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+27.01,270101,Serviços de assistência social.,5%,Portaria F/SUBTF/CIS N° 256/2018
+28.01,280103,Serviços de avaliação de bens e serviços de qualquer natureza.,5%,Portaria F/SUBTF/CIS N° 256/2018
+29.01,290101,Serviços de biblioteconomia.,5%,Portaria F/SUBTF/CIS N° 256/2018
+30.01,300103,"Serviços de biologia, biotecnologia e química.",5%,Portaria F/SUBTF/CIS N° 256/2018
+31.01,310107,"Serviços técnicos em edificações, eletrônica, eletrotécnica, mecânica, telecomunicações e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+32.01,320101,Serviços de desenhos técnicos.,5%,Portaria F/SUBTF/CIS N° 256/2018
+33.01,330104,"Serviços de desembaraço aduaneiro, comissários, despachantes e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+34.01,340101,"Serviços de investigações particulares, detetives e congêneres.",5%,Portaria F/SUBTF/CIS N° 256/2018
+35.01,350105,"Serviços de reportagem, assessoria de imprensa, jornalismo e relações públicas.",5%,Portaria F/SUBTF/CIS N° 256/2018
+36.01,360101,Serviços de meteorologia.,5%,Portaria F/SUBTF/CIS N° 256/2018
+37.01,370103,"Serviços de artistas, atletas, modelos e manequins.",5%,Portaria F/SUBTF/CIS N° 256/2018

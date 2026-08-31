@@ -1,4 +1,3 @@
-from src.models.aliquota_iss_constant import ALIQUOTA_ISS
 from src.models.conversation_constants import (
     CAMPOS_OBRIGATORIOS,
     CONFIRM_WORDS,
@@ -10,6 +9,5 @@ __all__ = [
     "CAMPOS_OBRIGATORIOS",
     "CANCEl_WORDS",
     "CONFIRM_WORDS",
-    "ALIQUOTA_ISS",
     "NOTAAS_BASE_URL",
 ]

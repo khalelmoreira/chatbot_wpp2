@@ -34,7 +34,6 @@ from src.types.exceptions import (
     CnpjJaCadastradoError,
     DadosInvalidosError,
     InvalidTransactionError,
-    IssRateSyncError,
     IssResolutionError,
     LimitePlanoAtingidoError,
     NfNotFoundError,
@@ -151,7 +150,6 @@ __all__ = [
     "NotaasEmissaoError",
     "NotaasEmissaoPermanenteError",
     "NotaasEmissaoTransitoriaError",
-    "IssRateSyncError",
     # handler result
     "HandlerResult",
     # iss
