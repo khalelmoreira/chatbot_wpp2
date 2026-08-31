@@ -154,6 +154,20 @@ def test_collecting_flow_rejects_invalid_cnpj_instead_of_advancing(db, monkeypat
     assert json.loads(row["draft_json"])["tomador"]["cnpj"] is None
 
 
+def test_greeting_reply_mentions_the_cancel_word(db, monkeypatch):
+    phone = "5511900001234"
+    prestador_id = _novo_prestador(db, phone)
+
+    fake_client = FakeAIClient(extract_json_responses=[{"value": "NENHUM"}])
+    monkeypatch.setattr(ai_client_factory, "build_ai_client", lambda: fake_client)
+
+    active_flow(_ctx(prestador_id, phone, text="oi"))
+
+    msgs = db.select("messages", where={"prestador_id": prestador_id})
+    ai_msg = next(m["content"] for m in msgs if m["role"] == "AI")
+    assert '_Durante uma emissão' in ai_msg and '"cancelar"' in ai_msg
+
+
 def test_exit_word_during_collecting_cancels_the_conversation(db):
     phone = "5511900002222"
     prestador_id = _novo_prestador(db, phone)
