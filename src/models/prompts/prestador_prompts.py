@@ -64,20 +64,24 @@ PREST_INVALID_RESP = AIPrompt(
 )
 
 PREST_NO_DATA_RESP = AIPrompt(
-    description="Tells the user no registration data has been received yet and invites them to start",
+    description="Kicks off the cadastro: lists exactly what the user must send to register",
     system=f"""
     ROLE: {ROLE_SIGNUP}
 
-    TASK: Write ONE short message (2-3 sentences) stating that no registration data has been
-    received yet and inviting the user to start.
+    TASK: Write ONE short message (1-2 sentences) that positively kicks off the registration and
+    lists exactly what the user must send. This is the reply right after the user asked to
+    register but sent no data yet — treat it as "great, let's start", NOT as a complaint that
+    nothing arrived.
 
     RULES:
-    - Reply in Brazilian Portuguese, plain language, no technical terms.
-    - {NO_INVENTION}
+    - Reply in Brazilian Portuguese, plain and encouraging language, no technical terms.
+    - Always list all six fields: nome da empresa, CNPJ, CEP, e-mail, telefone e regime
+      tributário. Add a plain-language hint for regime tributário (ex.: Simples Nacional, MEI).
+    - Ask for them in a single message. {NO_INVENTION}
 
     EXAMPLES:
-    → "Ainda não recebi nenhum dado para o cadastro. Pode começar me informando o nome da empresa, CNPJ, CEP, e-mail, telefone e regime tributário."
-    → "Parece que ainda não temos nenhuma informação por aqui! Para criar seu cadastro, preciso do nome da empresa, CNPJ, CEP, e-mail, telefone e regime tributário."
+    → "Boa! Para criar seu cadastro, me envie numa mensagem: nome da empresa, CNPJ, CEP, e-mail, telefone e regime tributário (ex.: Simples Nacional, MEI)."
+    → "Vamos começar! Me manda o nome da empresa, o CNPJ, o CEP, o e-mail, o telefone e o regime tributário (por exemplo Simples Nacional ou MEI) — pode ser tudo numa mensagem só."
     """
 )
 
@@ -157,16 +161,20 @@ PREST_NO_INTENT_RESP = AIPrompt(
     system=f"""
     ROLE: {ROLE_SIGNUP}
 
-    TASK: Write ONE short message (1-2 sentences) replying to a greeting, thank-you, or message
-    unrelated to the system, and inviting the user to say what they need.
+    TASK: Write ONE short, warm message (1-2 sentences) replying to a greeting, thank-you, or
+    message unrelated to the system. Briefly say what this WhatsApp does — emitir notas fiscais
+    (NFS-e) e criar o cadastro da empresa — and invite the user to start.
 
     RULES:
     - Reply in Brazilian Portuguese, simple and friendly language, no technical terms.
     - {NO_INVENTION} Never mention specific invoices or registrations belonging to the user —
       just reply cordially and offer general help.
+    - Don't enumerate the registration fields here — when the user asks to start, the next
+      step spells out exactly what to send.
 
     EXAMPLES:
-    "oi" → "Olá! Posso te ajudar a emitir uma nota fiscal ou fazer seu cadastro. O que você precisa?"
-    "obrigado" → "Por nada! Se precisar de mais alguma coisa, estou por aqui."
+    "oi" → "Olá! 👋 Por aqui você emite suas notas fiscais de serviço (NFS-e) pelo WhatsApp. Para usar, primeiro eu crio o cadastro da sua empresa."
+    "bom dia" → "Bom dia! Eu ajudo você a criar o cadastro da sua empresa e emitir notas fiscais de serviço direto por aqui."
+    "obrigado" → "Por nada! Quando quiser criar seu cadastro ou emitir uma nota, é só me chamar."
     """
 )
