@@ -39,18 +39,20 @@ def _setup_nf(db, invoice_id: str = "inv-123") -> dict:
     return {"prestador_id": prestador_id, "conv_id": conv_id, "nf_id": nf_id, "phone": phone}
 
 
-def test_issued_marks_nf_done_and_resets_conversation(db):
+def test_issued_marks_nf_done_and_closes_conversation(db):
     ids = _setup_nf(db)
 
-    NfseService({"invoiceId": "inv-123", "chNFSe": "CH-1", "numeroNfe": "1"}).issued()
+    NfseService({"invoiceId": "inv-123", "chNFSe": "CH-1", "nNFSe": "1"}).issued()
 
     nf = db.select_one("nfs", where={"id": ids["nf_id"]})
     assert nf["status"] == "DONE"
     assert nf["ch_nfse"] == "CH-1"
     assert nf["n_nfse"] == "1"
 
+    # Conversa vai para um estado terminal, não volta para COLLECTING — senão a
+    # próxima mensagem do prestador cairia na coleta em vez do idle_flow.
     conv = db.select_one("conversations", where={"id": ids["conv_id"]})
-    assert conv["status"] == "COLLECTING"
+    assert conv["status"] == "DONE"
     assert json.loads(conv["draft_json"]) == {}
 
     msgs = db.select("messages", where={"prestador_id": ids["prestador_id"]})
@@ -71,7 +73,7 @@ def test_error_marks_nf_error_with_message(db):
     assert nf["erro_msg"] == "CNPJ invalido"
 
     conv = db.select_one("conversations", where={"id": ids["conv_id"]})
-    assert conv["status"] == "COLLECTING"
+    assert conv["status"] == "ERROR"
 
 
 def test_cancelled_marks_nf_cancelled(db):
@@ -82,6 +84,9 @@ def test_cancelled_marks_nf_cancelled(db):
     nf = db.select_one("nfs", where={"id": ids["nf_id"]})
     assert nf["status"] == "CANCELLED"
     assert nf["cancelled_at"] == "2026-01-01T00:00:00Z"
+
+    conv = db.select_one("conversations", where={"id": ids["conv_id"]})
+    assert conv["status"] == "CANCELLED"
 
 
 def test_issued_raises_when_invoice_id_unknown(db):

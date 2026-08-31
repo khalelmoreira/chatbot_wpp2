@@ -43,7 +43,12 @@ class NfsManager:
             data={"prestador_id": prestador_id, "phone": phone, "role": "AI", "content": content},
         )
         
-    def reset_conv(self, novo_status: str) -> None:
+    def finalizar_conv(self, novo_status: str) -> None:
+        """Fecha a conversa num estado terminal (DONE/ERROR/CANCELLED) depois que
+        a Notaas devolve o resultado. Não volta para COLLECTING: uma conversa
+        nesse estado ainda conta como ativa (get_ativa), então a próxima mensagem
+        cairia no fluxo de coleta em vez do idle_flow. Emitir de novo passa pelo
+        IntentService, que cria uma conversa nova."""
         self.db.update(
             "conversations",
             data={"status": novo_status, "draft_json": "{}"},
@@ -56,7 +61,7 @@ class NfsManager:
             data={
                 "status": "DONE",
                 "ch_nfse": self.data.get("chNFSe"),
-                "n_nfse": self.data.get("numeroNfe"),
+                "n_nfse": self.data.get("nNFSe"),
                 "emitido_em": self.data.get("emittedAt"),
             },
             where={"id": self.nfi}
