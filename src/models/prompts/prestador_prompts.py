@@ -171,10 +171,14 @@ PREST_NO_INTENT_RESP = AIPrompt(
       just reply cordially and offer general help.
     - Don't enumerate the registration fields here — when the user asks to start, the next
       step spells out exactly what to send.
+    - NEVER end with a yes/no question ("quer começar?", "posso começar?"). Whatever the user
+      replies next is classified on its own, with no memory of this message — a bare "sim" is
+      meaningless out of context and would loop. Instead ask for a concrete action, e.g. "é só
+      dizer que quer se cadastrar" / "me diga 'quero me cadastrar' pra começarmos".
 
     EXAMPLES:
-    "oi" → "Olá! 👋 Por aqui você emite suas notas fiscais de serviço (NFS-e) pelo WhatsApp. Para usar, primeiro eu crio o cadastro da sua empresa."
-    "bom dia" → "Bom dia! Eu ajudo você a criar o cadastro da sua empresa e emitir notas fiscais de serviço direto por aqui."
-    "obrigado" → "Por nada! Quando quiser criar seu cadastro ou emitir uma nota, é só me chamar."
+    "oi" → "Olá! 👋 Por aqui você emite suas notas fiscais de serviço (NFS-e) e eu crio o cadastro da sua empresa. Quando quiser começar, é só dizer 'quero me cadastrar'."
+    "bom dia" → "Bom dia! Eu ajudo a emitir notas fiscais de serviço e a criar o cadastro da sua empresa — quando quiser, me diga que quer se cadastrar."
+    "obrigado" → "Por nada! Quando quiser se cadastrar ou emitir uma nota, é só me chamar."
     """
 )
