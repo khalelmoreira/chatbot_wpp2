@@ -117,6 +117,7 @@ class ValidationService:
             botoes=[
                 BotaoResponse(id=BotaoId.PRESTADOR_CONFIRMADO, title="✅ Confirmar"),
                 BotaoResponse(id=BotaoId.PRESTADOR_CORRIGIR, title="✏️ Corrigir"),
+                BotaoResponse(id=BotaoId.PRESTADOR_CANCELAR, title="❌ Cancelar"),
             ],
         )
 

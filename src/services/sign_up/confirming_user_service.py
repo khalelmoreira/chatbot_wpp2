@@ -1,6 +1,7 @@
 from src.flows.user_flows.project_flow import project_flow
 from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager
+from src.services.active.exit_command import SIGNUP_EXIT_CONFIRMATION_MSG
 from src.services.sender import get_sender
 from src.types import BotaoId, ContextPrestador, MsgType, Role, UserStatus
 
@@ -28,7 +29,11 @@ class ConfirmUserService:
             case BotaoId.PRESTADOR_CORRIGIR:
                 self._prestador_corrigir()
                 return
-            
+
+            case BotaoId.PRESTADOR_CANCELAR:
+                self._prestador_cancelar()
+                return
+
             case _:
                 raise ValueError(f"Button ID não encontrado: {self.ctx.button_id}")
 
@@ -37,6 +42,11 @@ class ConfirmUserService:
         msg = "Por favor, digite sem endereço completo."
         self._notf_user(msg)
         MsgManager(self.ctx.user).save_msg(Role.AI, msg)
+
+    def _prestador_cancelar(self):
+        self.prestador.update_state(UserStatus.CANCELLED)
+        self._notf_user(SIGNUP_EXIT_CONFIRMATION_MSG)
+        MsgManager(self.ctx.user).save_msg(Role.AI, SIGNUP_EXIT_CONFIRMATION_MSG)
 
     def _use_botoes_msg(self):
         msg="Por favor, use os botões para confirmar ou corrigir os dados."

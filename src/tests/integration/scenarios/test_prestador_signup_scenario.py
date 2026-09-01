@@ -134,6 +134,39 @@ def test_exit_word_during_onboarding_cancels_and_returns_to_idle(scenario, db):
     assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
 
 
+def test_cancelar_button_on_confirm_card_cancels_onboarding(scenario, db, monkeypatch):
+    monkeypatch.setattr(
+        collecting_user_service, "get_cnpj_info",
+        lambda cnpj: {"descricao_situacao_cadastral": "ATIVA"},
+    )
+    monkeypatch.setattr(
+        collecting_user_service, "get_endereco_by_cep",
+        lambda cep: Address(logradouro="Rua Teste", bairro="Centro", cidade="São Paulo", uf="SP"),
+    )
+
+    scenario.queue_ai(
+        {"value": "ONBOARDING"},
+        {
+            "razao_social": "Empresa Teste LTDA",
+            "cnpj": "11222333000181",
+            "email": "empresa@teste.com",
+            "regime_tributario": "3",
+            "cep": "01310100",
+        },
+    )
+    scenario.send_text(
+        PHONE,
+        "Empresa Teste LTDA, cnpj 11222333000181, email empresa@teste.com, regime simples, cep 01310100",
+    )
+
+    scenario.queue_ai({"numero": "123"})
+    scenario.send_text(PHONE, "numero 123")
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "CONFIRMING"
+
+    scenario.send_button(PHONE, BotaoId.PRESTADOR_CANCELAR)
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "CANCELLED"
+
+
 def test_prestador_with_name_not_matching_cnpj_is_rejected_before_address(scenario, db, monkeypatch):
     monkeypatch.setattr(
         collecting_user_service, "get_cnpj_info",
