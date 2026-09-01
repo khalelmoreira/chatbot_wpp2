@@ -112,6 +112,28 @@ def test_prestador_with_inactive_cnpj_is_rejected_before_address(scenario, db, m
     assert prestador["status"] == "COLLECTING"
 
 
+def test_exit_word_during_onboarding_cancels_and_returns_to_idle(scenario, db):
+    # Turn 1: partial data -> COLLECTING (still missing fields).
+    scenario.queue_ai(
+        {"value": "ONBOARDING"},
+        {"razao_social": "Empresa Teste LTDA"},
+    )
+    scenario.send_text(PHONE, "quero me cadastrar, Empresa Teste LTDA")
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
+
+    # Turn 2: the exit word abandons the cadastro — no AI on this path.
+    scenario.send_text(PHONE, "cancelar")
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "CANCELLED"
+
+    # Turn 3: a fresh onboarding message is handled from the top again.
+    scenario.queue_ai(
+        {"value": "ONBOARDING"},
+        {"razao_social": "Empresa Teste LTDA"},
+    )
+    scenario.send_text(PHONE, "quero me cadastrar de novo")
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
+
+
 def test_prestador_with_name_not_matching_cnpj_is_rejected_before_address(scenario, db, monkeypatch):
     monkeypatch.setattr(
         collecting_user_service, "get_cnpj_info",
