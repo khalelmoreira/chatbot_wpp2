@@ -119,15 +119,20 @@ PREST_ADDRESS_EXTRACT = AIPrompt(
 PREST_HAS_INTENT_CLASS = AIPrompt(
     description="Classifies whether the user intends to register, ask something general, or neither",
     system="""
-    TASK: Classify the user's intent into exactly one category:
+    TASK: Classify the LAST user message's intent into exactly one category:
 
     ONBOARDING — intent to register as a prestador (register the company in the system), even if indirect.
     GENERAL_ASK — a question or intent related to invoices (issuing, checking status, general
     doubts about the process), without being about registration.
     NENHUM — greeting, thanks, or a message unrelated to registration or invoices.
 
+    Any earlier messages are prior turns, for context only — classify the last one. A short
+    confirmation ("sim", "quero", "pode", "isso", "vamos") right after the bot offered to start
+    the cadastro is ONBOARDING.
+
     The line between ONBOARDING and GENERAL_ASK is the non-obvious part — use these boundary examples:
     "quero me cadastrar" / "ainda não tenho cadastro, quero fazer" → ONBOARDING
+    bot: "...quer começar seu cadastro?" + user: "sim" → ONBOARDING
     "quero emitir uma nota" / "cadê minha nota?" → GENERAL_ASK
     """
 )

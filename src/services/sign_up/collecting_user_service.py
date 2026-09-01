@@ -17,6 +17,7 @@ from src.types import (
 )
 from src.utils.get_cnpj import get_cnpj_info
 from src.utils.get_endereco import get_endereco_by_cep
+from src.utils.nome_empresa import nome_confere_com_receita
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,8 @@ class ValidationService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
-        self.msg = MsgManager(ctx)
+        self.msg = MsgManager(ctx.user)
+        self.history = self.msg.get_ai_history()
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidatorPrestador()
         self.wpp = get_sender(ctx.user.channel)
@@ -77,19 +79,21 @@ class ValidationService:
         return True
     
     def _no_data(self):
-        response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text)
+        response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text, history=self.history)
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
 
     def _incompleto(self):
         faltantes = ", ".join(self.ctx.validation.missing)
 
-        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [faltantes])
+        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [faltantes], history=self.history)
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
 
     def _invalidos(self):
-        response = self.ai.prest.respond(PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
+        response = self.ai.prest.respond(
+            PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid, history=self.history
+        )
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
 
@@ -164,6 +168,16 @@ class CnpjService:
             self.notf_user(
                 f"O CNPJ {cnpj} está com situação cadastral \"{situacao}\" na Receita Federal.\n"
                 f"Não é possível emitir notas fiscais para um CNPJ que não está ativo.\n"
+            )
+            return False
+
+        razao = self.ctx.valid.razao_social
+        if razao and not nome_confere_com_receita(razao, info):
+            consta = info.get("razao_social") or info.get("nome_fantasia") or "outro"
+            self.notf_user(
+                f"A razão social informada não confere com o CNPJ na Receita Federal, "
+                f"que consta como \"{consta}\".\n"
+                f"Pode enviar a razão social correta (ou o CNPJ certo)?\n"
             )
             return False
 

@@ -10,7 +10,6 @@ from src.services.active.exit_command import EXIT_CONFIRMATION_MSG, is_exit_comm
 from src.services.sender import get_sender
 from src.types import ContextTomador, ConvStatus, MsgType, Role
 from src.types.conversation import Conversation
-from src.utils.debug import log_table
 
 logger = logging.getLogger(__name__)
 
@@ -22,20 +21,10 @@ class ConvActiveService:
     def tem_conv(self):
         conversa = self._get_conv()
         if conversa is None:
-            self._save_msg()
             return conversa
 
         self.ctx.conv_id = conversa.id
-        self._save_msg()
         return conversa
-    
-    def _save_msg(self):
-        msg = MsgManager(self.ctx)
-        # Cliques de botão chegam com text vazio — registra o id do botão para o
-        # histórico não ter linhas em branco.
-        content = self.ctx.text or self.ctx.button_id or ""
-        msg.save_msg(role=Role.USER, content=content)
-        log_table(table_name="messages", where="phone = ?", params=(self.ctx.user.phone,))
 
     def _get_conv(self):
         conversa = self.conversation.get_ativa()
@@ -81,7 +70,7 @@ class DispatchActiveService:
 
     def _cancelar_conversa(self):
         self.conversation.update_state(ConvStatus.CANCELLED)
-        MsgManager(self.ctx).save_msg(Role.AI, EXIT_CONFIRMATION_MSG)
+        MsgManager(self.ctx.user).save_msg(Role.AI, EXIT_CONFIRMATION_MSG)
         get_sender(self.ctx.user.channel).send_msg_text(self.ctx.user.phone, EXIT_CONFIRMATION_MSG)
 
     def _collecting_flow(self):

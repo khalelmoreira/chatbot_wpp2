@@ -22,6 +22,7 @@ class BotaoId(StrEnum):
 
     PRESTADOR_CONFIRMADO = "prestador_confirmado"
     PRESTADOR_CORRIGIR   = "prestador_corrigir"
+    PRESTADOR_CANCELAR   = "prestador_cancelar"
 
 class Role(StrEnum):
     USER = "USER"

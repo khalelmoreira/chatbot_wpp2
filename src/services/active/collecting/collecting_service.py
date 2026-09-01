@@ -50,7 +50,8 @@ class ValidationService:
         self.conversation = conversation
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidadorTomador()
-        self.msg = MsgManager(ctx)
+        self.msg = MsgManager(ctx.user)
+        self.history = self.msg.get_ai_history()
         self.wpp = get_sender(ctx.user.channel)
         self.iss_resolution = IssResolutionService(ai=self.ai)
 
@@ -226,16 +227,18 @@ class ValidationService:
     def _incompleto(self):
         faltantes = ", ".join(self.ctx.validation.missing)
 
-        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, [faltantes])
+        response = self.ai.tom.respond(TomRespKey.INCOMPLETE, self.ctx.text, [faltantes], history=self.history)
         self.msg.save_msg(Role.AI, response)
         self._notf_user(response)
-    
+
     def _invalidos(self):
-        response = self.ai.tom.respond(TomRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
+        response = self.ai.tom.respond(
+            TomRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid, history=self.history
+        )
         self.msg.save_msg(Role.AI, response)
         self._notf_user(response)
 
     def _no_data(self):
-        response = self.ai.tom.respond(TomRespKey.NO_DATA, self.ctx.text)
+        response = self.ai.tom.respond(TomRespKey.NO_DATA, self.ctx.text, history=self.history)
         self.msg.save_msg(Role.AI, response)
         self._notf_user(response)

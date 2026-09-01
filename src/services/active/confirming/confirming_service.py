@@ -54,5 +54,5 @@ class ConfirmingService:
         self._notf_user(msg=EXIT_CONFIRMATION_MSG)
 
     def _notf_user(self, msg: str) -> None:
-        MsgManager(self.ctx).save_msg(Role.AI, msg)
+        MsgManager(self.ctx.user).save_msg(Role.AI, msg)
         self.wpp.send_msg_text(self.ctx.user.phone, msg)

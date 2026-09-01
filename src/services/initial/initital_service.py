@@ -5,19 +5,34 @@ from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.confirming_user_flow import confirming_flow
 from src.flows.user_flows.idle_user_flow import idle_user_flow
 from src.flows.user_flows.project_flow import project_flow
-from src.managers.user_manager import UserManager
+from src.managers.msg_manager import MsgManager
+from src.managers.user_manager import PrestadorManager, UserManager
+from src.services.active.exit_command import SIGNUP_EXIT_CONFIRMATION_MSG, is_exit_command
 from src.services.sender import get_sender
 from src.types import (
     Address,
     ContextPrestador,
     ContextTomador,
     IncomingMessage,
+    MsgType,
     PrestadorData,
+    Role,
     TomadorData,
     User,
     UserStatus,
 )
 from src.utils.build_ctx import build_ctx
+
+# Etapas do onboarding em que a palavra de saída ("cancelar") abandona o cadastro
+# e devolve o usuário ao ponto de partida — espelha COLLECTING/CONFIRMING no
+# fluxo de emissão. ACTIVE e os estados terminais ficam de fora.
+_ETAPAS_CANCELAVEIS = frozenset({
+    UserStatus.COLLECTING,
+    UserStatus.ADDRESS,
+    UserStatus.CONFIRMING,
+    UserStatus.PROJECT,
+    UserStatus.CERTIFICATE,
+})
 
 
 class UserResolv:
@@ -53,6 +68,9 @@ class DispatchUser:
         if self.user.status is None:
             return idle_user_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
 
+        if self._quer_sair():
+            return self._cancelar_cadastro()
+
         dispatchers = {
             UserStatus.COLLECTING:  self._collecting_flow,
             UserStatus.CONFIRMING:  self._confirming,
@@ -67,6 +85,21 @@ class DispatchUser:
             return idle_user_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
         return dispacher()
     
+    def _quer_sair(self) -> bool:
+        """Palavra de saída digitada durante o onboarding. Só texto — um clique de
+        botão nunca é uma palavra de saída."""
+        return (
+            self.user.status in _ETAPAS_CANCELAVEIS
+            and self.msg.tipo == MsgType.TEXT
+            and is_exit_command(self.msg.text)
+        )
+
+    def _cancelar_cadastro(self):
+        ctx = build_ctx(ContextPrestador, PrestadorData, self.user, self.msg)
+        PrestadorManager(ctx).update_state(UserStatus.CANCELLED)
+        MsgManager(self.user).save_msg(Role.AI, SIGNUP_EXIT_CONFIRMATION_MSG)
+        self.wpp.send_msg_text(self.user.phone, SIGNUP_EXIT_CONFIRMATION_MSG)
+
     def _collecting_flow(self):
         return collecting_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
     

@@ -1,5 +1,11 @@
-"""Palavra de saída: o prestador digita "cancelar" (ou similar) para abandonar
-uma emissão em andamento — vale só em COLLECTING e CONFIRMING.
+"""Palavra de saída: o usuário digita "cancelar" (ou similar) para abandonar um
+fluxo em andamento e voltar ao ponto de partida.
+
+Vale para as duas máquinas de estado conversacionais: a emissão de uma NFS-e
+(`ConvStatus`, em COLLECTING/CONFIRMING) e o onboarding do prestador
+(`UserStatus`, em qualquer etapa antes de ACTIVE — ver `DispatchUser`). O módulo
+mora em `active/` por ser onde o recurso nasceu; o detector em si não tem nada
+de específico da emissão.
 
 Determinístico de propósito: sem IA no caminho, e só dispara quando a mensagem
 *inteira* é a palavra, nunca como substring — senão uma descrição de serviço como
@@ -17,10 +23,16 @@ _EXIT_WORDS: frozenset[str] = frozenset({
     "encerrar",
 })
 
-# Mensagem única de confirmação do cancelamento — usada pela palavra digitada
-# (DispatchActiveService) e pelo botão ❌ Cancelar (ConfirmingService).
+# Confirmação do cancelamento de uma emissão (ConvStatus) — usada pela palavra
+# digitada (DispatchActiveService) e pelo botão ❌ Cancelar (ConfirmingService).
 EXIT_CONFIRMATION_MSG = (
     "Ok, cancelei esta emissão. Quando quiser emitir uma nota, é só me enviar os dados. 👍"
+)
+
+# Confirmação do cancelamento do cadastro (UserStatus) — usada pela palavra
+# digitada durante o onboarding (DispatchUser).
+SIGNUP_EXIT_CONFIRMATION_MSG = (
+    "Ok, cancelei o cadastro. Quando quiser retomar, é só me enviar seus dados. 👍"
 )
 
 # Linha em itálico anexada à saudação (idle_flow) para o usuário saber da saída.
