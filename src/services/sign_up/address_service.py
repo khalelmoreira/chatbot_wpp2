@@ -72,14 +72,14 @@ class ValidationService:
         response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text, history=self.history)
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
-    
+
     def _incompleto(self):
         faltantes = ", ".join(self.ctx.validation.missing)
 
         response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [faltantes], history=self.history)
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
-    
+
     def _invalidos(self):
         response = self.ai.prest.respond(
             PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid, history=self.history
@@ -95,15 +95,21 @@ class ValidationService:
         bairro = self.ctx.valid.bairro
         cidade = self.ctx.valid.cidade
         uf = self.ctx.valid.uf
+        numero = self.ctx.valid.numero
+        complemento = self.ctx.merged.complemento if self.ctx.merged is not None else None
 
         db_data = self.prestador.get_db_data()
         cep = db_data.cep if db_data is not None else None
+
+        linha_logradouro = f"{logradouro}, {numero}" if numero else logradouro
+        if complemento:
+            linha_logradouro += f" — {complemento}"
 
         self.wpp.send_msg_botao(
             phone=self.ctx.user.phone,
             text=(
                 f"📍 *Endereço encontrado:*\n\n"
-                f"{logradouro}\n"
+                f"{linha_logradouro}\n"
                 f"{bairro} — {cidade}/{uf}\n"
                 f"CEP: {cep}\n\n"
                 f"Esse é o endereço correto?"
