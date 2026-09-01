@@ -17,6 +17,7 @@ from src.types import (
 )
 from src.utils.get_cnpj import get_cnpj_info
 from src.utils.get_endereco import get_endereco_by_cep
+from src.utils.nome_empresa import nome_confere_com_receita
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +168,16 @@ class CnpjService:
             self.notf_user(
                 f"O CNPJ {cnpj} está com situação cadastral \"{situacao}\" na Receita Federal.\n"
                 f"Não é possível emitir notas fiscais para um CNPJ que não está ativo.\n"
+            )
+            return False
+
+        razao = self.ctx.valid.razao_social
+        if razao and not nome_confere_com_receita(razao, info):
+            consta = info.get("razao_social") or info.get("nome_fantasia") or "outro"
+            self.notf_user(
+                f"A razão social informada não confere com o CNPJ na Receita Federal, "
+                f"que consta como \"{consta}\".\n"
+                f"Pode enviar a razão social correta (ou o CNPJ certo)?\n"
             )
             return False
 

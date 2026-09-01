@@ -110,3 +110,31 @@ def test_prestador_with_inactive_cnpj_is_rejected_before_address(scenario, db, m
 
     prestador = db.select_one("prestador", where={"phone": PHONE})
     assert prestador["status"] == "COLLECTING"
+
+
+def test_prestador_with_name_not_matching_cnpj_is_rejected_before_address(scenario, db, monkeypatch):
+    monkeypatch.setattr(
+        collecting_user_service, "get_cnpj_info",
+        lambda cnpj: {
+            "descricao_situacao_cadastral": "ATIVA",
+            "razao_social": "Outra Empresa Completamente Diferente LTDA",
+        },
+    )
+
+    scenario.queue_ai(
+        {"value": "ONBOARDING"},
+        {
+            "razao_social": "Empresa Teste LTDA",
+            "cnpj": "11222333000181",
+            "email": "teste@teste.com",
+            "regime_tributario": "3",
+            "cep": "01310100",
+        },
+    )
+    scenario.send_text(
+        PHONE,
+        "Empresa Teste LTDA, cnpj 11222333000181, email teste@teste.com, regime simples, cep 01310100",
+    )
+
+    prestador = db.select_one("prestador", where={"phone": PHONE})
+    assert prestador["status"] == "COLLECTING"
