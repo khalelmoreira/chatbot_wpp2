@@ -101,7 +101,8 @@ PREST_ADDRESS_EXTRACT = AIPrompt(
     "av Brasil"). Absent → null.
 
     numero: Digits or alphanumeric as written (e.g. "123", "S/N"). Never confuse with cep or a
-    phone number. Absent → null.
+    phone number. If the previous bot turn asked for the endereço/número and the user replies with
+    a bare number (e.g. "12"), that is the numero. Absent → null.
 
     complemento: Extra address detail (sala, apto, bloco, andar). Absent → null.
 
