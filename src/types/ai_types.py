@@ -83,12 +83,13 @@ class AIExtractor(Generic[TExtracted]):
     output_type: Type[TExtracted]
     schema:      dict
 
-    def extract(self, text: str) -> TExtracted | None:
+    def extract(self, text: str, history: list[dict[str, str]] | None = None) -> TExtracted | None:
         try:
             response_json = self.client.extract_json(
                 system_prompt=str(self.prompt),
                 user_msg=text,
                 schema=self.schema,
+                history=history,
             )
             logger.debug("extract response=%s", response_json)
             return self.output_type.from_dict(response_json)

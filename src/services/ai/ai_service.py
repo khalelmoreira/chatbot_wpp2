@@ -164,10 +164,13 @@ class AIOperations(Generic[KE, KC, KR]):
     def _render(self, prompt: AIPrompt, params: list[str] | tuple[str, ...] = ()) -> AIPrompt:
         return replace(prompt, system=prompt.render(*params)) if params else prompt
 
-    def extract(self, key: KE, text: str, params: list[str] | tuple[str, ...] = ()) -> object | None:
+    def extract(
+        self, key: KE, text: str, params: list[str] | tuple[str, ...] = (),
+        history: list[dict[str, str]] | None = None,
+    ) -> object | None:
         config = self._extract_conf[key]
         prompt = self._render(config.prompt, params)
-        return AIExtractor(self.client, prompt, config.output_type, config.schema).extract(text)
+        return AIExtractor(self.client, prompt, config.output_type, config.schema).extract(text, history)
 
     def classify(
         self, key: KC, text: str, params: list[str] | tuple[str, ...] = (),

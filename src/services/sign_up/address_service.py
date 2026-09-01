@@ -15,10 +15,12 @@ class ExtractionService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
+        self.msg = MsgManager(ctx.user)
         self.ai = AIService(ai_client_factory.build_ai_client())
 
     def extract_e_merge(self):
-        new_data = self.ai.prest.extract(PrestExtractKey.ADDRESS, self.ctx.text)
+        history = self.msg.get_ai_history()
+        new_data = self.ai.prest.extract(PrestExtractKey.ADDRESS, self.ctx.text, history=history)
 
         if new_data is not None:
             self.ctx.new_data = new_data                       #type: ignore

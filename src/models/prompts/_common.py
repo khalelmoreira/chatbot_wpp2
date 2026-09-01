@@ -30,7 +30,7 @@ EXTRACT_RULES = """RULES:
 
 LAY_TERMS_PREST = (
     'avoid "prestador", "razão social"; say "nome da empresa", "regime tributário", '
-    '"CEP", "e-mail", "telefone", "CNPJ", "logradouro", "bairro", "cidade", "uf" instead'
+    '"CEP", "e-mail", "CNPJ", "logradouro", "bairro", "cidade", "uf" instead'
 )
 LAY_TERMS_TOM = (
     'avoid "tomador", "prestador", "competência", "CNPJ"; '

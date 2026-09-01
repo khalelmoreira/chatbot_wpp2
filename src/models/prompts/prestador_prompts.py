@@ -36,7 +36,7 @@ PREST_INCOMPLETE_RESP = AIPrompt(
 
     EXAMPLES:
     dados_faltantes="CNPJ" → "Agora só falta o CNPJ da empresa — pode me enviar?"
-    dados_faltantes="CEP, e-mail, telefone, regime tributário" → "Ainda preciso de mais alguns dados: CEP, e-mail, telefone e regime tributário."
+    dados_faltantes="CEP, e-mail, regime tributário" → "Ainda preciso de mais alguns dados: CEP, e-mail e regime tributário."
 
     DADOS_FALTANTES: {ARG}
     """
@@ -75,13 +75,14 @@ PREST_NO_DATA_RESP = AIPrompt(
 
     RULES:
     - Reply in Brazilian Portuguese, plain and encouraging language, no technical terms.
-    - Always list all six fields: nome da empresa, CNPJ, CEP, e-mail, telefone e regime
+    - Always list all five fields: nome da empresa, CNPJ, CEP, e-mail e regime
       tributário. Add a plain-language hint for regime tributário (ex.: Simples Nacional, MEI).
+    - Never ask for the user's phone number — it already comes with the message.
     - Ask for them in a single message. {NO_INVENTION}
 
     EXAMPLES:
-    → "Boa! Para criar seu cadastro, me envie numa mensagem: nome da empresa, CNPJ, CEP, e-mail, telefone e regime tributário (ex.: Simples Nacional, MEI)."
-    → "Vamos começar! Me manda o nome da empresa, o CNPJ, o CEP, o e-mail, o telefone e o regime tributário (por exemplo Simples Nacional ou MEI) — pode ser tudo numa mensagem só."
+    → "Boa! Para criar seu cadastro, me envie numa mensagem: nome da empresa, CNPJ, CEP, e-mail e regime tributário (ex.: Simples Nacional, MEI)."
+    → "Vamos começar! Me manda o nome da empresa, o CNPJ, o CEP, o e-mail e o regime tributário (por exemplo Simples Nacional ou MEI) — pode ser tudo numa mensagem só."
     """
 )
 
@@ -100,7 +101,8 @@ PREST_ADDRESS_EXTRACT = AIPrompt(
     "av Brasil"). Absent → null.
 
     numero: Digits or alphanumeric as written (e.g. "123", "S/N"). Never confuse with cep or a
-    phone number. Absent → null.
+    phone number. If the previous bot turn asked for the endereço/número and the user replies with
+    a bare number (e.g. "12"), that is the numero. Absent → null.
 
     complemento: Extra address detail (sala, apto, bloco, andar). Absent → null.
 
@@ -152,7 +154,7 @@ PREST_GENERAL_ASK_RESP = AIPrompt(
       or contacting support. Never invent deadlines, amounts, or fiscal rules.
 
     EXAMPLES:
-    "como cadastro minha empresa?" + doc has a section on registration → "Para se cadastrar, me envie o nome da empresa, CNPJ, CEP, e-mail, telefone e regime tributário. Assim que eu tiver tudo, seu cadastro é criado automaticamente."
+    "como cadastro minha empresa?" + doc has a section on registration → "Para se cadastrar, me envie o nome da empresa, CNPJ, CEP, e-mail e regime tributário. Assim que eu tiver tudo, seu cadastro é criado automaticamente."
     "qual a alíquota do ISS pra minha cidade?" + doc doesn't cover fiscal amounts → "Não tenho essa informação — recomendo confirmar direto com sua prefeitura ou contador."
 
     ---
