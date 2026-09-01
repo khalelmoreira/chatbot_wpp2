@@ -23,7 +23,8 @@ class IntentUserService:
         self.ctx = ctx
         self.prestador = prestador
         self.ai = AIService(ai_client_factory.build_ai_client())
-        self.msg = MsgManager(ctx)
+        self.msg = MsgManager(ctx.user)
+        self.history = self.msg.get_ai_history()
         self.wpp = get_sender(ctx.user.channel)
 
     def notf_user(self, msg: str) -> None:
@@ -50,16 +51,16 @@ class IntentUserService:
     def intent(self) -> IntentUserType:
         intencao = cast(
             IntentUserType,
-            self.ai.prest.classify(PrestClassKey.HAS_INTENT, self.ctx.text))
+            self.ai.prest.classify(PrestClassKey.HAS_INTENT, self.ctx.text, history=self.history))
         logger.debug("intencao=%s", intencao)
         return intencao
     
     def _general_ask(self):
-        response = self.ai.prest.respond(PrestRespKey.GENERAL_ASK, self.ctx.text)
+        response = self.ai.prest.respond(PrestRespKey.GENERAL_ASK, self.ctx.text, history=self.history)
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)
 
     def _nenhum(self):
-        response = self.ai.prest.respond(PrestRespKey.NO_INTENT, self.ctx.text)
+        response = self.ai.prest.respond(PrestRespKey.NO_INTENT, self.ctx.text, history=self.history)
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)

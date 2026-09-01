@@ -33,7 +33,8 @@ class ValidationService:
     def __init__(self, ctx: ContextPrestador, prestador: PrestadorManager):
         self.ctx = ctx
         self.prestador = prestador
-        self.msg = MsgManager(ctx)
+        self.msg = MsgManager(ctx.user)
+        self.history = self.msg.get_ai_history()
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.validador = ValidatorAddress()
         self.wpp = get_sender(ctx.user.channel)
@@ -68,19 +69,21 @@ class ValidationService:
         return True
     
     def _no_data(self):
-        response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text)
+        response = self.ai.prest.respond(PrestRespKey.NO_DATA, self.ctx.text, history=self.history)
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
     
     def _incompleto(self):
         faltantes = ", ".join(self.ctx.validation.missing)
 
-        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [faltantes])
+        response = self.ai.prest.respond(PrestRespKey.INCOMPLETE, self.ctx.text, [faltantes], history=self.history)
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
     
     def _invalidos(self):
-        response = self.ai.prest.respond(PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid)
+        response = self.ai.prest.respond(
+            PrestRespKey.INVALID, self.ctx.text, self.ctx.validation.invalid, history=self.history
+        )
         self.msg.save_msg(Role.AI, response)
         self.notf_user(response)
     

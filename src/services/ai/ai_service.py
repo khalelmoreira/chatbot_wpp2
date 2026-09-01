@@ -169,15 +169,23 @@ class AIOperations(Generic[KE, KC, KR]):
         prompt = self._render(config.prompt, params)
         return AIExtractor(self.client, prompt, config.output_type, config.schema).extract(text)
 
-    def classify(self, key: KC, text: str, params: list[str] | tuple[str, ...] = ()) -> object:
+    def classify(
+        self, key: KC, text: str, params: list[str] | tuple[str, ...] = (),
+        history: list[dict[str, str]] | None = None,
+    ) -> object:
         config = self._classify_conf[key]
         prompt = self._render(config.prompt, params)
-        return AIClassifier(self.client, prompt, config.schema, config.parser, config.fallback).classify(text)
+        return AIClassifier(
+            self.client, prompt, config.schema, config.parser, config.fallback
+        ).classify(text, history)
 
-    def respond(self, key: KR, text: str, params: list[str] | tuple[str, ...] = ()) -> str:
+    def respond(
+        self, key: KR, text: str, params: list[str] | tuple[str, ...] = (),
+        history: list[dict[str, str]] | None = None,
+    ) -> str:
         config = self._respond_conf[key]
         prompt = self._render(config.prompt, params)
-        return AIInterpreter(self.client, prompt, lambda r: r, config.fallback).interpret(text)
+        return AIInterpreter(self.client, prompt, lambda r: r, config.fallback).interpret(text, history)
         
 
 class AIService:

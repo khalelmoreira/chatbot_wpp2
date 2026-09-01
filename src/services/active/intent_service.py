@@ -19,7 +19,8 @@ class IntentService:
         self.conversation = conversation
         self.ai = AIService(ai_client_factory.build_ai_client())
         self.resumo = ResumoBuilder(ctx, ctx.conv_status)
-        self.msg = MsgManager(ctx)
+        self.msg = MsgManager(ctx.user)
+        self.history = self.msg.get_ai_history()
         self.wpp = get_sender(ctx.user.channel)
 
     def notf_user(self, msg: str) -> None:
@@ -46,7 +47,7 @@ class IntentService:
     def intent(self) -> IntentType:
         intencao = cast(
             IntentType,
-            self.ai.tom.classify(TomClassKey.HAS_INTENT, self.ctx.text))
+            self.ai.tom.classify(TomClassKey.HAS_INTENT, self.ctx.text, history=self.history))
         logger.debug("intencao=%s", intencao)
         return intencao
     
@@ -54,7 +55,7 @@ class IntentService:
         resumo_data = self.resumo.resumo_status()
         resumo_str = resumo_data.to_str()
 
-        response = self.ai.tom.respond(TomRespKey.CONSULTA_INFO, self.ctx.text, [resumo_str])
+        response = self.ai.tom.respond(TomRespKey.CONSULTA_INFO, self.ctx.text, [resumo_str], history=self.history)
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)
     
@@ -65,12 +66,14 @@ class IntentService:
         msgs = self.resumo.resumo_msg_history()
         msgs_str = "\n".join(msg.to_str() for msg in msgs) or "Nenhum historico de conversa."
 
-        response = self.ai.tom.respond(TomRespKey.CONSULTA_HISTORY, self.ctx.text, [nfs_str, msgs_str])
+        response = self.ai.tom.respond(
+            TomRespKey.CONSULTA_HISTORY, self.ctx.text, [nfs_str, msgs_str], history=self.history
+        )
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)
 
     def _nenhum(self):
-        response = self.ai.tom.respond(TomRespKey.NO_INTENT, self.ctx.text)
+        response = self.ai.tom.respond(TomRespKey.NO_INTENT, self.ctx.text, history=self.history)
         response = f"{response}\n\n{EXIT_HINT}"
         self.msg.save_msg(role=Role.AI, content=response)
         self.notf_user(response)

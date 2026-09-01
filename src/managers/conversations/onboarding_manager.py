@@ -62,11 +62,12 @@ class OnboardingManager:
         return [dict(row) for row in rows]
     
     def get_msg_history(self, limit: int = 5) -> list[dict[str, str]]:
+        # `limit` mais recentes (id DESC), devolvidas em ordem cronológica.
         rows = self.db.select(
             "messages",
             columns="role, content",
             where={"prestador_id": self.id},
-            order_by="id ASC",
+            order_by="id DESC",
             limit=limit
         )
-        return [dict(row) for row in rows]
+        return [dict(row) for row in reversed(rows)]

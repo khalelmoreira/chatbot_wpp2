@@ -10,6 +10,22 @@ from src.types import AIClient, AIClientError, AIClientRetryableError
 
 logger = logging.getLogger(__name__)
 
+# O histórico chega no vocabulário do domínio ("user" / "ai"); os SDKs falam
+# "user" / "assistant". A tradução mora só aqui, na fronteira com o provedor.
+_SDK_ROLE = {"user": "user", "ai": "assistant"}
+
+
+def _with_history(
+    history: list[dict[str, str]] | None, user_msg: str
+) -> list[dict[str, str]]:
+    turns = [
+        {"role": _SDK_ROLE[m["role"]], "content": m["content"]}
+        for m in (history or [])
+        if m["role"] in _SDK_ROLE
+    ]
+    turns.append({"role": "user", "content": user_msg})
+    return turns
+
 def _map_openai_error(e: Exception) -> Exception:
     if isinstance(e, (openai.APITimeoutError, openai.APIConnectionError)):
         return AIClientRetryableError(f"Falha transitoria na OpenAI: {e}")
@@ -31,13 +47,16 @@ class OpenAIClient(AIClient):
         self.client = OpenAI(api_key=api_key)
         self.model = model
 
-    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
+    def extract_json(
+        self, system_prompt: str, user_msg: str, schema: dict,
+        history: list[dict[str, str]] | None = None,
+    ) -> dict:
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg},
+                    *_with_history(history, user_msg),
                 ],
                 response_format={
                     "type": "json_schema",
@@ -61,13 +80,16 @@ class OpenAIClient(AIClient):
         except Exception as e:
             raise _map_openai_error(e) from e
 
-    def extract_text(self, system_prompt: str, user_msg: str) -> str:
+    def extract_text(
+        self, system_prompt: str, user_msg: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> str:
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg},
+                    *_with_history(history, user_msg),
                 ],
             )
             return response.choices[0].message.content or ""
@@ -99,13 +121,16 @@ class AnthropicClient(AIClient):
         self.model = model
         self.max_tokens = max_tokens
 
-    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
+    def extract_json(
+        self, system_prompt: str, user_msg: str, schema: dict,
+        history: list[dict[str, str]] | None = None,
+    ) -> dict:
         try:
             message = self.client.messages.create(
                 model=self.model,
                 max_tokens=self.max_tokens,
                 system=system_prompt,
-                messages=[{"role": "user", "content": user_msg}],
+                messages=_with_history(history, user_msg),
                 tools=[{
                     "name": self.TOOL_NAME,
                     "description": "Retorna os dados extraidos no formato especificado.",
@@ -123,13 +148,16 @@ class AnthropicClient(AIClient):
         except Exception as e:
             raise _map_anthropic_error(e) from e
 
-    def extract_text(self, system_prompt: str, user_msg: str) -> str:
+    def extract_text(
+        self, system_prompt: str, user_msg: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> str:
         try:
             message = self.client.messages.create(
                 model=self.model,
                 max_tokens=self.max_tokens,
                 system=system_prompt,
-                messages=[{"role": "user", "content": user_msg}],
+                messages=_with_history(history, user_msg),
             )
             return "".join(block.text for block in message.content if block.type == "text")
         except Exception as e:
@@ -146,21 +174,27 @@ class FallbackAIClient(AIClient):
             raise ValueError("FallbackAIClient requer ao menos um client")
         self._clients = clients
 
-    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
+    def extract_json(
+        self, system_prompt: str, user_msg: str, schema: dict,
+        history: list[dict[str, str]] | None = None,
+    ) -> dict:
         last_error: Exception | None = None
         for client in self._clients:
             try:
-                return client.extract_json(system_prompt, user_msg, schema)
+                return client.extract_json(system_prompt, user_msg, schema, history)
             except AIClientRetryableError as e:
                 logger.warning(f"{type(client).__name__} falhou, tentando proximo provedor: {e}")
                 last_error = e
         raise AIClientRetryableError(f"Todos os provedores de IA falharam: {last_error}") from last_error
 
-    def extract_text(self, system_prompt: str, user_msg: str) -> str:
+    def extract_text(
+        self, system_prompt: str, user_msg: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> str:
         last_error: Exception | None = None
         for client in self._clients:
             try:
-                return client.extract_text(system_prompt, user_msg)
+                return client.extract_text(system_prompt, user_msg, history)
             except AIClientRetryableError as e:
                 logger.warning(f"{type(client).__name__} falhou, tentando proximo provedor: {e}")
                 last_error = e

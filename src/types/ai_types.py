@@ -52,11 +52,17 @@ class AIClientRetryableError(AIClientError):
 class AIClient(ABC):
 
     @abstractmethod
-    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
+    def extract_json(
+        self, system_prompt: str, user_msg: str, schema: dict,
+        history: list[dict[str, str]] | None = None,
+    ) -> dict:
         pass
 
     @abstractmethod
-    def extract_text(self, system_prompt: str, user_msg: str) -> str:
+    def extract_text(
+        self, system_prompt: str, user_msg: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> str:
         pass
 
 @dataclass
@@ -115,11 +121,12 @@ class AIInterpreter(Generic[TInterpreted]):
     parser:   Callable[[str], TInterpreted]
     fallback: TInterpreted
 
-    def interpret(self, text: str) -> TInterpreted:
+    def interpret(self, text: str, history: list[dict[str, str]] | None = None) -> TInterpreted:
         try:
             response = self.client.extract_text(
                 system_prompt=str(self.prompt),
-                user_msg=text
+                user_msg=text,
+                history=history,
             )
             return self.parser(response)
         except Exception as e:
@@ -134,12 +141,13 @@ class AIClassifier(Generic[TInterpreted]):
     parser:   Callable[[object], TInterpreted]
     fallback: TInterpreted
 
-    def classify(self, text: str) -> TInterpreted:
+    def classify(self, text: str, history: list[dict[str, str]] | None = None) -> TInterpreted:
         try:
             response = self.client.extract_json(
                 system_prompt=str(self.prompt),
                 user_msg=text,
                 schema=self.schema,
+                history=history,
             )
             return self.parser(response["value"])
         except Exception as e:

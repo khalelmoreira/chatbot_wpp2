@@ -12,13 +12,19 @@ class _ScriptedClient(AIClient):
         self._error = error
         self.calls = 0
 
-    def extract_json(self, system_prompt: str, user_msg: str, schema: dict) -> dict:
+    def extract_json(
+        self, system_prompt: str, user_msg: str, schema: dict,
+        history: list[dict[str, str]] | None = None,
+    ) -> dict:
         self.calls += 1
         if self._error:
             raise self._error
         return self._result
 
-    def extract_text(self, system_prompt: str, user_msg: str) -> str:
+    def extract_text(
+        self, system_prompt: str, user_msg: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> str:
         self.calls += 1
         if self._error:
             raise self._error

@@ -25,15 +25,20 @@ TOM_NO_INTENT_RESP = AIPrompt(
 TOM_HAS_INTENT_CLASS = AIPrompt(
     description="Classifies whether the user intends to issue an invoice, ask about one, or neither",
     system="""
-    TASK: Classify the user's intent into exactly one category:
+    TASK: Classify the LAST user message's intent into exactly one category:
 
     EMITIR — intent to create an invoice, even partial or indirect (includes just supplying
     fiscal data like CNPJ, amount, or service, without explicitly saying "emitir").
     CONSULTA — a question about status, history, or how the process works, without creating an invoice.
     NENHUM — greeting, thanks, or a message unrelated to invoices.
 
+    Any earlier messages are prior turns, for context only — classify the last one. A short
+    confirmation ("sim", "pode", "isso", "vamos") right after the bot offered to start a nota
+    is EMITIR.
+
     The line between EMITIR and CONSULTA is the non-obvious part — use these boundary examples:
     "500 reais de consultoria pra empresa X" / "nota para CNPJ 12.345.678/0001-99" → EMITIR
+    bot: "...quer emitir uma nota agora?" + user: "sim" → EMITIR
     "cadê minha nota?" / "como faço pra emitir?" / "quanto tempo demora?" → CONSULTA
     """
 )

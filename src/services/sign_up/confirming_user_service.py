@@ -36,9 +36,9 @@ class ConfirmUserService:
         self.prestador.update_state(UserStatus.ADDRESS)
         msg = "Por favor, digite sem endereço completo."
         self._notf_user(msg)
-        MsgManager(self.ctx).save_msg(Role.AI, msg)
+        MsgManager(self.ctx.user).save_msg(Role.AI, msg)
 
     def _use_botoes_msg(self):
         msg="Por favor, use os botões para confirmar ou corrigir os dados."
         self._notf_user(msg)
-        MsgManager(self.ctx).save_msg(Role.AI, msg)
+        MsgManager(self.ctx.user).save_msg(Role.AI, msg)

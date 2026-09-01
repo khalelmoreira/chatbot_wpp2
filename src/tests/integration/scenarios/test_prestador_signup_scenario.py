@@ -66,6 +66,27 @@ def test_prestador_onboards_from_collecting_to_certificate(scenario, db, monkeyp
     assert prestador["status"] == "CERTIFICATE"
 
 
+def test_greeting_then_bare_yes_advances_to_collecting(scenario, db):
+    """Regression: "oi" -> greeting, then "sim" must be read in light of the prior
+    turn and classify as ONBOARDING (not loop back to the greeting)."""
+    # Turn 1: greeting -> NENHUM, user stays unregistered.
+    scenario.queue_ai({"value": "NENHUM"})
+    scenario.send_text(PHONE, "oi")
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] is None
+
+    # Turn 2: bare "sim" -> ONBOARDING (classifier now sees the greeting), then the
+    # empty data extract lands the user in COLLECTING with the field checklist.
+    scenario.queue_ai({"value": "ONBOARDING"}, {})
+    scenario.send_text(PHONE, "sim")
+
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
+    # the turn-2 intent classify was given the prior turns as history
+    assert any(
+        h and {"role": "user", "content": "oi"} in h
+        for h in scenario.ai.histories
+    )
+
+
 def test_prestador_with_inactive_cnpj_is_rejected_before_address(scenario, db, monkeypatch):
     monkeypatch.setattr(
         collecting_user_service, "get_cnpj_info",
