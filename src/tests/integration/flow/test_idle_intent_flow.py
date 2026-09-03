@@ -28,7 +28,7 @@ def test_sim_after_greeting_advances_to_collecting(db, monkeypatch):
     mgr.save_msg(Role.USER, "sim")  # current inbound, persisted by initial_handler
 
     fake = FakeAIClient(
-        extract_json_responses=[{"value": "ONBOARDING"}, {}],  # classify, then collecting extract
+        extract_json_responses=[{"value": True}, {}],  # classify, then collecting extract
         extract_text_response="Boa! Me envie nome da empresa, CNPJ, CEP, e-mail e regime.",
     )
     monkeypatch.setattr(ai_client_factory, "build_ai_client", lambda: fake)

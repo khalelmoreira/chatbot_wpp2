@@ -9,6 +9,7 @@ from src.types import (
     InvalidTransactionError,
     Prestador,
     User,
+    UserStatus,
 )
 
 
@@ -105,6 +106,27 @@ class PrestadorManager:
             data={"status": novo_status},
             where={"id": self.id}
         )
+
+    def enter_help(self, return_to: str | None) -> None:
+        """Guarda o UserStatus atual em help_return_to e move para HELP. `return_to`
+        None significa que o usuário veio do idle (sem cadastro)."""
+        self.db.update(
+            "prestador",
+            data={"status": UserStatus.HELP, "help_return_to": return_to},
+            where={"id": self.id},
+        )
+
+    def leave_help(self) -> str | None:
+        """Restaura o status guardado em help_return_to (None volta ao idle) e limpa
+        a coluna. Devolve o status restaurado."""
+        row = self.db.select_one("prestador", columns="help_return_to", where={"id": self.id})
+        return_to = row["help_return_to"] if row else None
+        self.db.update(
+            "prestador",
+            data={"status": return_to, "help_return_to": None},
+            where={"id": self.id},
+        )
+        return return_to
 
     def update_error(self, novo_status: str, error_msg: str) -> None:
         self.db.update(

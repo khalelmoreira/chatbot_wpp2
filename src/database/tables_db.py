@@ -261,3 +261,6 @@ def init_db():
     """)
 
     _add_column_if_missing(db, "prestador", "channel TEXT NOT NULL DEFAULT 'WHATSAPP'")
+    # UserStatus a retomar quando o usuário sai do modo ajuda (status = HELP).
+    # NULL = veio do idle (sem cadastro) — ver help_command.py / DispatchUser.
+    _add_column_if_missing(db, "prestador", "help_return_to TEXT")
