@@ -11,8 +11,8 @@ from src.models.prompts import (
     ISS_SERVICE_CODE_CLASS,
     PREST_ADDRESS_EXTRACT,
     PREST_DATA_EXTRACT,
-    PREST_GENERAL_ASK_RESP,
     PREST_HAS_INTENT_CLASS,
+    PREST_HELP_RESP,
     PREST_INCOMPLETE_RESP,
     PREST_INVALID_RESP,
     PREST_NO_DATA_RESP,
@@ -34,7 +34,6 @@ from src.types import (
     ClassificationConfig,
     ExtractionConfig,
     IntentType,
-    IntentUserType,
     IssClassKey,
     PrestadorData,
     PrestClassKey,
@@ -63,10 +62,6 @@ def _value_schema(value_schema: dict) -> dict:
     }
 
 BOOL_VALUE_SCHEMA = _value_schema({"type": "boolean"})
-
-PREST_HAS_INTENT_SCHEMA = _value_schema(
-    {"type": "string", "enum": ["ONBOARDING", "GENERAL_ASK", "NENHUM"]}
-)
 
 TOM_HAS_INTENT_SCHEMA = _value_schema(
     {"type": "string", "enum": ["EMITIR", "CONSULTA", "NENHUM"]}
@@ -208,15 +203,15 @@ class AIService:
             classify_conf={
                 PrestClassKey.HAS_INTENT: ClassificationConfig(
                     prompt=PREST_HAS_INTENT_CLASS,
-                    schema=PREST_HAS_INTENT_SCHEMA,
-                    parser=lambda v: IntentUserType(v),
-                    fallback=IntentUserType.NENHUM,
+                    schema=BOOL_VALUE_SCHEMA,
+                    parser=lambda v: bool(v),
+                    fallback=False,
                 ),
             },
             respond_conf={
                 PrestRespKey.NO_INTENT: ResponseConfig(PREST_NO_INTENT_RESP),
                 PrestRespKey.NO_DATA: ResponseConfig(PREST_NO_DATA_RESP),
-                PrestRespKey.GENERAL_ASK: ResponseConfig(PREST_GENERAL_ASK_RESP),
+                PrestRespKey.HELP: ResponseConfig(PREST_HELP_RESP),
                 PrestRespKey.INCOMPLETE: ResponseConfig(PREST_INCOMPLETE_RESP),
                 PrestRespKey.INVALID: ResponseConfig(PREST_INVALID_RESP),
             },

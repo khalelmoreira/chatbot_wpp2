@@ -12,7 +12,7 @@ Determinístico de propósito: sem IA no caminho, e só dispara quando a mensage
 "cancelamento de contrato" derrubaria o fluxo.
 """
 
-import unicodedata
+from src.utils.text import normalize_word
 
 _EXIT_WORDS: frozenset[str] = frozenset({
     "cancelar",
@@ -39,12 +39,7 @@ SIGNUP_EXIT_CONFIRMATION_MSG = (
 EXIT_HINT = '_Durante uma emissão, é só digitar "cancelar" a qualquer momento para desistir._'
 
 
-def _normalizar(texto: str) -> str:
-    sem_acento = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
-    return sem_acento.casefold().strip(" \t\n.!?")
-
-
 def is_exit_command(texto: str | None) -> bool:
     if not texto:
         return False
-    return _normalizar(texto) in _EXIT_WORDS
+    return normalize_word(texto) in _EXIT_WORDS

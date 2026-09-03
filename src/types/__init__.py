@@ -84,7 +84,6 @@ from src.types.tomador import (
 )
 from src.types.user import (
     Address,
-    IntentUserType,
     Prestador,
     PrestadorData,
     User,
@@ -108,7 +107,6 @@ __all__ = [
     "User",
     "UserStatus",
     "Address",
-    "IntentUserType",
     "Prestador",
     "PrestadorData",
     # tomador

@@ -3,12 +3,14 @@ from src.flows.user_flows.address_flow import address_flow
 from src.flows.user_flows.certificate_flow import cerfiticate_flow
 from src.flows.user_flows.collecting_user_flow import collecting_flow
 from src.flows.user_flows.confirming_user_flow import confirming_flow
+from src.flows.user_flows.help_flow import help_flow
 from src.flows.user_flows.idle_user_flow import idle_user_flow
 from src.flows.user_flows.project_flow import project_flow
 from src.managers.msg_manager import MsgManager
 from src.managers.user_manager import PrestadorManager, UserManager
 from src.services.active.exit_command import SIGNUP_EXIT_CONFIRMATION_MSG, is_exit_command
 from src.services.sender import get_sender
+from src.services.sign_up.help_command import is_help_command
 from src.types import (
     Address,
     ContextPrestador,
@@ -33,6 +35,11 @@ _ETAPAS_CANCELAVEIS = frozenset({
     UserStatus.PROJECT,
     UserStatus.CERTIFICATE,
 })
+
+# Onde a palavra reservada "ajuda"/"help" abre o modo assistente. Inclui o idle
+# (status None) — um usuário sem cadastro também pode pedir ajuda. ACTIVE e os
+# estados terminais ficam de fora (por ora só onboarding).
+_ETAPAS_AJUDAVEIS = _ETAPAS_CANCELAVEIS | {None}
 
 
 class UserResolv:
@@ -65,6 +72,12 @@ class DispatchUser:
 
     def dispatch(self):
 
+        if self.user.status == UserStatus.HELP:
+            return help_flow(build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
+
+        if self._quer_ajuda():
+            return self._abrir_ajuda()
+
         if self.user.status is None:
             return idle_user_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
 
@@ -85,6 +98,21 @@ class DispatchUser:
             return idle_user_flow(ctx=build_ctx(ContextPrestador, PrestadorData, self.user, self.msg))
         return dispacher()
     
+    def _quer_ajuda(self) -> bool:
+        """Palavra reservada "ajuda"/"help" — abre o modo assistente. Só texto; um
+        clique de botão nunca é uma palavra reservada."""
+        return (
+            self.user.status in _ETAPAS_AJUDAVEIS
+            and self.msg.tipo == MsgType.TEXT
+            and is_help_command(self.msg.text)
+        )
+
+    def _abrir_ajuda(self):
+        ctx = build_ctx(ContextPrestador, PrestadorData, self.user, self.msg)
+        prev = self.user.status.value if self.user.status is not None else None
+        PrestadorManager(ctx).enter_help(prev)
+        return help_flow(ctx, intro=True)
+
     def _quer_sair(self) -> bool:
         """Palavra de saída digitada durante o onboarding. Só texto — um clique de
         botão nunca é uma palavra de saída."""

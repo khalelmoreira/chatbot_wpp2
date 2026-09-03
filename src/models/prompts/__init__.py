@@ -20,8 +20,8 @@ from src.models.prompts.nfse_prompts import (
 from src.models.prompts.prestador_prompts import (
     PREST_ADDRESS_EXTRACT,
     PREST_DATA_EXTRACT,
-    PREST_GENERAL_ASK_RESP,
     PREST_HAS_INTENT_CLASS,
+    PREST_HELP_RESP,
     PREST_INCOMPLETE_RESP,
     PREST_INVALID_RESP,
     PREST_NO_DATA_RESP,
@@ -51,6 +51,6 @@ __all__ = [
     "PREST_NO_DATA_RESP",
     "PREST_ADDRESS_EXTRACT",
     "PREST_HAS_INTENT_CLASS",
-    "PREST_GENERAL_ASK_RESP",
+    "PREST_HELP_RESP",
     "PREST_NO_INTENT_RESP",
 ]

@@ -14,7 +14,7 @@ class PrestRespKey(StrEnum):
     INCOMPLETE  = "INCOMPLETE"
     INVALID     = "INVALID"
     NO_DATA     = "NO_DATA"
-    GENERAL_ASK = "GENERAL_ASK"
+    HELP        = "HELP"
     NO_INTENT   = "NO_INTENT"
 
 class PrestClassKey(StrEnum):

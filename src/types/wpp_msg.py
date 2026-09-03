@@ -13,6 +13,9 @@ class MsgType(StrEnum):
     BUTTON   = "button"
 
 class BotaoId(StrEnum):
+    INICIO_COMECAR       = "inicio_comecar"
+    INICIO_COMO_FUNCIONA = "inicio_como_funciona"
+
     TOMADOR_CONFIRMADO   = "tomador_confirmado"
     TOMADOR_CORRIGIR     = "tomador_corrigir"
     TOMADOR_CANCELAR     = "tomador_cancelar"

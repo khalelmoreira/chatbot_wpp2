@@ -12,15 +12,9 @@ class UserStatus(StrEnum):
     PROJECT     = "PROJECT"
     CERTIFICATE = "CERTIFICATE"
     ACTIVE      = "ACTIVE"
+    HELP        = "HELP"
     ERROR       = "ERROR"
     CANCELLED   = "CANCELLED"
-
-class IntentUserType(StrEnum):
-    ONBOARDING  = "ONBOARDING"
-    ASK_PRICE   = "ASK_PRICE"
-    ASK_WORKING = "ASK_WORKING"
-    GENERAL_ASK = "GENERAL_ASK"
-    NENHUM      = "NENHUM"
 
 @dataclass
 class Address(MergeableMixin, FromDictMixin, TextMixin):

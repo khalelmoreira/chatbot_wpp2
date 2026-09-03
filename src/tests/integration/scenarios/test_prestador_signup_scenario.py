@@ -32,7 +32,7 @@ def test_prestador_onboards_from_collecting_to_certificate(scenario, db, monkeyp
 
     # Turn 1: new phone, full CNPJ/company data in one message -> intent classify + data extract.
     scenario.queue_ai(
-        {"value": "ONBOARDING"},
+        {"value": True},
         {
             "razao_social": "Empresa Teste LTDA",
             "cnpj": "11222333000181",
@@ -70,13 +70,13 @@ def test_greeting_then_bare_yes_advances_to_collecting(scenario, db):
     """Regression: "oi" -> greeting, then "sim" must be read in light of the prior
     turn and classify as ONBOARDING (not loop back to the greeting)."""
     # Turn 1: greeting -> NENHUM, user stays unregistered.
-    scenario.queue_ai({"value": "NENHUM"})
+    scenario.queue_ai({"value": False})
     scenario.send_text(PHONE, "oi")
     assert db.select_one("prestador", where={"phone": PHONE})["status"] is None
 
     # Turn 2: bare "sim" -> ONBOARDING (classifier now sees the greeting), then the
     # empty data extract lands the user in COLLECTING with the field checklist.
-    scenario.queue_ai({"value": "ONBOARDING"}, {})
+    scenario.queue_ai({"value": True}, {})
     scenario.send_text(PHONE, "sim")
 
     assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
@@ -94,7 +94,7 @@ def test_prestador_with_inactive_cnpj_is_rejected_before_address(scenario, db, m
     )
 
     scenario.queue_ai(
-        {"value": "ONBOARDING"},
+        {"value": True},
         {
             "razao_social": "Empresa Baixada LTDA",
             "cnpj": "11222333000181",
@@ -115,7 +115,7 @@ def test_prestador_with_inactive_cnpj_is_rejected_before_address(scenario, db, m
 def test_exit_word_during_onboarding_cancels_and_returns_to_idle(scenario, db):
     # Turn 1: partial data -> COLLECTING (still missing fields).
     scenario.queue_ai(
-        {"value": "ONBOARDING"},
+        {"value": True},
         {"razao_social": "Empresa Teste LTDA"},
     )
     scenario.send_text(PHONE, "quero me cadastrar, Empresa Teste LTDA")
@@ -127,11 +127,62 @@ def test_exit_word_during_onboarding_cancels_and_returns_to_idle(scenario, db):
 
     # Turn 3: a fresh onboarding message is handled from the top again.
     scenario.queue_ai(
-        {"value": "ONBOARDING"},
+        {"value": True},
         {"razao_social": "Empresa Teste LTDA"},
     )
     scenario.send_text(PHONE, "quero me cadastrar de novo")
     assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
+
+
+def test_greeting_button_comecar_advances_to_collecting(scenario, db):
+    """A brand-new phone whose first message is the '🚀 Começar' greeting button
+    lands straight in COLLECTING — the button is resolved deterministically, never
+    through the intent classifier."""
+    scenario.queue_ai({})  # only the collecting extract runs (empty message)
+    scenario.send_button(PHONE, BotaoId.INICIO_COMECAR)
+
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
+
+
+def test_greeting_button_como_funciona_does_not_change_state(scenario, db):
+    scenario.send_button(PHONE, BotaoId.INICIO_COMO_FUNCIONA)
+
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] is None
+
+
+def test_help_word_opens_assistant_and_exit_word_restores_prior_stage(scenario, db):
+    # Turn 1: partial data -> COLLECTING.
+    scenario.queue_ai({"value": True}, {"razao_social": "Empresa Teste LTDA"})
+    scenario.send_text(PHONE, "quero me cadastrar, Empresa Teste LTDA")
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] == "COLLECTING"
+
+    # Turn 2: the reserved word "ajuda" opens HELP and remembers where we were.
+    # No AI on this path.
+    scenario.send_text(PHONE, "ajuda")
+    row = db.select_one("prestador", where={"phone": PHONE})
+    assert row["status"] == "HELP"
+    assert row["help_return_to"] == "COLLECTING"
+
+    # Turn 3: a question in HELP is answered by the assistant, state unchanged.
+    scenario.send_text(PHONE, "o que é o certificado digital?")
+    row = db.select_one("prestador", where={"phone": PHONE})
+    assert row["status"] == "HELP"
+
+    # Turn 4: an exit word leaves HELP and restores COLLECTING.
+    scenario.send_text(PHONE, "sair")
+    row = db.select_one("prestador", where={"phone": PHONE})
+    assert row["status"] == "COLLECTING"
+    assert row["help_return_to"] is None
+
+
+def test_help_word_from_idle_returns_to_idle(scenario, db):
+    scenario.send_text(PHONE, "ajuda")
+    row = db.select_one("prestador", where={"phone": PHONE})
+    assert row["status"] == "HELP"
+    assert row["help_return_to"] is None
+
+    scenario.send_text(PHONE, "sair")
+    assert db.select_one("prestador", where={"phone": PHONE})["status"] is None
 
 
 def test_cancelar_button_on_confirm_card_cancels_onboarding(scenario, db, monkeypatch):
@@ -145,7 +196,7 @@ def test_cancelar_button_on_confirm_card_cancels_onboarding(scenario, db, monkey
     )
 
     scenario.queue_ai(
-        {"value": "ONBOARDING"},
+        {"value": True},
         {
             "razao_social": "Empresa Teste LTDA",
             "cnpj": "11222333000181",
@@ -177,7 +228,7 @@ def test_prestador_with_name_not_matching_cnpj_is_rejected_before_address(scenar
     )
 
     scenario.queue_ai(
-        {"value": "ONBOARDING"},
+        {"value": True},
         {
             "razao_social": "Empresa Teste LTDA",
             "cnpj": "11222333000181",

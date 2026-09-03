@@ -1,5 +1,14 @@
 # Task: `PREST_GENERAL_ASK_RESP` has no documentation to answer from
 
+## RESOLVED — option 1 taken (see `task-improve-initial-prompts.md`)
+
+`PREST_GENERAL_ASK_RESP` was renamed `PREST_HELP_RESP` and folded into the new
+HELP assistant state. `PREST_FAQ` (static constant) is now baked into the prompt,
+so the `DOCUMENTAÇÃO` section is never empty. The `GENERAL_ASK` classifier branch
+is gone — HELP is reached only by the reserved word `ajuda`/`help`.
+
+Original write-up kept below for context.
+
 ## Symptom
 
 When a prestador (still onboarding) asks a general question about the system —
